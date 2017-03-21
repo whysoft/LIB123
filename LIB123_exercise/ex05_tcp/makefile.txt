@@ -1,0 +1,3 @@
+CC = gcc
+    all:
+	$(CC) -o tcptest tcptest.cpp -lpthread -lstdc++
