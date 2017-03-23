@@ -1,0 +1,42 @@
+﻿Build started 2016/5/28 20:59:20.
+     1>Project "D:\a3\BS_TEMPLATE\作业九九设—远程监控的演示系统\PRG\MyClient\MyClient\MyClient.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "Debug\MyClient.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D _UNICODE /D UNICODE /D _ATL_STATIC_REGISTRY /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yc"StdAfx.h" /Fp"Debug\MyClient.pch" /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt stdafx.cpp
+         stdafx.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D _UNICODE /D UNICODE /D _ATL_STATIC_REGISTRY /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"StdAfx.h" /Fp"Debug\MyClient.pch" /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt EditInfoDlg.cpp MyClient.cpp MyClientDlg.cpp
+         MyClientDlg.cpp
+         MyClient.cpp
+         EditInfoDlg.cpp
+         Generating Code...
+       ResourceCompile:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /D _DEBUG /D _UNICODE /D UNICODE /l"0x0409" /IDebug\ /nologo /fo"Debug\MyClient.res" MyClient.rc 
+       ManifestResourceCompile:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /nologo /fo"Debug\MyClient.exe.embed.manifest.res" Debug\MyClient_manifest.rc 
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\a3\BS_TEMPLATE\作业九九设—远程监控的演示系统\PRG\MyClient\Debug\MyClient.exe" /INCREMENTAL /NOLOGO /MANIFEST /ManifestFile:"Debug\MyClient.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"D:\a3\BS_TEMPLATE\作业九九设—远程监控的演示系统\PRG\MyClient\Debug\MyClient.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /ENTRY:"wWinMainCRTStartup" /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\a3\BS_TEMPLATE\作业九九设—远程监控的演示系统\PRG\MyClient\Debug\MyClient.lib" /MACHINE:X86 Debug\MyClient.res
+         Debug\MyClient.exe.embed.manifest.res
+         Debug\EditInfoDlg.obj
+         Debug\MyClient.obj
+         Debug\MyClientDlg.obj
+         Debug\stdafx.obj
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /out:"Debug\MyClient.exe.embed.manifest" /manifest Debug\MyClient.exe.intermediate.manifest "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\Include\Manifest\dpiaware.manifest"
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /nologo /fo"Debug\MyClient.exe.embed.manifest.res" Debug\MyClient_manifest.rc 
+       LinkEmbedManifest:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\a3\BS_TEMPLATE\作业九九设—远程监控的演示系统\PRG\MyClient\Debug\MyClient.exe" /INCREMENTAL /NOLOGO /MANIFEST /ManifestFile:"Debug\MyClient.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"D:\a3\BS_TEMPLATE\作业九九设—远程监控的演示系统\PRG\MyClient\Debug\MyClient.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /ENTRY:"wWinMainCRTStartup" /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\a3\BS_TEMPLATE\作业九九设—远程监控的演示系统\PRG\MyClient\Debug\MyClient.lib" /MACHINE:X86 Debug\MyClient.res
+         Debug\MyClient.exe.embed.manifest.res
+         Debug\EditInfoDlg.obj
+         Debug\MyClient.obj
+         Debug\MyClientDlg.obj
+         Debug\stdafx.obj
+         MyClient.vcxproj -> D:\a3\BS_TEMPLATE\作业九九设—远程监控的演示系统\PRG\MyClient\Debug\MyClient.exe
+       FinalizeBuildStatus:
+         Deleting file "Debug\MyClient.unsuccessfulbuild".
+         Touching "Debug\MyClient.lastbuildstate".
+     1>Done Building Project "D:\a3\BS_TEMPLATE\作业九九设—远程监控的演示系统\PRG\MyClient\MyClient\MyClient.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:46.23
