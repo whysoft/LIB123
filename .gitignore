@@ -1,0 +1,38 @@
+# Compiled Dynamic libraries
+# Compiled Object files
+# Compiled Static libraries
+# Executables
+# Fortran module files
+# Precompiled Headers
+*.a
+*.app
+*.bsc
+*.dep
+*.dll
+*.dylib
+*.exe
+*.gch
+*.idb
+*.ilk
+*.ipch
+*.la
+*.lai
+*.lib
+*.lo
+*.log
+*.mod
+*.ncb
+*.o
+*.obj
+*.out
+*.pch
+*.pdb
+*.rsp
+*.slo
+*.smod
+*.so
+*.suo
+*.tlog
+*.user
+*.sdf
+*.exe

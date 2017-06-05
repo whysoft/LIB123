@@ -1,0 +1,17 @@
+#CC = arm-linux-gcc
+CC = gcc
+CC1 = $(CC) -c `pkg-config --cflags gtk+-2.0 gthread-2.0`
+CC3 = $(CC) -lpthread `pkg-config --cflags --libs gtk+-2.0 gthread-2.0`
+
+O_FILES = bmpprndata.o env_t.o 
+
+bmpprndata: $(O_FILES)
+	$(CC) -o bmpprndata $(O_FILES) -lpthread `pkg-config --cflags --libs gtk+-2.0 gthread-2.0` -lstdc++
+
+bmpprndata.o :bmpprndata.cpp
+	$(CC1) bmpprndata.cpp
+
+env_t.o :env_t.cpp
+	$(CC1) env_t.cpp
+
+

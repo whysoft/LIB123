@@ -1,0 +1,165 @@
+
+INPUTPATH = .\
+OUTPUTFN =  ..\MyServer\MyServerDlg.cpp
+
+
+###
+
+// MyServerDlg.cpp : implementation file
+//
+
+#include "stdafx.h"
+#include "MyServer.h"
+#include "MyServerDlg.h"
+#include "afxdialogex.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+
+// CMyServerDlg dialog
+
+
+
+
+CMyServerDlg::CMyServerDlg(CWnd* pParent /*=NULL*/)
+	: CDialogEx(CMyServerDlg::IDD, pParent)
+{
+	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+}
+
+void CMyServerDlg::DoDataExchange(CDataExchange* pDX)
+{
+	CDialogEx::DoDataExchange(pDX);
+}
+
+BEGIN_MESSAGE_MAP(CMyServerDlg, CDialogEx)
+		ON_WM_TIMER()
+	ON_WM_PAINT()
+	ON_WM_QUERYDRAGICON()
+END_MESSAGE_MAP()
+
+
+// CMyServerDlg message handlers
+
+BOOL CMyServerDlg::OnInitDialog()
+{
+	CDialogEx::OnInitDialog();
+
+	// Set the icon for this dialog.  The framework does this automatically
+	//  when the application's main window is not a dialog
+	SetIcon(m_hIcon, TRUE);			// Set big icon
+	SetIcon(m_hIcon, FALSE);		// Set small icon
+
+	// TODO: Add extra initialization here
+	SetTimer(1, 666, NULL); // 
+	this->GetDlgItem( IDC_STATIC )->SetWindowText( CString("监控服务端") );
+	this->GetDlgItem( IDC_STATIC2 )->SetWindowText( CString("正在运行") );
+
+	this->SetWindowText( CString("视频监控系统 - 北京中科神盾环境安全技术中心") );
+
+	int ZEROIFSUCCESSFUL = 0;
+	WSADATA	 Wa;
+	ZEROIFSUCCESSFUL = WSAStartup( MAKEWORD(2,0), &Wa );
+
+	return TRUE;  // return TRUE  unless you set the focus to a control
+}
+
+// If you add a minimize button to your dialog, you will need the code below
+//  to draw the icon.  For MFC applications using the document/view model,
+//  this is automatically done for you by the framework.
+
+void CMyServerDlg::OnPaint()
+{
+	if (IsIconic())
+	{
+		CPaintDC dc(this); // device context for painting
+
+		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
+
+		// Center icon in client rectangle
+		int cxIcon = GetSystemMetrics(SM_CXICON);
+		int cyIcon = GetSystemMetrics(SM_CYICON);
+		CRect rect;
+		GetClientRect(&rect);
+		int x = (rect.Width() - cxIcon + 1) / 2;
+		int y = (rect.Height() - cyIcon + 1) / 2;
+
+		// Draw the icon
+		dc.DrawIcon(x, y, m_hIcon);
+	}
+	else
+	{
+		CDialogEx::OnPaint();
+	}
+}
+
+// The system calls this function to obtain the cursor to display while the user drags
+//  the minimized window.
+HCURSOR CMyServerDlg::OnQueryDragIcon()
+{
+	return static_cast<HCURSOR>(m_hIcon);
+}
+
+#include "bmpf.c"
+
+char * p;
+long len;
+const char *filename;
+SOCKET	soc1;
+SOCKET	soc2;
+SOCKET	socZUO1;
+SOCKET	socZUO2;
+
+A10传画面服务函数.C{};
+A20接受点击坐标服务函数.C{};
+
+//
+void CMyServerDlg::OnTimer(UINT nIDEvent) 
+{
+	static CRect rect;
+	static CWnd* pwnd;
+	static int i = 0;
+	static int j = 0;
+
+	filename = "d:\\buff.bmp";
+
+	if( i == 0 )
+	{
+		i++;
+		pwnd = GetDesktopWindow();
+		//pwnd = this;
+		pwnd->GetWindowRect(&rect);
+	}
+
+	HBITMAP hMap = CopyScreenToBitmap(rect); 
+	SaveBitmapToFile(hMap, CString(filename));
+
+	if( j == 0 )
+	{
+		j++;
+
+		求文件长度_1进1出.C{ filename ### len };
+
+		p = (char*)malloc( len );
+
+		//侦听8000，画面通道	
+		侦听_1进1出.C{ 8100 ### soc1 };
+		侦听_1进1出.C{ 8200 ### socZUO1 };
+
+		//启动线程1
+		::_beginthread(  
+		foo1
+		, 0, NULL );
+
+		//启动线程2
+		::_beginthread(  
+		foo2
+		, 0, NULL );
+	}
+
+	块文件整个读入_1进1出.C{ filename ### p };
+}
+
+
