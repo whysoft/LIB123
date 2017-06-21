@@ -35,4 +35,5 @@
 *.tlog
 *.user
 *.sdf
-*.exe
+*.zip
+*.rar

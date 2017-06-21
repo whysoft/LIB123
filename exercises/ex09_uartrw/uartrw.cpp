@@ -33,6 +33,11 @@ int main(int argc, char* argv[])
 
 		rc = uart.Conn( "com=ttyS0;start=1;stop=1;speed=9600;parity=N;datalen=8;timeoutsec=0.50;" );
 
+		if( IsOsWin() )
+		{
+			rc = uart.Conn( "com=COM5;start=1;stop=1;speed=9600;parity=N;datalen=8;timeoutsec=0.50;" );
+		}
+
 		if( !rc )
 		{
 			std::cout << "cannot open uart." << std::endl;
