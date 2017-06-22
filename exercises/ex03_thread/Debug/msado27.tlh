@@ -1,9 +1,9 @@
-﻿// Created by Microsoft (R) C/C++ Compiler Version 14.00.50727.762 (f502c1e2).
+﻿// Created by Microsoft (R) C/C++ Compiler Version 14.00.50727.762 (1cdcfc7c).
 //
-// d:\a2\lib123(gh\exercises\ex06_db\debug\msado27.tlh
+// d:\a2\lib123(gh\exercises\ex03_thread\debug\msado27.tlh
 //
 // C++ source equivalent of Win32 type library msado27.tlb
-// compiler-generated file created 06/22/17 at 15:49:07 - DO NOT EDIT!
+// compiler-generated file created 06/22/17 at 15:46:54 - DO NOT EDIT!
 
 #pragma once
 #pragma pack(push, 8)
@@ -3132,7 +3132,7 @@ _Record : _ADO
 // Wrapper method implementations
 //
 
-#include "d:\a2\lib123(gh\exercises\ex06_db\debug\msado27.tli"
+#include "d:\a2\lib123(gh\exercises\ex03_thread\debug\msado27.tli"
 
 } // namespace ADODB
 

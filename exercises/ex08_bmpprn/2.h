@@ -9,6 +9,12 @@
 #define LINUENV_
 #endif
 
+//#ifdef macintosh
+//#ifdef Macintosh
+#ifdef __APPLE__ 
+//#ifdef __MACH__
+#define OS_MACOSX_
+#endif
 
 #ifdef LINUENV_
 //#include "gtk/gtk.h"
@@ -18,7 +24,11 @@
 //#include <gdk/gdkkeysyms.h>
 //#include <X11/Xlib.h>
 #include "list"
+#ifdef OS_MACOSX_
+#include "1_u8.h"
+#else
 #include "1.h"
+#endif
 #else
 #pragma warning(disable: 4996)
 #ifndef _CRT_SECURE_NO_WARNINGS
@@ -29,9 +39,9 @@
 #include "atlstr.h" //CString in here
 //#import "msado27.tlb" rename("EOF", "adoEOF")  
 #include "list"
-#include "\a1\\a\k\mydup04\CDUP\w_alls.h"
-#include "\a1\a\k\mydup04\CDUP\w_allw.h"
-#include "\a1\a\k\mydup04\CDUP\net\a01ref_net.h"
+//#include "\a1\\a\k\mydup04\CDUP\w_alls.h"
+//#include "\a1\a\k\mydup04\CDUP\w_allw.h"
+//#include "\a1\a\k\mydup04\CDUP\net\a01ref_net.h"
 #include "1.h"
 #endif
 

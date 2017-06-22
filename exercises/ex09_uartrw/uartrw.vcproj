@@ -178,10 +178,6 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\uartrw.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\env_t.cpp"
 				>
 			</File>
@@ -197,6 +193,10 @@
 				RelativePath=".\makefile4.txt"
 				>
 			</File>
+			<File
+				RelativePath=".\uartrw.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -205,6 +205,10 @@
 			>
 			<File
 				RelativePath=".\1.h"
+				>
+			</File>
+			<File
+				RelativePath=".\1_u8.h"
 				>
 			</File>
 			<File

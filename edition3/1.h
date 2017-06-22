@@ -15,7 +15,7 @@
 // library, and the C++ .
 
 /*  
-2017c03c21c周二-16c54c24.45  
+2017c06c22c周四-15c42c31.49  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -1403,6 +1403,19 @@ public:
 		return str1;
 	}
 
+	
+	template< class T >
+	static std::string b2s_i( T sourcedata )
+	{
+		return b2s(sourcedata);
+	}
+
+	
+	template< class T >
+	static std::string b2s_const( const T & sourcedata )
+	{
+		return b2s_i(sourcedata);
+	}
 
 	
 	template< class T >
@@ -1888,7 +1901,7 @@ public:
 		return dseal( strData.c_str(), SStrf::slen( strData.c_str() ) , out_len , szMethod );
 	}
 
-	
+
 	static std::string dseal( const tchar *s, tsize len, tsize out_len, const tchar *szMethod = "" )
 	{
 		
@@ -1915,7 +1928,7 @@ public:
 		return strOut;
 	}
 
-	
+
 	static std::string dseal2( const tchar *s, tsize len, tsize out_len )
 	{
 		
@@ -1937,7 +1950,7 @@ public:
 		return strOut;
 	}
 
-	
+
 	static std::string dseal3( const tchar *s, tsize len, tsize out_len = 33 )
 	{
 		std::string strOut("");
@@ -1949,6 +1962,12 @@ public:
 		strOut = dseal2( s, len, out_len + 22 );
 		(*SClib::p_sprintf())( &(strOut[0]), "a%d", (int)l1 );
 		return dseal2( strOut.c_str(), (tsize)strOut.size(), out_len );
+	}
+
+
+	static std::string dseal3( const std::string &s, tsize out_len = 33 )
+	{
+		return dseal3( s.c_str(), (tsize)s.size(), out_len );
 	}
 
 
@@ -3920,8 +3939,13 @@ private:
 
 	static tbool d_is_leap_year(int y)
 	{
-		return y%400==0||y%4==0&&y%100!=0;
 		
+
+		
+
+
+		return ( y % 400 == 0 ) ||
+				( ( y % 4 == 0 ) && ( y % 100 != 0 ) );
 	}
 
 
@@ -5216,7 +5240,26 @@ public:
 		return rc?1:0 ;
 	}
 
-	
+
+	tbool write() 
+	{
+		FILE *fp;
+		tbool rc;
+
+		rc=0;
+
+		do
+		{
+			fp = (*SClib::p_fopen())( m_strFilename.c_str( ), "wb" );
+			if(fp==NULL) break;
+			fclose(fp);
+			rc = 1;
+		}while(0);
+
+		return rc?1:0 ;
+	}
+
+
 	tbool write_bs( const std::string & strBs )
 	{
 		SCake ck;
@@ -12144,10 +12187,13 @@ public:
 		std::reverse( (char*)(&dd), (char*)(&dd) + sizeof(double) );
 		std::reverse( s2.begin(), s2.end() );
 
-		tchar szBuf[33];
-		SClib::p_sprintf()( szBuf, "%p%x", *(int*)(&dd) + j + i + SStrf::satol(s2) + SStrf::satol(s3) + (int)time(0) + i2 , 0xfff & i++ );
+		tchar szBuf[35];
+		tchar *pp=szBuf;
+		SClib::p_sprintf()( szBuf, "%p%x", *(int*)(&dd) + j + i + SStrf::satol(s2) + SStrf::satol(s3) + (int)time(0) + i2 , 0xfff & i );
+		i++;
 
-		return SStrf::slcase(szBuf);
+		if( szBuf[0] == '0' && szBuf[1] == 'x' ) pp++;
+		return SStrf::slcase(pp);
 	}
 
 
@@ -12368,7 +12414,7 @@ public:
 		for( int i = 1; i < argc; i += 2 )
 		{
 			std::string n;
-			std::string v = " ";
+			std::string v = " ";	
 			if( i   < argc ) n = argv[i  ];
 			if( i+1 < argc ) v = argv[i+1];
 			this->let( n, v );
@@ -13666,6 +13712,8 @@ private:
 
 	friend class WIdleThrdEle;
 
+	volatile int          m_isLive; 
+
 public:
 		
 		class WIdleThrdEle : public TH_T
@@ -13745,11 +13793,15 @@ public:
 		m_iWorkThrdObjRef = 0;
 		m_iWorkThrdWaitingRunfuncRef = 0;
 		m_iWorkThrdRunRef = 0;
+
+		m_isLive = 1;
 	}
 
 	
 	virtual ~WIdleThrd()
 	{
+		m_isLive = 0;
+
 		while( GetTasksSize() )
 		{
 			WThrd::tr_sleep(1);
@@ -13764,8 +13816,9 @@ public:
 	
 	void PostTask( const TASK_T & t, tbool biWithWait = 1, tbool biContribute = 1 )
 	{
-		
+		if( !m_isLive ) return;
 
+		
 		if( biWithWait )
 		{
 			if   ( m_iWorkThrdObjRef              > 9 ) WThrd::tr_sleep( 0, 0.51 );
@@ -14706,7 +14759,9 @@ public:
 
 		m_fp = (*SClib::p_fopen())("log.txt","ab");
 
+		if( m_fp == NULL ) return 0;
 
+		return 1;
 	}
 
 public:
@@ -14916,8 +14971,11 @@ public:
 		if( get_small_probability() && numberX_reach() )
 				Purge();
 
-		if( day_change() || get_small_probability() && get_small_probability() && numberX_reach() )
+		if( day_change() ||
+			( get_small_probability() && get_small_probability() && numberX_reach() )	)
+		{
 			add_file();
+		}
 	}
 
 };
@@ -15165,8 +15223,11 @@ public:
 		if( get_small_probability() && numberX_reach() )
 				Purge();
 
-		if( day_change() || get_small_probability() && get_small_probability() && numberX_reach() )
+		if( day_change() ||
+			( get_small_probability() && get_small_probability() && numberX_reach() )	)
+		{
 			add_file();
+		}
 	}
 
 };
@@ -20670,25 +20731,18 @@ public:
 	}
 
 
-	static wlint8 *str_seq_fix(wlint8 *s_num, int len=33, wlint8 *s_symbset="")
-	{
-		wlint8 *t;
-
-		if(len<=0) len=1;
-		if(str_len(s_symbset)<2) s_symbset = str_seq_dirno();
-
-		t = (wlint8 *)malloc(len+1);
-		memset( t, 0, len+1 );
-		memset( t, s_symbset[0], len ); 
-		str_rev(s_num);
-		str_left(s_num,len);
-		memcpy(t, s_num, str_len(s_num) );
-		str_rev(t);
-		str_seq(t, s_symbset, 1);
-		strcpy(s_num, t);
-		free(t);
-		return s_num;
-	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 	static wlint8 *str_seq(wlint8 *buf=NULL)
 	{
@@ -21151,7 +21205,7 @@ public:
 		wlint8 *t;
 
 		a = wl_stru_strf::str_len( a_sep );
-		j = howmany();
+		j = howmany_AA();
 		for(k=i=0;i<j;i++) {
 			k += wl_stru_strf::str_len( cf_read(i) );
 			k += a;
@@ -21171,7 +21225,7 @@ public:
 			i=cf_swap(0,j);
 			if(!i) return 0;
 		}
-		while(howmany()>1){
+		while(howmany_AA()>1){
 			cf_deltop();
 		}
 		return 1;
@@ -21251,7 +21305,7 @@ public:
 	wlint8 *cf_read(wlint32 idx) 
 	{
         if(idx<0) return NULL;
-        if(idx>=howmany()) return NULL;
+        if(idx>=howmany_AA()) return NULL;
         if(isempty()) return NULL;
         return  str_stack.stk[idx];
     }
@@ -21267,7 +21321,7 @@ public:
 	{
 		wlint32 i,j,k,m;
 		k=0;
-		j=howmany();
+		j=howmany_AA();
 		for(i=0;i<j;i++) {
 			m=wl_stru_strf::str_len( cf_read(i));
 			if(k<m)k=m;
@@ -21280,7 +21334,7 @@ public:
 	{
 		wlint32 i,j,k,m;
 		k=0;
-		j=howmany();
+		j=howmany_AA();
 		for(i=0;i<j;i++) {
 			m=wl_stru_strf::str_len( cf_read(i));
 			k += m;
@@ -21419,7 +21473,7 @@ public:
 
 	wlint32 cf_howmany(void)
 	{
-		return howmany();
+		return howmany_AA();
 	}
 
 
@@ -21490,9 +21544,9 @@ public:
 
 				sortstatus.issorted=0;
 
-			cf_swap(idx, (howmany() - 1) );
+			cf_swap(idx, (howmany_AA() - 1) );
 		}else{
-			for(lv_cf_del_i=idx;lv_cf_del_i < (howmany() - 1);lv_cf_del_i++)
+			for(lv_cf_del_i=idx;lv_cf_del_i < (howmany_AA() - 1);lv_cf_del_i++)
 				cf_swap(lv_cf_del_i, lv_cf_del_i+1);
 		}
 
@@ -21578,7 +21632,7 @@ public:
 
 			sortstatus.cmpf=iv_mycmp; sortstatus.issorted=1;
 
-        ::qsort((void *)str_stack.stk, (size_t)howmany(), sizeof(char *), iv_mycmp);
+        ::qsort((void *)str_stack.stk, (size_t)howmany_AA(), sizeof(char *), iv_mycmp);
     }
 
 
@@ -21824,7 +21878,7 @@ private:
     }
 
 
-    wlint32 howmany()
+    wlint32 howmany_AA()
     {
         return str_stack.sp;
     }
@@ -21834,7 +21888,7 @@ private:
 	{
 
 		lv_count_c=0;
-		for(lv_count_i=0;lv_count_i<howmany();lv_count_i++) {
+		for(lv_count_i=0;lv_count_i<howmany_AA();lv_count_i++) {
 			if (!strcmp(s, cf_read(lv_count_i))) lv_count_c++;
 		}
 		return lv_count_c;
@@ -21845,7 +21899,7 @@ private:
     {
 		char *newvalue=(char*)newvalue1;
         if(idx<0) return 0;
-        if(idx>=howmany()) return 0;
+        if(idx>=howmany_AA()) return 0;
         if(isempty()) return 0;
         lv_chg_tp=str_stack.stk[idx];
 		free(lv_chg_tp);
@@ -21861,7 +21915,7 @@ private:
     {
 
         if(idx<0) return 0;
-        if(idx>=howmany()) return 0;
+        if(idx>=howmany_AA()) return 0;
         if(isempty()) return 0;
         lv_lcf_free_tp=str_stack.stk[idx];
 		free(lv_lcf_free_tp);
@@ -28233,8 +28287,8 @@ X011_NAMESPACE_BEGIN
 
 
 
-#ifndef V1_3AAFWEB02_TBL_T_20161107_084330
-#define V1_3AAFWEB02_TBL_T_20161107_084330
+#ifndef V1_3AAFWEB02_TBL_T_20170622_133852
+#define V1_3AAFWEB02_TBL_T_20170622_133852
 
 
 
@@ -28263,7 +28317,7 @@ public:
 		m_TimeStamp.MakeNow();
 		m_FSA_FuncInt = 0;
 		m_FSA_Func = "";
-		m_strTitle = "_——";
+		m_strTitle = "_----_";
 		m_BigFontFlag = 0;
 		m_StepCount = 0;
 		
@@ -29282,7 +29336,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_TimeStamp==strVal)
-		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -29311,7 +29365,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_FSA_FuncInt==iVal)
-		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -29340,7 +29394,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_FSA_Func==strVal)
-		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -29369,7 +29423,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_strTitle==strVal)
-		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -29398,7 +29452,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_BigFontFlag==iVal)
-		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -29427,7 +29481,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_StepCount==iVal)
-		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -29456,7 +29510,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_Value==aVal)
-		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -29485,7 +29539,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_01==iVal)
-		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -29514,7 +29568,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_02==strVal)
-		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -29543,7 +29597,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_03==iVal)
-		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -29572,7 +29626,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_04==iVal)
-		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -29601,7 +29655,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_05==aVal)
-		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -29971,7 +30025,7 @@ public:
 	
 	std::string GETWEBINPUT_PrefixName_DE( const std::string & sNameprefix )
 	{
-		 GETWEBINPUT_DE(GETWEBINPUT_PrefixName(sNameprefix));
+		 return GETWEBINPUT_DE(GETWEBINPUT_PrefixName(sNameprefix));
 	}
 
 
@@ -30029,9 +30083,9 @@ public:
 		v1.push_back( "User-Agent" );  	v2.push_back( h.GetSvrRtnHeadParaVal( "User-Agent" ) );
 
 
-		WebFormBegin( "欢迎使用AFWEB02-" + m_dtnow.ReadString() );
+		WebFormBegin( "Welcome to use AFWEB02 - " + m_dtnow.ReadString() );
 
-		WebSendString( "常用内部变量：" );
+		WebSendString( "built-in variable: " );
 
 		
 		WebSendString( "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n" );
@@ -30062,8 +30116,7 @@ public:
 
 		m_dtnow.MakeNow();
 
-		std::cout << m_tSvr.m_strRemoteIPAddress << " " << m_dtnow.ReadString() << std::endl;
-
+		
 		m_tSvr.recv_ln( ckTmp, "\r\n\r\n" );
 		ckTmp.mk_str(m_strHttpHead);
 		WTcpHttp::GetLine1ParaFromHead( m_strHttpHead, m_strCmdLine1, m_strCmdVerb, m_strProtocolName, m_strAddr, m_strUPfn ); 
@@ -30317,14 +30370,18 @@ public:
 		for( int j = 0; j < (int)v1.size(); j++ )
 		{
 			WebSendString( "<tr>\r\n" );
+
 			WebSendString( "<td>" );
 			WebSendString( Chg2XmlCode(v1[j]) );
 			WebSendString( "</td>" );
+
 			WebSendString( "\r\n" );
+
 			WebSendString( "<td>" );
 			WebSendString( Chg2XmlCode(v2[j]) );
 			WebSendString( "</td>" );
 			WebSendString( "\r\n" );
+
 			WebSendString( "</tr>\r\n" );
 		}
 		WebSendString( "</table>\r\n" );
@@ -30379,6 +30436,40 @@ public:
 		return 0;
 	}
 };
+
+
+
+
+class AWeb_t : public AFlowEle_t
+{
+public:
+
+	
+	
+	
+	
+
+	virtual void On_flow()
+	{
+		On_flow2( &((m_pafdata->m_env0).m_FSA_FuncInt) );
+	}
+
+	virtual void On_flow2( int *pstate )
+	{
+		AFlowEle_t::On_flow();
+	}
+
+
+
+
+	
+	
+	
+	
+	
+
+};
+
 
 
 
@@ -31808,6 +31899,19 @@ public:
 		return str1;
 	}
 
+	
+	template< class T >
+	static std::string b2s_i( T sourcedata )
+	{
+		return b2s(sourcedata);
+	}
+
+	
+	template< class T >
+	static std::string b2s_const( const T & sourcedata )
+	{
+		return b2s_i(sourcedata);
+	}
 
 	
 	template< class T >
@@ -32293,7 +32397,7 @@ public:
 		return dseal( strData.c_str(), SStrf::slen( strData.c_str() ) , out_len , szMethod );
 	}
 
-	
+
 	static std::string dseal( const tchar *s, tsize len, tsize out_len, const tchar *szMethod = "" )
 	{
 		
@@ -32320,7 +32424,7 @@ public:
 		return strOut;
 	}
 
-	
+
 	static std::string dseal2( const tchar *s, tsize len, tsize out_len )
 	{
 		
@@ -32342,7 +32446,7 @@ public:
 		return strOut;
 	}
 
-	
+
 	static std::string dseal3( const tchar *s, tsize len, tsize out_len = 33 )
 	{
 		std::string strOut("");
@@ -32354,6 +32458,12 @@ public:
 		strOut = dseal2( s, len, out_len + 22 );
 		(*SClib::p_sprintf())( &(strOut[0]), "a%d", (int)l1 );
 		return dseal2( strOut.c_str(), (tsize)strOut.size(), out_len );
+	}
+
+
+	static std::string dseal3( const std::string &s, tsize out_len = 33 )
+	{
+		return dseal3( s.c_str(), (tsize)s.size(), out_len );
 	}
 
 
@@ -32473,6 +32583,80 @@ public:
 
 		return crc;
 	}
+
+
+	#if 1
+	static tbool mk_chksumU8( unsigned char * sz1, unsigned int iLen )
+	{
+		unsigned char c1 = 0;
+		unsigned int j;
+
+		
+		for( j = 0 ; j < iLen - 1; j ++ )
+			c1 += sz1[j];
+
+		sz1[iLen-1] = c1;
+
+		return 1;
+	}
+	#endif
+
+	#if 1
+	static tbool chk_chksumU8( unsigned char * sz1, unsigned int iLen )
+	{
+		unsigned char c1 = 0;
+		unsigned int j;
+
+		
+		for( j = 0 ; j < iLen - 1; j ++ )
+			c1 += sz1[j];
+
+		if( sz1[iLen-1] == c1 )
+			return 1;
+		else
+			return 0;
+	}
+	#endif
+
+
+	
+	#if 1
+	static unsigned char mk_chk2sumU8( unsigned char * sz1, unsigned int iLen )
+	{
+		unsigned char c1 = 0;
+		unsigned int j;
+
+		
+		for( j = 0 ; j < iLen - 1; j ++ )
+			c1 += ( sz1[j] ^ (unsigned char)j );
+
+		if( c1 == 0 || c1 == 255 ) c1 = 1;
+
+		sz1[iLen-1] = c1;
+
+		return 1;
+	}
+	#endif
+
+	#if 1
+	static unsigned char chk_chk2sumU8( unsigned char * sz1, unsigned int iLen )
+	{
+		unsigned char c1 = 0;
+		unsigned int j;
+
+		
+		for( j = 0 ; j < iLen - 1; j ++ )
+			c1 += ( sz1[j] ^ (unsigned char)j );
+
+		if( c1 == 0 || c1 == 255 ) c1 = 1;
+
+		if( sz1[iLen-1] == c1 )
+			return 1;
+		else
+			return 0;
+	}
+	#endif
+
 
 
 }; 
@@ -34251,8 +34435,11 @@ private:
 
 	static tbool d_is_leap_year(int y)
 	{
-		return y%400==0||y%4==0&&y%100!=0;
 		
+		
+
+		return ( y % 400 == 0 ) ||
+				( ( y % 4 == 0 ) && ( y % 100 != 0 ) );
 	}
 
 
@@ -35544,6 +35731,26 @@ public:
 
 		return rc?1:0 ;
 	}
+
+
+	tbool write() 
+	{
+		FILE *fp;
+		tbool rc;
+
+		rc=0;
+
+		do
+		{
+			fp = (*SClib::p_fopen())( m_strFilename.c_str( ), "wb" );
+			if(fp==NULL) break;
+			fclose(fp);
+			rc = 1;
+		}while(0);
+
+		return rc?1:0 ;
+	}
+
 
 	
 	tbool write_bs( const std::string & strBs )
@@ -38732,7 +38939,13 @@ public:
 		m_pcsSelf = new pthread_mutex_t;
 		pthread_mutexattr_t attr;
 		pthread_mutexattr_init(&attr);
+
+#ifdef OS_MACOSX_
+		pthread_mutexattr_settype(&attr,PTHREAD_MUTEX_RECURSIVE);
+#else
 		pthread_mutexattr_settype(&attr,PTHREAD_MUTEX_RECURSIVE_NP);
+#endif
+
 		pthread_mutex_init(m_pcsSelf,&attr);
 		pthread_mutexattr_destroy(&attr);
 	}
@@ -39878,7 +40091,7 @@ public:
 			return;
 		}
 
-		while( pdirent = readdir(pdir) )
+		while( ( pdirent = readdir(pdir) ) ) 
 		{
 			std::string strFn( pdirent->d_name );
 			std::string strFullFn( MkDir2Path( strRootPathOrDir ) + strFn );
@@ -40443,7 +40656,14 @@ public:
 	static std::string MkRUStr()
 	{
 		static tint32 i = 1;
+
+#ifdef OS_MACOSX_
+		std::string ss = SStrf::b2s_i( pthread_self() ) + "12341234";
+		int i2 = (int)time(0) * ( *(int*)( &(ss[0]) ) );
+#else
 		int i2 = (int)time(0) * (int)pthread_self();
+#endif
+
 		int j;
 		void *p = SStrf::smalloc(3);
 		memcpy( &j, &p, sizeof(int) );
@@ -40457,9 +40677,12 @@ public:
 		std::reverse( s2.begin(), s2.end() );
 
 		tchar szBuf[33];
-		SClib::p_sprintf()( szBuf, "%p%x", *(int*)(&dd) + j + i + SStrf::satol(s2) + SStrf::satol(s3) + (int)time(0) + i2 , 0xfff & i++ );
+		tchar *pp=szBuf;
+		SClib::p_sprintf()( szBuf, "%p%x", *(int*)(&dd) + j + i + SStrf::satol(s2) + SStrf::satol(s3) + (int)time(0) + i2 , 0xfff & i );
+		i++;
 
-		return SStrf::slcase(szBuf);
+		if( szBuf[0] == '0' && szBuf[1] == 'x' ) pp++;
+		return SStrf::slcase(pp);
 	}
 
 
@@ -40558,7 +40781,7 @@ public:
 		for( int i = 1; i < argc; i += 2 )
 		{
 			std::string n;
-			std::string v = " ";
+			std::string v = " ";	
 			if( i   < argc ) n = argv[i  ];
 			if( i+1 < argc ) v = argv[i+1];
 			this->let( n, v );
@@ -41388,6 +41611,8 @@ private:
 
 	friend class WIdleThrdEle;
 
+	volatile int          m_isLive; 
+
 public:
 		
 		class WIdleThrdEle : public TH_T
@@ -41467,11 +41692,15 @@ public:
 		m_iWorkThrdObjRef = 0;
 		m_iWorkThrdWaitingRunfuncRef = 0;
 		m_iWorkThrdRunRef = 0;
+
+		m_isLive = 1;
 	}
 
 	
 	virtual ~WIdleThrd()
 	{
+		m_isLive = 0;
+
 		while( GetTasksSize() )
 		{
 			WThrd::tr_sleep(1);
@@ -41486,8 +41715,9 @@ public:
 	
 	void PostTask( const TASK_T & t, tbool biWithWait = 1, tbool biContribute = 1 )
 	{
-		
+		if( !m_isLive ) return;
 
+		
 		if( biWithWait )
 		{
 			if   ( m_iWorkThrdObjRef              > 9 ) WThrd::tr_sleep( 0, 0.51 );
@@ -41748,7 +41978,13 @@ X011_NAMESPACE_END
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+
+
+#ifdef OS_MACOSX_
+
+#else
 #include <linux/soundcard.h>
+#endif
 
 
 X011_NAMESPACE_BEGIN
@@ -41842,6 +42078,12 @@ public:
 };
 
 
+
+
+#ifdef OS_MACOSX_
+
+
+#else
 
 
 class WSnd : public WSndConv
@@ -42027,6 +42269,11 @@ public:
 
 
 };
+
+
+#endif
+
+
 
 
 
@@ -42555,7 +42802,9 @@ public:
 
 		m_fp = (*SClib::p_fopen())("log.txt","ab");
 
+		if( m_fp == NULL ) return 0;
 
+		return 1;
 	}
 
 public:
@@ -42765,8 +43014,11 @@ public:
 		if( get_small_probability() && numberX_reach() )
 				Purge();
 
-		if( day_change() || get_small_probability() && get_small_probability() && numberX_reach() )
+		if( day_change() ||
+			( get_small_probability() && get_small_probability() && numberX_reach() )	)
+		{
 			add_file();
+		}
 	}
 
 };
@@ -43014,8 +43266,11 @@ public:
 		if( get_small_probability() && numberX_reach() )
 				Purge();
 
-		if( day_change() || get_small_probability() && get_small_probability() && numberX_reach() )
+		if( day_change() ||
+			( get_small_probability() && get_small_probability() && numberX_reach() )	)
+		{
 			add_file();
+		}
 	}
 
 };
@@ -48491,25 +48746,18 @@ public:
 	}
 
 
-	static wlint8 *str_seq_fix(wlint8 *s_num, int len=33, wlint8 *s_symbset="")
-	{
-		wlint8 *t;
-
-		if(len<=0) len=1;
-		if(str_len(s_symbset)<2) s_symbset = str_seq_dirno();
-
-		t = (wlint8 *)malloc(len+1);
-		memset( t, 0, len+1 );
-		memset( t, s_symbset[0], len ); 
-		str_rev(s_num);
-		str_left(s_num,len);
-		memcpy(t, s_num, str_len(s_num) );
-		str_rev(t);
-		str_seq(t, s_symbset, 1);
-		strcpy(s_num, t);
-		free(t);
-		return s_num;
-	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 	static wlint8 *str_seq(wlint8 *buf=NULL)
 	{
@@ -48972,7 +49220,7 @@ public:
 		wlint8 *t;
 
 		a = wl_stru_strf::str_len( a_sep );
-		j = howmany();
+		j = howmany_AA();
 		for(k=i=0;i<j;i++) {
 			k += wl_stru_strf::str_len( cf_read(i) );
 			k += a;
@@ -48992,7 +49240,7 @@ public:
 			i=cf_swap(0,j);
 			if(!i) return 0;
 		}
-		while(howmany()>1){
+		while(howmany_AA()>1){
 			cf_deltop();
 		}
 		return 1;
@@ -49072,7 +49320,7 @@ public:
 	wlint8 *cf_read(wlint32 idx) 
 	{
         if(idx<0) return NULL;
-        if(idx>=howmany()) return NULL;
+        if(idx>=howmany_AA()) return NULL;
         if(isempty()) return NULL;
         return  str_stack.stk[idx];
     }
@@ -49088,7 +49336,7 @@ public:
 	{
 		wlint32 i,j,k,m;
 		k=0;
-		j=howmany();
+		j=howmany_AA();
 		for(i=0;i<j;i++) {
 			m=wl_stru_strf::str_len( cf_read(i));
 			if(k<m)k=m;
@@ -49101,7 +49349,7 @@ public:
 	{
 		wlint32 i,j,k,m;
 		k=0;
-		j=howmany();
+		j=howmany_AA();
 		for(i=0;i<j;i++) {
 			m=wl_stru_strf::str_len( cf_read(i));
 			k += m;
@@ -49240,7 +49488,7 @@ public:
 
 	wlint32 cf_howmany(void)
 	{
-		return howmany();
+		return howmany_AA();
 	}
 
 
@@ -49311,9 +49559,9 @@ public:
 
 				sortstatus.issorted=0;
 
-			cf_swap(idx, (howmany() - 1) );
+			cf_swap(idx, (howmany_AA() - 1) );
 		}else{
-			for(lv_cf_del_i=idx;lv_cf_del_i < (howmany() - 1);lv_cf_del_i++)
+			for(lv_cf_del_i=idx;lv_cf_del_i < (howmany_AA() - 1);lv_cf_del_i++)
 				cf_swap(lv_cf_del_i, lv_cf_del_i+1);
 		}
 
@@ -49399,7 +49647,7 @@ public:
 
 			sortstatus.cmpf=iv_mycmp; sortstatus.issorted=1;
 
-        ::qsort((void *)str_stack.stk, (size_t)howmany(), sizeof(char *), iv_mycmp);
+        ::qsort((void *)str_stack.stk, (size_t)howmany_AA(), sizeof(char *), iv_mycmp);
     }
 
 
@@ -49645,7 +49893,7 @@ private:
     }
 
 
-    wlint32 howmany()
+    wlint32 howmany_AA()
     {
         return str_stack.sp;
     }
@@ -49655,7 +49903,7 @@ private:
 	{
 
 		lv_count_c=0;
-		for(lv_count_i=0;lv_count_i<howmany();lv_count_i++) {
+		for(lv_count_i=0;lv_count_i<howmany_AA();lv_count_i++) {
 			if (!strcmp(s, cf_read(lv_count_i))) lv_count_c++;
 		}
 		return lv_count_c;
@@ -49666,7 +49914,7 @@ private:
     {
 		char *newvalue=(char*)newvalue1;
         if(idx<0) return 0;
-        if(idx>=howmany()) return 0;
+        if(idx>=howmany_AA()) return 0;
         if(isempty()) return 0;
         lv_chg_tp=str_stack.stk[idx];
 		free(lv_chg_tp);
@@ -49682,7 +49930,7 @@ private:
     {
 
         if(idx<0) return 0;
-        if(idx>=howmany()) return 0;
+        if(idx>=howmany_AA()) return 0;
         if(isempty()) return 0;
         lv_lcf_free_tp=str_stack.stk[idx];
 		free(lv_lcf_free_tp);
@@ -55406,8 +55654,8 @@ X011_NAMESPACE_BEGIN
 
 
 
-#ifndef V1_3AAFWEB02_TBL_T_20161107_084330
-#define V1_3AAFWEB02_TBL_T_20161107_084330
+#ifndef V1_3AAFWEB02_TBL_T_20170622_133852
+#define V1_3AAFWEB02_TBL_T_20170622_133852
 
 
 
@@ -55436,7 +55684,7 @@ public:
 		m_TimeStamp.MakeNow();
 		m_FSA_FuncInt = 0;
 		m_FSA_Func = "";
-		m_strTitle = "_——";
+		m_strTitle = "_----_";
 		m_BigFontFlag = 0;
 		m_StepCount = 0;
 		
@@ -56455,7 +56703,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_TimeStamp==strVal)
-		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -56484,7 +56732,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_FSA_FuncInt==iVal)
-		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -56513,7 +56761,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_FSA_Func==strVal)
-		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -56542,7 +56790,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_strTitle==strVal)
-		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -56571,7 +56819,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_BigFontFlag==iVal)
-		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -56600,7 +56848,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_StepCount==iVal)
-		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -56629,7 +56877,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_Value==aVal)
-		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -56658,7 +56906,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_01==iVal)
-		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -56687,7 +56935,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_02==strVal)
-		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -56716,7 +56964,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_03==iVal)
-		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -56745,7 +56993,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_04==iVal)
-		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -56774,7 +57022,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_05==aVal)
-		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -57144,7 +57392,7 @@ public:
 	
 	std::string GETWEBINPUT_PrefixName_DE( const std::string & sNameprefix )
 	{
-		 GETWEBINPUT_DE(GETWEBINPUT_PrefixName(sNameprefix));
+		 return GETWEBINPUT_DE(GETWEBINPUT_PrefixName(sNameprefix));
 	}
 
 
@@ -57202,9 +57450,9 @@ public:
 		v1.push_back( "User-Agent" );  	v2.push_back( h.GetSvrRtnHeadParaVal( "User-Agent" ) );
 
 
-		WebFormBegin( "欢迎使用AFWEB02-" + m_dtnow.ReadString() );
+		WebFormBegin( "Welcome to use AFWEB02 - " + m_dtnow.ReadString() );
 
-		WebSendString( "常用内部变量：" );
+		WebSendString( "built-in variable: " );
 
 		
 		WebSendString( "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n" );
@@ -57235,8 +57483,7 @@ public:
 
 		m_dtnow.MakeNow();
 
-		std::cout << m_tSvr.m_strRemoteIPAddress << " " << m_dtnow.ReadString() << std::endl;
-
+		
 		m_tSvr.recv_ln( ckTmp, "\r\n\r\n" );
 		ckTmp.mk_str(m_strHttpHead);
 		WTcpHttp::GetLine1ParaFromHead( m_strHttpHead, m_strCmdLine1, m_strCmdVerb, m_strProtocolName, m_strAddr, m_strUPfn ); 
@@ -57490,14 +57737,18 @@ public:
 		for( int j = 0; j < (int)v1.size(); j++ )
 		{
 			WebSendString( "<tr>\r\n" );
+
 			WebSendString( "<td>" );
 			WebSendString( Chg2XmlCode(v1[j]) );
 			WebSendString( "</td>" );
+
 			WebSendString( "\r\n" );
+
 			WebSendString( "<td>" );
 			WebSendString( Chg2XmlCode(v2[j]) );
 			WebSendString( "</td>" );
 			WebSendString( "\r\n" );
+
 			WebSendString( "</tr>\r\n" );
 		}
 		WebSendString( "</table>\r\n" );
@@ -57552,6 +57803,40 @@ public:
 		return 0;
 	}
 };
+
+
+
+
+class AWeb_t : public AFlowEle_t
+{
+public:
+
+	
+	
+	
+	
+
+	virtual void On_flow()
+	{
+		On_flow2( &((m_pafdata->m_env0).m_FSA_FuncInt) );
+	}
+
+	virtual void On_flow2( int *pstate )
+	{
+		AFlowEle_t::On_flow();
+	}
+
+
+
+
+	
+	
+	
+	
+	
+
+};
+
 
 
 

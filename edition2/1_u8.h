@@ -15,7 +15,7 @@
 // library, and the C++ .
 
 /*  
-2017c06c22cÖÜËÄ-15c41c47.45  
+2017c06c22cå‘¨å››-15c41c47.45  
 */  
 #ifdef WINENV_
 #pragma warning(push)

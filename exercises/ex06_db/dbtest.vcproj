@@ -209,6 +209,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\1_u8.h"
+				>
+			</File>
+			<File
 				RelativePath=".\2.h"
 				>
 			</File>

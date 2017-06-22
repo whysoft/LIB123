@@ -37,7 +37,7 @@
 #include <windows.h> 
 #include <shellapi.h>
 #include "atlstr.h" //CString in here
-//#import "msado27.tlb" rename("EOF", "adoEOF")  
+#import "msado27.tlb" rename("EOF", "adoEOF")
 #include "list"
 //#include "\a1\\a\k\mydup04\CDUP\w_alls.h"
 //#include "\a1\a\k\mydup04\CDUP\w_allw.h"
