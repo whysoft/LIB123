@@ -1,0 +1,11 @@
+9600
+nocrtscts
+noauth
+asyncmap 020a0000
+local
+proxyarp
+lcp-echo-interval 3
+lcp-echo-failure 4
+passive
+defaultroute
+usepeerdns

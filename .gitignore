@@ -10,7 +10,6 @@
 *.dep
 *.dll
 *.dylib
-*.exe
 *.gch
 *.idb
 *.ilk
@@ -36,4 +35,3 @@
 *.user
 *.sdf
 *.zip
-*.rar

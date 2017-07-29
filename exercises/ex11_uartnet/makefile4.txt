@@ -1,0 +1,23 @@
+#CC = arm-linux-gcc
+CC = gcc
+CC1 = $(CC) -c 
+CC3 = $(CC) -lpthread 
+
+O_FILES = cli_ppp.o env_t.o svr_ppp.o uartnet.o 
+
+uartnet: $(O_FILES)
+	$(CC) -o uartnet $(O_FILES) -lpthread  -lstdc++
+
+cli_ppp.o :cli_ppp.cpp
+	$(CC1) cli_ppp.cpp
+
+env_t.o :env_t.cpp
+	$(CC1) env_t.cpp
+
+svr_ppp.o :svr_ppp.cpp
+	$(CC1) svr_ppp.cpp
+
+uartnet.o :uartnet.cpp
+	$(CC1) uartnet.cpp
+
+

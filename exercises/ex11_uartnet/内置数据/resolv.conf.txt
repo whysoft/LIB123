@@ -1,0 +1,5 @@
+nameserver 192.168.41.1
+nameserver 211.136.150.66
+nameserver 211.136.112.50
+nameserver 8.8.8.8
+nameserver 8.8.4.4

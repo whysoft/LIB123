@@ -44,9 +44,9 @@ bool IsOsWin()
 //
 env_t::env_t()	
 {
-	m_strName = "bmp-prn-data";
-	m_strVer = "V1.2";
-	m_strHelp = "bmp-prn-data help";
+	m_strName = "uart-rw";
+	m_strVer = "V1.00";
+	m_strHelp = "uart-rw help";
 }
 
 

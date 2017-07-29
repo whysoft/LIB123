@@ -1,0 +1,10 @@
+9600
+nocrtscts
+noauth
+asyncmap 020a0000
+local
+192.168.11.1:192.168.11.254
+netmask 255.255.255.0
+proxyarp
+lcp-echo-interval 3
+lcp-echo-failure 4
