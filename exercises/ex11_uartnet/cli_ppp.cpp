@@ -302,3 +302,55 @@ int cli_reboot::tr_on_user_run()
 
 
 
+
+
+// cli_ter
+
+//
+cli_ter::cli_ter()	
+{
+}
+
+
+
+//
+cli_ter::~cli_ter()	
+{
+}
+
+
+
+//
+void cli_ter::tr_on_pre_thrd()
+{
+	WThrd::tr_sleep( 5 );
+ 
+	return;
+}
+
+
+
+//
+int cli_ter::tr_on_user_run()
+{
+	WFile f;
+	
+	f.bind( "ter.txt" ); // exit the process
+	
+	if( f.exists() )
+	{
+		f.erase();
+
+		exit( 0 );
+	}
+
+
+
+	WThrd::tr_sleep( 6 );
+ 
+	return 1;
+}
+
+
+
+

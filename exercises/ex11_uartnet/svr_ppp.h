@@ -115,6 +115,23 @@ public:
 
 
 
+// ter  ¼ì²â½áÊø±ê¼Ç
+class svr_ter : public WThrd 
+{
+public:
+
+public:
+	svr_ter();
+	virtual ~svr_ter();
+	
+	virtual void tr_on_pre_thrd();
+	virtual int tr_on_user_run();
+};
+
+
+
+
+
 
 #endif
 

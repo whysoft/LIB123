@@ -311,3 +311,52 @@ int svr_reboot::tr_on_user_run()
 
 
 
+
+
+// svr_ter
+
+//
+svr_ter::svr_ter()	
+{
+}
+
+
+
+//
+svr_ter::~svr_ter()	
+{
+}
+
+
+
+//
+void svr_ter::tr_on_pre_thrd()
+{
+	WThrd::tr_sleep( 5 );
+ 
+	return;
+}
+
+
+
+//
+int svr_ter::tr_on_user_run()
+{
+	WFile f;
+	
+	f.bind( "ter.txt" ); // exit the process
+	
+	if( f.exists() )
+	{
+		f.erase();
+
+		exit( 0 );
+	}
+
+
+
+	WThrd::tr_sleep( 6 );
+ 
+	return 1;
+}
+

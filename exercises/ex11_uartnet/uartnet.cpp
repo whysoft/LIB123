@@ -11,6 +11,8 @@ tbool do_ppp_server( WNava & nvCmdLn )
 {
 	if( nvCmdLn.get( "-c" ) == "server" )
 	{
+		WThrd::tr_sleep( 13 );
+
 		SStrf::newobjptr< svr_ppp >()->tr_openx();
 		SStrf::newobjptr< svr_dns >()->tr_openx();
 		SStrf::newobjptr< svr_route >()->tr_openx();
@@ -18,6 +20,7 @@ tbool do_ppp_server( WNava & nvCmdLn )
 		SStrf::newobjptr< svr_iptables >()->tr_openx();
 		SStrf::newobjptr< svr_ipforward >()->tr_openx();
 		SStrf::newobjptr< svr_reboot >()->tr_openx();
+		SStrf::newobjptr< svr_ter >()->tr_openx();
 
 		while(1)
 		{
@@ -37,6 +40,8 @@ tbool do_ppp_cli( WNava & nvCmdLn )
 {
 	if( nvCmdLn.get( "-c" ) == "cli" )
 	{
+		WThrd::tr_sleep( 13 );
+
 		SStrf::newobjptr< cli_ppp >()->tr_openx();
 		SStrf::newobjptr< cli_dns >()->tr_openx();
 		SStrf::newobjptr< cli_route >()->tr_openx();
@@ -44,6 +49,7 @@ tbool do_ppp_cli( WNava & nvCmdLn )
 		SStrf::newobjptr< cli_iptables >()->tr_openx();
 		SStrf::newobjptr< cli_ipforward >()->tr_openx();
 		SStrf::newobjptr< cli_reboot >()->tr_openx();
+		SStrf::newobjptr< cli_ter >()->tr_openx();
 
 		while(1)
 		{

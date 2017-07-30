@@ -116,6 +116,29 @@ public:
 
 
 
+
+
+
+// ter  ¼ì²â½áÊø±ê¼Ç
+class cli_ter : public WThrd 
+{
+public:
+
+public:
+	cli_ter();
+	virtual ~cli_ter();
+	
+	virtual void tr_on_pre_thrd();
+	virtual int tr_on_user_run();
+};
+
+
+
+
+
+
+
+
 #endif
 
 
