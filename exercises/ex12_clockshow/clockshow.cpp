@@ -73,7 +73,9 @@ public:
 
 	//
 	virtual void OnPoint_bg( int x, int y ) 
-	{ 
+	{
+		return;
+
 		this->PaperPutPixel( x, y, m_backColor );
 	
 		SBmp::RGB_t c = m_backColor;
@@ -162,31 +164,40 @@ tbool do_clock( WNava & nvCmdLn )
 {
 	if( nvCmdLn.get( "-c" ) == "clock" )
 	{
+		SDte dt_old;
+		SDte dt;
+
+		dt.MakeNow();
+		dt_old = dt;
+
 		while(1)
 		{
 			MyBlackBoard_t sp;
 			double x, y;
 			std::string strContent;
-			SDte dt;
+
 
 			sp.AttachHZK( gfBINDDATA("ASC16"), gfBINDDATA("HZK16F") );
 			sp.Init( SStrf::satol( nvCmdLn.get( "-w" ) ) , SStrf::satol( nvCmdLn.get( "-h" ) ) );
 
 			dt.MakeNow();
 
+
 			// draw txt on sp with scale
 
 
-			//small number
-			strContent =dt.ReadString();
+			//small number, erase old
 			x = 90.0 / 1366.0 * sp.m_width;
 			y = 80.0 / 768.0 * sp.m_height;
+			strContent =dt_old.ReadString();
 			sp.m_foreColor = sp.m_backColor;
 			sp.PrintText( strContent , (int)x, (int)y, 
 												1 , 0, 1 ,
 												3.0 / 1366.0 * sp.m_width , 
 												3.0 / 768.0 * sp.m_height	);
 
+			//small number, draw new
+			strContent =dt.ReadString();
 			sp.rand_forecolor();
 			y = sp.PrintText( strContent , (int)x, (int)y, 
 												1 , 0, 1 ,
@@ -194,22 +205,26 @@ tbool do_clock( WNava & nvCmdLn )
 												3.0 / 768.0 * sp.m_height	);
 
 
-			//big number
-			strContent = dt.ReadStrTime();
+			//big number, erase old
 			x = 90.0 / 1366.0 * sp.m_width;
 			y += 80.0 / 768.0 * sp.m_height;
+			strContent = dt_old.ReadStrTime();
 			sp.m_foreColor = sp.m_backColor;
 			sp.PrintText( strContent, (int)x, (int)y, 
 													1 , 0, 1 ,
 													18.0 / 1366.0 * sp.m_width , 
 													29.0 / 768.0 * sp.m_height		);
 
+			// draw new
+			strContent = dt.ReadStrTime();
 			sp.rand_forecolor();
 			y = sp.PrintText( strContent, (int)x, (int)y, 
 													1 , 0, 1 ,
 													18.0 / 1366.0 * sp.m_width , 
 													29.0 / 768.0 * sp.m_height		);
 
+	
+			dt_old = dt;
 
 			if( dt.m_sec == 0 )
 			{
