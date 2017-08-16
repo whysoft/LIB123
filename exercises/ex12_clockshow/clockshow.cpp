@@ -157,6 +157,73 @@ public:
 };
 
 
+///////////////////////////////////
+//
+class values_t 
+{
+public:
+	SDte m_dt_old;
+	SDte m_dt;
+	std::string m_str_ip_old;
+	std::string m_str_ip;
+
+	//
+	values_t()
+	{
+		m_dt.MakeNow();
+		m_dt_old = m_dt;
+	}
+
+
+	//
+	~values_t()
+	{ 
+	}
+
+
+	//
+	std::string get_ip_str()
+	{
+		if( IsOsWin() )
+		{
+			return "222.333.444.555";
+		}
+
+		//ÏÔÊ¾ip
+		WFile fl;
+		std::string strIp;
+
+		fl.bind( "/tmp/1.txt" );
+		fl.erase();
+
+		WFile::run_exe( "ifconfig wlan0 |grep \"inet addr\"| cut -f 2 -d \":\"|cut -f 1 -d \" \">/tmp/1.txt" );
+
+		fl.read_str( strIp );
+		SStrf::strim( strIp );
+		return strIp; 
+	}
+
+
+	//
+	void refresh()
+	{
+		m_dt.MakeNow();
+		m_str_ip = get_ip_str();
+	}
+
+	//
+	void trace_up()
+	{
+		m_dt_old = m_dt;
+		m_str_ip_old = m_str_ip;
+	}
+
+
+};
+
+
+
+
 
 
 //
@@ -164,11 +231,10 @@ tbool do_clock( WNava & nvCmdLn )
 {
 	if( nvCmdLn.get( "-c" ) == "clock" )
 	{
-		SDte dt_old;
-		SDte dt;
-
-		dt.MakeNow();
-		dt_old = dt;
+		values_t v;
+		
+		v.refresh();
+		v.trace_up();
 
 		while(1)
 		{
@@ -180,16 +246,19 @@ tbool do_clock( WNava & nvCmdLn )
 			sp.AttachHZK( gfBINDDATA("ASC16"), gfBINDDATA("HZK16F") );
 			sp.Init( SStrf::satol( nvCmdLn.get( "-w" ) ) , SStrf::satol( nvCmdLn.get( "-h" ) ) );
 
-			dt.MakeNow();
+			v.refresh();
 
 
 			// draw txt on sp with scale
 
 
+
+			//////////////
+
 			//small number, erase old
+			strContent = v.m_dt_old.ReadString();
 			x = 90.0 / 1366.0 * sp.m_width;
 			y = 80.0 / 768.0 * sp.m_height;
-			strContent =dt_old.ReadString();
 			sp.m_foreColor = sp.m_backColor;
 			sp.PrintText( strContent , (int)x, (int)y, 
 												1 , 0, 1 ,
@@ -197,7 +266,7 @@ tbool do_clock( WNava & nvCmdLn )
 												3.0 / 768.0 * sp.m_height	);
 
 			//small number, draw new
-			strContent =dt.ReadString();
+			strContent = v.m_dt.ReadString(); 
 			sp.rand_forecolor();
 			y = sp.PrintText( strContent , (int)x, (int)y, 
 												1 , 0, 1 ,
@@ -205,10 +274,13 @@ tbool do_clock( WNava & nvCmdLn )
 												3.0 / 768.0 * sp.m_height	);
 
 
+
+			//////////////
+
 			//big number, erase old
+			strContent = v.m_dt_old.ReadStrTime();
 			x = 90.0 / 1366.0 * sp.m_width;
 			y += 80.0 / 768.0 * sp.m_height;
-			strContent = dt_old.ReadStrTime();
 			sp.m_foreColor = sp.m_backColor;
 			sp.PrintText( strContent, (int)x, (int)y, 
 													1 , 0, 1 ,
@@ -216,17 +288,42 @@ tbool do_clock( WNava & nvCmdLn )
 													29.0 / 768.0 * sp.m_height		);
 
 			// draw new
-			strContent = dt.ReadStrTime();
+			strContent = v.m_dt.ReadStrTime();
 			sp.rand_forecolor();
 			y = sp.PrintText( strContent, (int)x, (int)y, 
 													1 , 0, 1 ,
 													18.0 / 1366.0 * sp.m_width , 
 													29.0 / 768.0 * sp.m_height		);
 
-	
-			dt_old = dt;
 
-			if( dt.m_sec == 0 )
+
+			//////////////
+
+			//ip number, erase old
+			strContent = v.m_str_ip_old;
+			x = 90.0 / 1366.0 * sp.m_width;
+			y += 0.0 / 768.0 * sp.m_height;
+			sp.m_foreColor = sp.m_backColor;
+			sp.PrintText( strContent, (int)x, (int)y, 
+													1 , 0, 1 ,
+													6.0 / 1366.0 * sp.m_width , 
+													6.0 / 768.0 * sp.m_height		);
+
+			// ip, draw new
+			strContent = v.m_str_ip;
+			sp.rand_forecolor();
+			y = sp.PrintText( strContent, (int)x, (int)y, 
+													1 , 0, 1 ,
+													6.0 / 1366.0 * sp.m_width , 
+													6.0 / 768.0 * sp.m_height		);
+
+
+
+	
+			v.trace_up();
+			
+
+			if( v.m_dt.m_sec == 0 )
 			{
 				for( int y = 0; y < sp.m_height; y++ ) 
 				{
