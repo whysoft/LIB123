@@ -1,0 +1,44 @@
+
+INPUTPATH = .\
+OUTPUTFN =  .\On_flow2.xpp
+
+
+###
+//
+
+
+//static int On_flow2_state = 0; 
+
+//#include "X40b1var.C"{};
+
+
+#if	 0
+//#THREADBEGIN#
+void ActiveWeb_t::On_flow2( int *pstate )
+{
+	//#FUNCBEGIN#
+
+	(m_pafdata->m_env0).m_BigFontFlag = 1;
+
+	while(1)
+	{
+
+		#include "X40_选择页面字体.C"{};
+
+
+	 
+		#include "X50_输入信息.C"{};
+
+
+	 
+
+		//#DELAY#
+
+	}
+
+	//#FUNCEND#
+}
+//#THREADEND#
+#endif
+
+

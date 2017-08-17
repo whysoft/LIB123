@@ -15,7 +15,7 @@
 // library, and the C++ .
 
 /*  
-2017c06c22c周四-15c41c47.45  
+2017c08c17c周四-14c48c12.45  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -959,11 +959,19 @@ public:
 		return s;
 	}
 
-	
+
 	static tchar *srev( tchar * s )
 	{
 		return srev(s,slen(s));
 	}
+
+
+	static tchar *srev( std::string & s )
+	{
+		return srev( &( s[0] ) );
+	}
+
+
 
 	
 	static tchar * sreplch( tchar * source, tsize len, tchar c1, tchar c2 )	
@@ -10557,10 +10565,12 @@ typedef		struct
 	}
 
 
-	static HANDLE win_run(  std::string strExePathfile,
-							std::string strArgs,
-							int nShow = SW_MINIMIZE, 
-							DWORD d_wait_time = INFINITE  )
+	static HANDLE win_run(  std::string strExePathfile ,
+							std::string strArgs ,
+							int nShow = SW_MINIMIZE , 
+							DWORD d_wait_time = INFINITE , 
+							LPDWORD lpExitCode = NULL
+							)
 	{
 		
 		
@@ -10577,12 +10587,35 @@ typedef		struct
 		ShExecInfo.hInstApp = NULL;
 		ShellExecuteExA(&ShExecInfo);
 		WaitForSingleObject(ShExecInfo.hProcess, d_wait_time);
-		return ShExecInfo.hProcess;
 
 		
+		if( lpExitCode )
+		{
+			
+			GetExitCodeProcess(ShExecInfo.hProcess,lpExitCode);
+			
+		}
+
+		return ShExecInfo.hProcess;
 	}
 
 
+	
+	static DWORD win_run_rtn(  std::string strExePathfile ,
+								std::string strArgs ,
+								int nShow = SW_MINIMIZE   
+								)
+	{
+		DWORD dwExitCode;
+
+		win_run( strExePathfile, strArgs, nShow, INFINITE, &dwExitCode );
+
+		return dwExitCode;
+	}
+
+
+
+	
 	static tbool UseCustomResource( int res, CString strType, SCake & rtnCakeBuf )
 	{
 		
@@ -10698,6 +10731,8 @@ typedef		struct
 	}
 
 
+
+	
 	static CString GetProcExeFilePathTS()
 	{
 		return  CutTailTS(GetProcExePathFilenameTS(), _T("\\"));
@@ -10708,6 +10743,41 @@ typedef		struct
 	{
 		return  CutTail(GetProcExePathFilename(), "\\");
 	}
+
+
+
+
+	static CString Get_CurrentDirectoryTS()
+	{
+		TCHAR szCurrDir[MAX_PATH];
+
+        if(GetCurrentDirectory(MAX_PATH, szCurrDir))
+		{
+            return szCurrDir;
+        }
+		else
+			return _T("");
+	}
+
+
+	static std::string Get_CurrentPath()
+	{
+		return SFile::MkDir2Path( (const char *)CStringA(Get_CurrentDirectoryTS()) );
+	}
+
+
+
+	static tbool Set_CurrentDir( CString PorD )
+	{
+        if(SetCurrentDirectory(PorD))
+		{
+            return 1;
+        }
+		else
+			return 0;
+	}
+
+
 
 
 	static tbool WriteIniFile( CString strFile, CString strSection, CString strKey, CString strVal )
@@ -20353,6 +20423,46 @@ public:
 
 
 
+
+
+class WClimbUp_t
+{
+public:
+
+private:
+
+	volatile int  m_iKeepType; 
+
+
+public:
+
+	
+	WClimbUp_t()
+	{
+		m_iKeepType = 1;
+	}
+
+	
+	 ~WClimbUp_t()
+	{
+	}
+
+public:
+
+	
+	void SetKeepType( int i )
+	{
+		
+	}
+
+
+};
+
+
+
+
+
+
 X011_NAMESPACE_END
 
 #endif
@@ -22952,25 +23062,37 @@ public:
 		WebSendString( str1 );
 	}
 
-	void WebAddBr() 
+	void WebAddBr( int i = 1 ) 
 	{
 		std::string sOut = "<br>\r\n";
-		WebSendString( sOut );
+		for( int j = 0; j < i; j++ )
+		{
+			WebSendString( sOut );
+		}
+		WebSendString( "\r\n" );
 	}
 
-	void WebAddCr() 
+	void WebAddCr( int i = 1 ) 
 	{
 		std::string sOut = "<p></p>\r\n";
-		WebSendString( sOut );
+		for( int j = 0; j < i; j++ )
+		{
+			WebSendString( sOut );
+		}
+		WebSendString( "\r\n" );
 	}
 
-	void WebAddHr() 
+	void WebAddHr( int i = 1 ) 
 	{
 		std::string sOut = "<hr/>\r\n";
-		WebSendString( sOut );
+		for( int j = 0; j < i; j++ )
+		{
+			WebSendString( sOut );
+		}
+		WebSendString( "\r\n" );
 	}
 
-	void WebAddSpace( int i = 2 )
+	void WebAddSpace( int i = 1 )
 	{
 		std::string sOut = "&nbsp;";
 		for( int j = 0; j < i; j++ )
@@ -24179,11 +24301,19 @@ public:
 		return s;
 	}
 
-	
+
 	static tchar *srev( tchar * s )
 	{
 		return srev(s,slen(s));
 	}
+
+
+	static tchar *srev( std::string & s )
+	{
+		return srev( &( s[0] ) );
+	}
+
+
 
 	
 	static tchar * sreplch( tchar * source, tsize len, tchar c1, tchar c2 )	
@@ -41092,6 +41222,46 @@ public:
 
 
 
+
+
+class WClimbUp_t
+{
+public:
+
+private:
+
+	volatile int  m_iKeepType; 
+
+
+public:
+
+	
+	WClimbUp_t()
+	{
+		m_iKeepType = 1;
+	}
+
+	
+	 ~WClimbUp_t()
+	{
+	}
+
+public:
+
+	
+	void SetKeepType( int i )
+	{
+		
+	}
+
+
+};
+
+
+
+
+
+
 X011_NAMESPACE_END
 
 #endif
@@ -43043,25 +43213,37 @@ public:
 		WebSendString( str1 );
 	}
 
-	void WebAddBr() 
+	void WebAddBr( int i = 1 ) 
 	{
 		std::string sOut = "<br>\r\n";
-		WebSendString( sOut );
+		for( int j = 0; j < i; j++ )
+		{
+			WebSendString( sOut );
+		}
+		WebSendString( "\r\n" );
 	}
 
-	void WebAddCr() 
+	void WebAddCr( int i = 1 ) 
 	{
 		std::string sOut = "<p></p>\r\n";
-		WebSendString( sOut );
+		for( int j = 0; j < i; j++ )
+		{
+			WebSendString( sOut );
+		}
+		WebSendString( "\r\n" );
 	}
 
-	void WebAddHr() 
+	void WebAddHr( int i = 1 ) 
 	{
 		std::string sOut = "<hr/>\r\n";
-		WebSendString( sOut );
+		for( int j = 0; j < i; j++ )
+		{
+			WebSendString( sOut );
+		}
+		WebSendString( "\r\n" );
 	}
 
-	void WebAddSpace( int i = 2 )
+	void WebAddSpace( int i = 1 )
 	{
 		std::string sOut = "&nbsp;";
 		for( int j = 0; j < i; j++ )

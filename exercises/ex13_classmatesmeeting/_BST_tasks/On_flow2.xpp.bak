@@ -1,0 +1,454 @@
+//
+//static int On_flow2_state = 0; 
+//#include "X40b1var.C"{};
+#if	 0
+//#THREADBEGIN#
+void ActiveWeb_t::On_flow2( int *pstate )
+{
+	//#FUNCBEGIN#
+	(m_pafdata->m_env0).m_BigFontFlag = 1;
+	while(1)
+	{
+			
+		
+		//X40_选择页面字体
+		
+		
+		
+		//goto LL_窗初始化之前_aa_X40_选择页面字体;
+		LLL_10:; // _窗初始化之前_aa_X40_选择页面字体
+		
+		
+		
+		//窗体初始化	
+				//
+		
+		
+		 
+		LLL_4:; // _LL_窗体开始_aa_X40_选择页面字体____1
+		
+		
+		//绘制
+		
+		 
+		if(1)
+		{
+			WebFormBegin( "2017同学会登记系统" );
+			
+			WebSendString( this->Get_StepCountstr() );
+			WebSendString( "欢迎使用2017同学会登记系统" );
+			WebAddCr();
+			
+			
+			WebAddButt( "OK1", "手机画面" );
+			WebAddBr();
+			WebAddBr();
+			
+		
+			WebAddButt( "OK2", "电脑画面" );
+			WebAddBr();
+			WebAddBr();
+		
+		
+			WebAddCr();
+		
+			WebSendString( "2017同学会登记系统" + gp_env->m_strVer );
+			WebAddBr();
+		
+			WebSendString( "访问者IP：" + m_tSvr.m_strRemoteIPAddress );  
+			WebAddBr();
+			std::cout << SDte::GetNow().ReadString() << "  " << m_tSvr.m_strRemoteIPAddress << std::endl;
+			
+			WTcpHttp h;
+			h.ImportSvrRtnHeadPara( m_strHttpHead );
+			WebSendString( "访问者系统：" + h.GetSvrRtnHeadParaVal( "User-Agent" ) );   
+			WebAddBr();
+		
+			WebSendString( "服务器时间：" + m_dtnow.ReadString() );  
+			WebAddBr();
+		
+			WebAddCr();
+			WebAddBr();
+		}
+		
+		
+		//事件
+		while(1)
+		{
+					##DELAY#
+			
+			 
+			 
+			if( GETWEBINPUT("OK1") != "" )
+			{
+				(m_pafdata->m_env0).m_BigFontFlag = 1;
+			
+				goto LLL_11; // to LL_窗初始化之前_aa_X50_输入信息
+			}
+			
+			
+			if( GETWEBINPUT("OK2") != "" )
+			{
+				(m_pafdata->m_env0).m_BigFontFlag = 0;
+				
+				goto LLL_11; // to LL_窗初始化之前_aa_X50_输入信息
+			}
+		
+			
+			goto LLL_4; // to LL_LL_窗体开始_aa_X40_选择页面字体____1
+		}
+		
+		
+		
+		//LL_LL_窗体结束_aa_X40_选择页面字体:;
+		
+		
+		 
+		
+	 
+			
+		
+		//X50_输入信息
+		
+		
+		
+		LLL_11:; // _窗初始化之前_aa_X50_输入信息
+		
+		
+		
+		//窗体初始化	
+				//
+		
+		
+		 
+		LLL_12:; // _LL_窗体开始_aa_X50_输入信息____2
+		
+		
+		//绘制
+		
+		 
+		if(1)
+		{
+			WebFormBegin( "2017同学会登记系统" );
+			
+			WebSendString( this->Get_StepCountstr() );
+			WebSendString( "输入信息" );
+			WebAddCr(3);
+			
+			
+			WebSendString( "输入姓名，汉字姓名全名，例如:万关茗" );
+			WebAddBr();
+			WebAddTextBox( "student_name", "" );
+			WebAddCr(3);
+		
+		
+			WebSendString( "输入学号，例如:08931135" );
+			WebAddBr();
+			WebAddTextBox( "student_num", "" );
+			WebAddCr(3);
+		
+			
+			WebSendString( "输入班级，例如:11班" );
+			WebAddBr();
+			WebAddTextBox( "student_class", "" );
+			WebAddCr(3);
+		
+			
+			WebSendString( "已交费额(元)，例如:123.45" );
+			WebAddBr();
+			WebAddTextBox( "student_money", "" );
+			WebAddCr(3);
+		
+		
+			WebSendString( "是否参加，是或否" );
+			WebAddBr();
+			WebAddTextBox( "student_take", "" );
+			WebAddCr(3);
+		
+		
+		
+			WebAddButt( "OK1", "保存" );
+			WebAddBr(2);
+			
+		
+			WebAddButt( "OK2", "取消" );
+			WebAddBr(2);
+		
+		
+			WebAddButt( "OK3", "查看列表" );
+			WebAddBr(2);
+		
+		
+			WebAddCr();
+			WebAddBr();
+		}
+		
+		
+		//事件
+		while(1)
+		{
+					##DELAY#
+			
+			 
+			 
+			if( GETWEBINPUT("OK1") != "" )
+			{
+				if(1)
+				{
+					MYAUTOLOCK( gp_env->m_ma.m_ut_tbl_lck );
+		
+					a_mates_t::ROWTYPE r;
+		
+					r.m_name = GETWEBINPUT_DE( "student_name" );
+		
+					r.m_num  = GETWEBINPUT_DE( "student_num" );
+		
+					r.m_class = GETWEBINPUT_DE( "student_class" );
+		
+					r.m_money = SStrf::satof( GETWEBINPUT_DE( "student_money" ) );
+		
+					r.m_take = GETWEBINPUT_DE( "student_take" );
+					
+					r.m_ip = m_tSvr.m_strRemoteIPAddress;
+		
+					//r.m_stamp_create 
+					//r.m_stamp_modi 
+		
+					//look up
+					for( long j = 0; j < gp_env->m_ma.ut_GetRowAmount(); j++ )
+					{
+						a_mates_t::ROWTYPE &r2( gp_env->m_ma.GetRow( j ) );
+		
+						if( r2.m_name == r.m_name )
+						{
+							std::string sOld = r2.m_stamp_create;
+							std::string s1 = r.Serialize();
+							r2.Unserialize( s1.c_str() );
+							r2.m_stamp_modi = SDte::GetNow().ReadString();
+							r2.m_stamp_create = sOld;
+							r.m_name = "";
+							break;
+						}
+					}
+		
+					if( r.m_name != "" )
+					{
+						gp_env->m_ma.Add( r );
+					}
+		
+		
+					gp_env->m_ma.SaveF();
+				}
+		
+		
+					
+				
+				//X60_保存消息框
+				
+				
+				
+				//LL_窗初始化之前_aa_X60_保存消息框:;
+				
+				
+				
+				//窗体初始化	
+						//
+				
+				
+				 
+				//LL_LL_窗体开始_aa_X60_保存消息框:;
+				
+				
+				//绘制
+				
+				 
+				if(1)
+				{
+					WebFormBegin( "保存消息框" );
+					
+					WebSendString( this->Get_StepCountstr() );
+					WebSendString( " 保存完成" );
+					WebAddCr();
+					
+					
+					WebAddButt( "OK1", "OK" );
+					WebAddBr();
+					WebAddCr();
+					WebAddBr();
+				}
+				
+				
+				//事件
+				while(1)
+				{
+							##DELAY#
+					
+					 
+					 
+					if( GETWEBINPUT("OK1") != "" )
+					{
+						//goto LL_窗初始化之前_aa_X60_保存消息框;
+					}
+					
+				
+					
+					//goto LL_LL_窗体开始_aa_X60_保存消息框;
+				
+					break;
+				}
+				
+				
+				
+				//LL_LL_窗体结束_aa_X60_保存消息框:;
+				
+				
+				 
+				
+				 
+			
+				goto LLL_11; // to LL_窗初始化之前_aa_X50_输入信息
+			}
+			
+				
+			
+			if( GETWEBINPUT("OK2") != "" )
+			{
+				goto LLL_11; // to LL_窗初始化之前_aa_X50_输入信息
+			}
+		
+				
+		
+			if( GETWEBINPUT("OK3") != "" )
+			{
+					
+				
+				//X70_数据列表
+				
+				
+				
+				//LL_窗初始化之前_aa_X70_数据列表:;
+				
+				
+				
+				//窗体初始化	
+						//
+				
+				
+				 
+				//LL_LL_窗体开始_aa_X70_数据列表:;
+				
+				
+				//绘制
+				
+				 
+				if(1)
+				{
+					WebFormBegin( "X70_数据列表" );
+					
+					WebSendString( this->Get_StepCountstr() );
+					WebSendString( "欢迎使用 X70_数据列表" );
+					WebAddCr();
+					
+					
+					WebAddButt( "OK1", "返回首页" );
+					WebAddBr();
+					WebAddBr();
+				
+				
+					//data list
+					//
+					MYAUTOLOCK( gp_env->m_ma.m_ut_tbl_lck );
+				
+				
+					WebAddTable2Begin();
+				
+					std::vector< std::string > row;
+				
+					row.clear();
+					row.push_back( "姓名" );
+					row.push_back( "学号" );
+					row.push_back( "班级" );
+					row.push_back( "已交费额" );
+					row.push_back( "是否参加" );
+					row.push_back( "创建日期" );
+					row.push_back( "修改日期" );
+					row.push_back( "访问者IP" );
+				
+					WebAddTable2Row( row, 1 );
+				
+					for( long j = 0; j < gp_env->m_ma.ut_GetRowAmount(); j++ )
+					{
+						SDB_t<a_mates_t> &r2(gp_env->m_ma); 
+				
+						row.clear();
+						row.push_back( r2.ut_GetItemStr( j, "name" ) );
+						row.push_back( r2.ut_GetItemStr( j, "num" ) );
+						row.push_back( r2.ut_GetItemStr( j, "class" ) );
+						row.push_back( r2.ut_GetItemStr( j, "money" ) );
+						row.push_back( r2.ut_GetItemStr( j, "take" ) );
+						row.push_back( r2.ut_GetItemStr( j, "stamp_create" ) );
+						row.push_back( r2.ut_GetItemStr( j, "stamp_modi" ) );
+						row.push_back( r2.ut_GetItemStr( j, "ip" ) );
+				
+						WebAddTable2Row( row, 0 );
+					}
+				
+				
+					WebAddTable2End();
+				
+				
+				
+					WebAddButt( "OK1", "返回首页" );
+					WebAddBr();
+					WebAddBr();
+				}
+				
+				
+				//事件
+				while(1)
+				{
+							##DELAY#
+					
+					 
+					 
+					if( GETWEBINPUT("OK1") != "" )
+					{
+						(m_pafdata->m_env0).m_BigFontFlag = 1;
+					
+						goto LLL_10; // to LL_窗初始化之前_aa_X40_选择页面字体
+					}
+					
+					
+					goto LLL_10; // to LL_窗初始化之前_aa_X40_选择页面字体
+				}
+				
+				
+				
+				//LL_LL_窗体结束_aa_X70_数据列表:;
+				
+				
+				 
+				
+		
+				goto LLL_11; // to LL_窗初始化之前_aa_X50_输入信息
+			}
+		
+		
+			
+			goto LLL_12; // to LL_LL_窗体开始_aa_X50_输入信息____2
+		}
+		
+		
+		
+		//LL_LL_窗体结束_aa_X50_输入信息:;
+		
+		
+		 
+		
+	 
+		//#DELAY#
+	}
+	//#FUNCEND#
+}
+//#THREADEND#
+#endif
