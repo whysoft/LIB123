@@ -15,7 +15,7 @@
 // library, and the C++ .
 
 /*  
-2017c08c17c周四-14c49c06.85  
+2017c08c18c周五-c8c10c36.29  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -30315,6 +30315,9 @@ public:
 			str1 += "<input type=\"hidden\" name=\"sessionid\" size=\"60\" value=\""+ m_SessionId +"\">\r\n";
 			str1 += "<p>\r\n";
 
+			str1 += "<input type=\"hidden\" name=\"sessionidupup\" size=\"60\" value=\""+ WFile::MkRUStr() +"\">\r\n";
+			str1 += "<p>\r\n";
+
 			WebSendString( str1 );
 		}
 	}
@@ -57740,6 +57743,9 @@ public:
 			str1 += "<p>\r\n";
 
 			str1 += "<input type=\"hidden\" name=\"sessionid\" size=\"60\" value=\""+ m_SessionId +"\">\r\n";
+			str1 += "<p>\r\n";
+
+			str1 += "<input type=\"hidden\" name=\"sessionidupup\" size=\"60\" value=\""+ WFile::MkRUStr() +"\">\r\n";
 			str1 += "<p>\r\n";
 
 			WebSendString( str1 );
