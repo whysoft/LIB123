@@ -15,7 +15,7 @@
 // library, and the C++ .
 
 /*  
-2017c08c18c周五-c8c11c00.03  
+2017c08c20c周日-c9c23c41.01  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -22391,7 +22391,8 @@ public:
 			str1 += "<input type=\"hidden\" name=\"sessionid\" size=\"60\" value=\""+ m_SessionId +"\">\r\n";
 			str1 += "<p>\r\n";
 
-			str1 += "<input type=\"hidden\" name=\"sessionidupup\" size=\"60\" value=\""+ WFile::MkRUStr() +"\">\r\n";
+			static tuint8 i = 0;
+			str1 += "<input type=\"hidden\" name=\"s_i_u\" size=\"60\" value=\""+ SStrf::sltoa(i++) +"\">\r\n";
 			str1 += "<p>\r\n";
 
 			WebSendString( str1 );
@@ -42545,7 +42546,8 @@ public:
 			str1 += "<input type=\"hidden\" name=\"sessionid\" size=\"60\" value=\""+ m_SessionId +"\">\r\n";
 			str1 += "<p>\r\n";
 
-			str1 += "<input type=\"hidden\" name=\"sessionidupup\" size=\"60\" value=\""+ WFile::MkRUStr() +"\">\r\n";
+			static tuint8 i = 0;
+			str1 += "<input type=\"hidden\" name=\"s_i_u\" size=\"60\" value=\""+ SStrf::sltoa(i++) +"\">\r\n";
 			str1 += "<p>\r\n";
 
 			WebSendString( str1 );
