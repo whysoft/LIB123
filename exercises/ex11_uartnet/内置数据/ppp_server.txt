@@ -1,4 +1,4 @@
-115200
+38400
 nocrtscts
 noauth
 asyncmap 020a0000

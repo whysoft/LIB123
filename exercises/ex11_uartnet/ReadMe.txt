@@ -26,5 +26,17 @@ echo -n -e "\xc0\x45\x67\x18\x00\xc0">/dev/ttyS2
 echo -n -e "\xc0\x45\x67\x38\x00\xc0">/dev/ttyS2
 
 
+sudo vim /etc/ppp/options.ttyS2
+/usr/sbin/pppd /dev/ttyS2 nodetach&
 
 
+-c server
+-c cli
+
+
+
+
+
+
+
+ 
