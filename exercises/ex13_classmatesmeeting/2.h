@@ -39,9 +39,9 @@
 #include "atlstr.h" //CString in here
 //#import "msado27.tlb" rename("EOF", "adoEOF")  
 #include "list"
-//#include "\a1\\a\k\mydup04\CDUP\w_alls.h"
-//#include "\a1\a\k\mydup04\CDUP\w_allw.h"
-//#include "\a1\a\k\mydup04\CDUP\net\a01ref_net.h"
+//#include "\a2\dup\mydup04\CDUP\w_alls.h"
+//#include "\a2\dup\mydup04\CDUP\w_allw.h"
+//#include "\a2\dup\mydup04\CDUP\net\a01ref_net.h"
 #include "1.h"
 #endif
 

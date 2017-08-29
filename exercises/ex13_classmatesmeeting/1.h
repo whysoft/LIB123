@@ -15,7 +15,7 @@
 // library, and the C++ .
 
 /*  
-2017c08c20c周日-c9c23c41.01  
+2017c08c29c周二-23c24c22.69  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -22063,6 +22063,7 @@ class AFlowEle_t : public WThrd
 public:
 	tbool			m_tSvrGoodFlag;
 	tbool			m_WebFormBeginDoneFlag;
+	tbool			m_RawMode; 
 
 	WTcpCells		m_tSvr;
 
@@ -22085,6 +22086,7 @@ public:
 	{
 		m_tSvrGoodFlag = 1;
 		m_WebFormBeginDoneFlag = 0;
+		m_RawMode = 0;
 	}
 
 	virtual ~AFlowEle_t()
@@ -22361,7 +22363,37 @@ public:
 
 			std::string str1;
 
-			str1 = "HTTP/1.0 200 OK\r\n\r\n";
+
+		std::string strOut;
+
+		strOut = "HTTP/1.0 200 OK\r\n";
+		strOut += "Server: NotApache/" + wl::SDte::GetNow().ReadStringPack() + "\r\n";
+		strOut += "Cache-Control: no-cache\r\n";
+		strOut += "Pragma: no-cache\r\n";
+
+		
+		if( m_RawMode )
+		{
+			strOut += "Content-Type: text/plain; charset=gb2312\r\n";
+		}
+		else
+		{
+			strOut += "Content-Type: text/html; charset=gb2312\r\n";
+		}
+
+		strOut += "Connection: close\r\n";
+		strOut += "\r\n";
+
+			if( m_RawMode )
+			{
+				WebSendString( strOut );
+
+				return;
+			}
+
+
+			str1 = strOut;
+
 			str1 += "<html><head>\r\n";
 			
 			str1 += "<meta http-equiv=\"Content-Type\" content=\"application/xhtml+xml; charset=gb2312\"/>\r\n";
@@ -22411,9 +22443,15 @@ public:
 	{
 		std::string str1;
 
+		str1 = "";
 		str1 += "</form>\r\n";
 		str1 += "</body>\r\n";
 		str1 += "</html>\r\n";
+
+			if( m_RawMode )
+			{
+				str1 = "\r\n";
+			}
 
 		WebSendString( str1 );
 	}
@@ -42218,6 +42256,7 @@ class AFlowEle_t : public WThrd
 public:
 	tbool			m_tSvrGoodFlag;
 	tbool			m_WebFormBeginDoneFlag;
+	tbool			m_RawMode; 
 
 	WTcpCells		m_tSvr;
 
@@ -42240,6 +42279,7 @@ public:
 	{
 		m_tSvrGoodFlag = 1;
 		m_WebFormBeginDoneFlag = 0;
+		m_RawMode = 0;
 	}
 
 	virtual ~AFlowEle_t()
@@ -42516,7 +42556,37 @@ public:
 
 			std::string str1;
 
-			str1 = "HTTP/1.0 200 OK\r\n\r\n";
+
+		std::string strOut;
+
+		strOut = "HTTP/1.0 200 OK\r\n";
+		strOut += "Server: NotApache/" + wl::SDte::GetNow().ReadStringPack() + "\r\n";
+		strOut += "Cache-Control: no-cache\r\n";
+		strOut += "Pragma: no-cache\r\n";
+
+		
+		if( m_RawMode )
+		{
+			strOut += "Content-Type: text/plain; charset=gb2312\r\n";
+		}
+		else
+		{
+			strOut += "Content-Type: text/html; charset=gb2312\r\n";
+		}
+
+		strOut += "Connection: close\r\n";
+		strOut += "\r\n";
+
+			if( m_RawMode )
+			{
+				WebSendString( strOut );
+
+				return;
+			}
+
+
+			str1 = strOut;
+
 			str1 += "<html><head>\r\n";
 			
 			str1 += "<meta http-equiv=\"Content-Type\" content=\"application/xhtml+xml; charset=gb2312\"/>\r\n";
@@ -42566,9 +42636,15 @@ public:
 	{
 		std::string str1;
 
+		str1 = "";
 		str1 += "</form>\r\n";
 		str1 += "</body>\r\n";
 		str1 += "</html>\r\n";
+
+			if( m_RawMode )
+			{
+				str1 = "\r\n";
+			}
 
 		WebSendString( str1 );
 	}
