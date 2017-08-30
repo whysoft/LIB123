@@ -45,13 +45,13 @@ if(1)
 	WebAddCr(3);
 
 	
-	WebSendString( "输入班级，例如:11班" );
+	WebSendString( "输入班级，例如:11" );
 	WebAddBr();
 	WebAddTextBox( "student_class", "" );
 	WebAddCr(3);
 
 	
-	WebSendString( "已交费额(元)，例如:123.45" );
+	WebSendString( "已交费额(元)，例如:0.00" );
 	WebAddBr();
 	WebAddTextBox( "student_money", "" );
 	WebAddCr(3);

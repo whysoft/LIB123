@@ -148,13 +148,13 @@ void ActiveWeb_t::On_flow2( int *pstate )
 			WebAddCr(3);
 		
 			
-			WebSendString( "输入班级，例如:11班" );
+			WebSendString( "输入班级，例如:11" );
 			WebAddBr();
 			WebAddTextBox( "student_class", "" );
 			WebAddCr(3);
 		
 			
-			WebSendString( "已交费额(元)，例如:123.45" );
+			WebSendString( "已交费额(元)，例如:0.00" );
 			WebAddBr();
 			WebAddTextBox( "student_money", "" );
 			WebAddCr(3);
@@ -343,10 +343,10 @@ void ActiveWeb_t::On_flow2( int *pstate )
 				 
 				if(1)
 				{
-					WebFormBegin( "X70_数据列表" );
+					WebFormBegin( "2017同学会登记系统 数据列表" );
 					
 					WebSendString( this->Get_StepCountstr() );
-					WebSendString( "欢迎使用 X70_数据列表" );
+					WebSendString( "目前已来登记的同学列表如下：" );
 					WebAddCr();
 					
 					

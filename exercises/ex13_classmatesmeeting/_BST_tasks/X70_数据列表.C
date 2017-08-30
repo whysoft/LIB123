@@ -26,10 +26,10 @@
  
 if(1)
 {
-	WebFormBegin( "X70_数据列表" );
+	WebFormBegin( "2017同学会登记系统 数据列表" );
 	
 	WebSendString( this->Get_StepCountstr() );
-	WebSendString( "欢迎使用 X70_数据列表" );
+	WebSendString( "目前已来登记的同学列表如下：" );
 	WebAddCr();
 	
 	
