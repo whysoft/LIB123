@@ -10,3 +10,9 @@ nohup ./clockshow -c clock -w 800 -h 480&
 DISPLAY=:0 xrandr
 
 
+nohup ./clockshow -c clock -w 1824 -h 444&
+
+
+
+
+
