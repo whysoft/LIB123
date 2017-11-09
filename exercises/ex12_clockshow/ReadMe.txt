@@ -14,5 +14,13 @@ nohup ./clockshow -c clock -w 1824 -h 444&
 
 
 
+		
+ifconfig wlan0 |grep "inet addr"| cut -f 2 -d ":"|cut -f 1 -d " ">/tmp/1.txt
+
+ifconfig wlan0 |grep "inet " 
+
+
+
+
 
 

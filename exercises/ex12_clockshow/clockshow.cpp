@@ -200,6 +200,14 @@ public:
 
 		fl.read_str( strIp );
 		SStrf::strim( strIp );
+
+		if( strIp == "" )
+		{
+			WFile::run_exe( "ifconfig wlan0 |grep \"inet \">/tmp/1.txt" );
+			fl.read_str( strIp );
+			SStrf::strim( strIp );
+		}
+
 		return strIp; 
 	}
 
