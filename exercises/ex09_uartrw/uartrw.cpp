@@ -31,7 +31,8 @@ int main(int argc, char* argv[])
 	{
 		tbool rc;
 
-		rc = uart.Conn( "com=ttyS0;start=1;stop=1;speed=9600;parity=N;datalen=8;timeoutsec=0.50;" );
+		//rc = uart.Conn( "com=ttyS0;start=1;stop=1;speed=9600;parity=N;datalen=8;timeoutsec=0.50;" );
+		rc = uart.Conn( "com=ttyUSB0;start=1;stop=1;speed=9600;parity=N;datalen=8;timeoutsec=1.50;" );
 
 		if( IsOsWin() )
 		{
@@ -48,7 +49,17 @@ int main(int argc, char* argv[])
 		{
 			uart.recv_ln( ck , "\r\n" );
 		
-			if( ck.len() ) std::cout << ck.mk_str() << std::endl;
+			if( ck.len() )
+			{
+				std::string s1;
+
+				s1 = ck.mk_str();
+				printf( "`%s`", s1.c_str() );
+				std::reverse( s1.begin(), s1.end() );
+				printf( "`%s`\n", s1.c_str() );
+
+			}
+
 		}
 
 	}
