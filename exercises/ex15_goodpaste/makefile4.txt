@@ -1,0 +1,23 @@
+#CC = arm-linux-gcc
+CC = gcc
+CC1 = $(CC) -c 
+CC3 = $(CC) -lpthread 
+
+O_FILES = ActiveWeb_t.o de_log_t.o env_t.o goodpaste.o 
+
+goodpaste: $(O_FILES)
+	$(CC) -o goodpaste $(O_FILES) -lpthread  -lstdc++
+
+ActiveWeb_t.o :ActiveWeb_t.cpp
+	$(CC1) ActiveWeb_t.cpp
+
+de_log_t.o :de_log_t.cpp
+	$(CC1) de_log_t.cpp
+
+env_t.o :env_t.cpp
+	$(CC1) env_t.cpp
+
+goodpaste.o :goodpaste.cpp
+	$(CC1) goodpaste.cpp
+
+

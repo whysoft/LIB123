@@ -1,0 +1,216 @@
+//
+//static int On_flow2_state = 0; 
+//#include "X40b1var.C"{};
+#if	 0
+//#THREADBEGIN#
+void ActiveWeb_t::On_flow2( int *pstate )
+{
+	//#FUNCBEGIN#
+	(m_pafdata->m_env0).m_BigFontFlag = 1;
+	this->m_font_size_pt = 22;
+	//(m_pafdata->m_env0).m_BigFontFlag = 0;
+	while(1)
+	{
+			
+		
+		//X30_句子列表
+		
+		
+		
+		//LL_窗初始化之前_aa_X30_句子列表:;
+		
+		
+		
+		//窗体初始化	
+				//
+		
+		
+		 
+		LLL_1:; // _LL_窗体开始_aa_X30_句子列表____1
+		
+		
+		//绘制
+		
+		 
+		if(1)
+		{
+			WebFormBegin( "X30_句子列表" );
+			
+			WebSendString( this->Get_StepCountstr() );
+			WebSendString( "X30_句子列表" );
+			WebAddCr(3);
+			
+			
+			WebAddTextarea(	"TXTA_GOODVALUE", "", 22, 55 );
+			WebAddBr(1);
+		
+		
+			WebAddButt( "OK1", " 保 存 " );
+			WebAddBr(3);
+			
+			
+			WebAddCr();
+			WebAddBr();
+		
+			//所有句子 
+			for( long i = gp_env->m_gt.GetRowCount(); i >= 0; i-- )
+			{
+				WebSendString( gp_env->m_gt.GetRow(i).m_goodvalue );
+				WebAddCr(3);
+			}
+		}
+		
+		
+		//事件
+		while(1)
+		{
+					##DELAY#
+			
+			 
+			 
+			if( GETWEBINPUT("OK1") != "" )
+			{
+				a_goodtbl_t::ROWTYPE r;
+		
+				r.m_dt_stamp = SDte::GetNow().ReadString();
+				r.m_goodvalue = GETWEBINPUT_DE( "TXTA_GOODVALUE" );
+		
+				if( r.m_goodvalue != "" )
+				{
+					gp_env->m_gt.Add( r ); 
+				}
+				
+				gp_env->m_gt.SaveF();
+				 
+			}
+		
+		
+			
+			goto LLL_1; // to LL_LL_窗体开始_aa_X30_句子列表____1
+		}
+		
+		
+		
+		//LL_LL_窗体结束_aa_X30_句子列表:;
+		
+		
+		 
+		
+		//#DELAY#
+	}
+	//#FUNCEND#
+}
+//#THREADEND#
+#endif
+
+
+/*======== donnot modify the generated code below manually =========*/ 
+
+//#THREADBEGIN#
+void ActiveWeb_t::On_flow2( int *pstate )
+{
+	//#FUNCBEGIN#
+	switch (*pstate) { 
+	case 1 : goto LL_1; 
+	default: break; 
+	} 
+
+	(m_pafdata->m_env0).m_BigFontFlag = 1;
+	this->m_font_size_pt = 22;
+	//(m_pafdata->m_env0).m_BigFontFlag = 0;
+	while(1)
+	{
+			
+		
+		//X30_句子列表
+		
+		
+		
+		//LL_窗初始化之前_aa_X30_句子列表:;
+		
+		
+		
+		//窗体初始化	
+				//
+		
+		
+		 
+		LLL_1:; // _LL_窗体开始_aa_X30_句子列表____1
+		
+		
+		//绘制
+		
+		 
+		if(1)
+		{
+			WebFormBegin( "X30_句子列表" );
+			
+			WebSendString( this->Get_StepCountstr() );
+			WebSendString( "X30_句子列表" );
+			WebAddCr(3);
+			
+			
+			WebAddTextarea(	"TXTA_GOODVALUE", "", 22, 55 );
+			WebAddBr(1);
+		
+		
+			WebAddButt( "OK1", " 保 存 " );
+			WebAddBr(3);
+			
+			
+			WebAddCr();
+			WebAddBr();
+		
+			//所有句子 
+			for( long i = gp_env->m_gt.GetRowCount(); i >= 0; i-- )
+			{
+				WebSendString( gp_env->m_gt.GetRow(i).m_goodvalue );
+				WebAddCr(3);
+			}
+		}
+		
+		
+		//事件
+		while(1)
+		{
+					*pstate = 1;
+					return;
+					LL_1:;
+			
+			 
+			 
+			if( GETWEBINPUT("OK1") != "" )
+			{
+				a_goodtbl_t::ROWTYPE r;
+		
+				r.m_dt_stamp = SDte::GetNow().ReadString();
+				r.m_goodvalue = GETWEBINPUT_DE( "TXTA_GOODVALUE" );
+		
+				if( r.m_goodvalue != "" )
+				{
+					gp_env->m_gt.Add( r ); 
+				}
+				
+				gp_env->m_gt.SaveF();
+				 
+			}
+		
+		
+			
+			goto LLL_1; // to LL_LL_窗体开始_aa_X30_句子列表____1
+		}
+		
+		
+		
+		//LL_LL_窗体结束_aa_X30_句子列表:;
+		
+		
+		 
+		
+		//#DELAY#
+	}
+	//#FUNCEND#
+}
+//#THREADEND#
+
+
