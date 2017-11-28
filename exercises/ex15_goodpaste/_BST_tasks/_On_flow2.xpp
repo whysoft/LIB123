@@ -19,7 +19,7 @@ void ActiveWeb_t::On_flow2( int *pstate )
 	//#FUNCBEGIN#
 
 	(m_pafdata->m_env0).m_BigFontFlag = 1;
-	this->m_font_size_pt = 15;
+	(m_pafdata->m_env0).m_BigFontSizePt = 32;
 	//(m_pafdata->m_env0).m_BigFontFlag = 0;
 
 	while(1)

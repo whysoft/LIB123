@@ -7,7 +7,7 @@ void ActiveWeb_t::On_flow2( int *pstate )
 {
 	//#FUNCBEGIN#
 	(m_pafdata->m_env0).m_BigFontFlag = 1;
-	this->m_font_size_pt = 22;
+	(m_pafdata->m_env0).m_BigFontSizePt = 32;
 	//(m_pafdata->m_env0).m_BigFontFlag = 0;
 	while(1)
 	{
@@ -41,7 +41,7 @@ void ActiveWeb_t::On_flow2( int *pstate )
 			WebAddCr(3);
 			
 			
-			WebAddTextarea(	"TXTA_GOODVALUE", "", 22, 55 );
+			WebAddTextarea(	"TXTA_GOODVALUE", "", 11, 33 );
 			WebAddBr(1);
 		
 		
@@ -49,15 +49,27 @@ void ActiveWeb_t::On_flow2( int *pstate )
 			WebAddBr(3);
 			
 			
+			WebAddHr();
 			WebAddCr();
 			WebAddBr();
 		
+		
 			//所有句子 
+				
+			WebAddTable2Begin();
+				
 			for( long i = gp_env->m_gt.GetRowCount(); i >= 0; i-- )
 			{
-				WebSendString( gp_env->m_gt.GetRow(i).m_goodvalue );
-				WebAddCr(3);
+				std::vector< std::string > r;
+		
+				r.push_back( gp_env->m_gt.GetRow(i).m_goodvalue );
+				r.push_back( gp_env->m_gt.GetRow(i).m_dt_stamp );
+		
+				WebAddTable2Row( r );
 			}
+				
+			WebAddTable2End();
+				
 		}
 		
 		
@@ -116,7 +128,7 @@ void ActiveWeb_t::On_flow2( int *pstate )
 	} 
 
 	(m_pafdata->m_env0).m_BigFontFlag = 1;
-	this->m_font_size_pt = 22;
+	(m_pafdata->m_env0).m_BigFontSizePt = 32;
 	//(m_pafdata->m_env0).m_BigFontFlag = 0;
 	while(1)
 	{
@@ -150,7 +162,7 @@ void ActiveWeb_t::On_flow2( int *pstate )
 			WebAddCr(3);
 			
 			
-			WebAddTextarea(	"TXTA_GOODVALUE", "", 22, 55 );
+			WebAddTextarea(	"TXTA_GOODVALUE", "", 11, 33 );
 			WebAddBr(1);
 		
 		
@@ -158,15 +170,27 @@ void ActiveWeb_t::On_flow2( int *pstate )
 			WebAddBr(3);
 			
 			
+			WebAddHr();
 			WebAddCr();
 			WebAddBr();
 		
+		
 			//所有句子 
+				
+			WebAddTable2Begin();
+				
 			for( long i = gp_env->m_gt.GetRowCount(); i >= 0; i-- )
 			{
-				WebSendString( gp_env->m_gt.GetRow(i).m_goodvalue );
-				WebAddCr(3);
+				std::vector< std::string > r;
+		
+				r.push_back( gp_env->m_gt.GetRow(i).m_goodvalue );
+				r.push_back( gp_env->m_gt.GetRow(i).m_dt_stamp );
+		
+				WebAddTable2Row( r );
 			}
+				
+			WebAddTable2End();
+				
 		}
 		
 		

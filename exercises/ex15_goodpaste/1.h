@@ -15,7 +15,7 @@
 // library, and the C++ .
 
 /*  
-2017c11c27c周一-19c23c08.68  
+2017c11c28c周二-11c19c12.19  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -1025,11 +1025,14 @@ public:
 	
 	static std::string Chg2XmlCode( std::string s )
 	{
-		sreplstr( s, "&",  "&amp;"  );
-		sreplstr( s, "<",  "&lt;"   );
-		sreplstr( s, ">",  "&gt;"   );
-		sreplstr( s, " ",  "&nbsp;"  );
-		sreplstr( s, "\"", "&quot;"  );
+		sreplstr( s, "&",  "&amp;" );
+		sreplstr( s, "<",  "&lt;" );
+		sreplstr( s, ">",  "&gt;" );
+		sreplstr( s, " ",  "&nbsp;" );
+		sreplstr( s, "\"", "&quot;" );
+		sreplstr( s, "\r", ""  );
+		sreplstr( s, "\n", "<br>\r\n" );
+
 		return s;
 	}
 
@@ -20553,8 +20556,8 @@ X011_NAMESPACE_BEGIN
 
 
 
-#ifndef V1_3AAFWEB02_TBL_T_20170622_133852
-#define V1_3AAFWEB02_TBL_T_20170622_133852
+#ifndef V1_3AAFWEB02_TBL_T_20171128_110611
+#define V1_3AAFWEB02_TBL_T_20171128_110611
 
 
 
@@ -20568,6 +20571,7 @@ public:
 	std::string		m_FSA_Func;			
 	std::string		m_strTitle;			
 	int		m_BigFontFlag;			
+	int		m_BigFontSizePt;			
 	tuint32		m_StepCount;			
 	NaS2S		m_Value;			
 	wl::tuint8		m_RES_01;			
@@ -20585,6 +20589,7 @@ public:
 		m_FSA_Func = "";
 		m_strTitle = "_----_";
 		m_BigFontFlag = 0;
+		m_BigFontSizePt = 33;
 		m_StepCount = 0;
 		
 		m_RES_01 = 0;
@@ -20702,6 +20707,13 @@ public:
 		en( buf1, len1, buf2 );
 		strOut += std::string(buf2);
 		strOut += std::string("/");
+		buf1 = (const char *)reinterpret_cast<char *>(&reinterpret_cast<char&>(m_BigFontSizePt));
+		len1 = sizeof(m_BigFontSizePt);
+		if( (int)v.size() < ( len1 * 2 + 4 ) ) v.resize( len1 * 2 + 4 );
+		buf2 = (char*)(&(v[0]));
+		en( buf1, len1, buf2 );
+		strOut += std::string(buf2);
+		strOut += std::string("/");
 		buf1 = (const char *)reinterpret_cast<char *>(&reinterpret_cast<char&>(m_StepCount));
 		len1 = sizeof(m_StepCount);
 		if( (int)v.size() < ( len1 * 2 + 4 ) ) v.resize( len1 * 2 + 4 );
@@ -20782,6 +20794,9 @@ public:
 		  m_BigFontFlag = *(int*)buf2; }else return *this;
 		buf2 = (char*)buf1;
 		 if( *buf2!='}') {buf1 = de( buf2 );
+		  m_BigFontSizePt = *(int*)buf2; }else return *this;
+		buf2 = (char*)buf1;
+		 if( *buf2!='}') {buf1 = de( buf2 );
 		  m_StepCount = decode2<tuint32>(buf2); }else return *this;
 		buf2 = (char*)buf1;
 		 if( *buf2!='}') {buf1 = de( buf2 );
@@ -20831,6 +20846,10 @@ public:
 		ckl.add( wl::SCake( buf1, len1 ) );
 		buf1 = (const char *)reinterpret_cast<char *>(&reinterpret_cast<char&>(m_BigFontFlag));
 		len1 = sizeof(m_BigFontFlag);
+		ckl.add( wl::SCake( (wl::tchar*)&len1, 4 ) );
+		ckl.add( wl::SCake( buf1, len1 ) );
+		buf1 = (const char *)reinterpret_cast<char *>(&reinterpret_cast<char&>(m_BigFontSizePt));
+		len1 = sizeof(m_BigFontSizePt);
 		ckl.add( wl::SCake( (wl::tchar*)&len1, 4 ) );
 		ckl.add( wl::SCake( buf1, len1 ) );
 		buf1 = (const char *)reinterpret_cast<char *>(&reinterpret_cast<char&>(m_StepCount));
@@ -20884,6 +20903,9 @@ public:
 		buf2 = (char*)buf1 + 4;
 		buf1 = buf2 + *(wl::tuint32*)buf1;
 		m_BigFontFlag = *(int*)buf2;
+		buf2 = (char*)buf1 + 4;
+		buf1 = buf2 + *(wl::tuint32*)buf1;
+		m_BigFontSizePt = *(int*)buf2;
 		buf2 = (char*)buf1 + 4;
 		buf1 = buf2 + *(wl::tuint32*)buf1;
 		m_StepCount = decode2<tuint32>(buf2);
@@ -20958,6 +20980,14 @@ public:
 
 
 
+	int & GetCol_BigFontSizePt(void)
+	{
+		return m_BigFontSizePt;
+	}
+
+
+
+
 	tuint32 & GetCol_StepCount(void)
 	{
 		return m_StepCount;
@@ -21019,7 +21049,7 @@ public:
 
 	int GetColAmount()
 	{
-		return 12;
+		return 13;
 	}
 
 
@@ -21049,29 +21079,33 @@ public:
 		}
 		if( iColNum == 5 )
 		{
-			return "StepCount";
+			return "BigFontSizePt";
 		}
 		if( iColNum == 6 )
 		{
-			return "Value";
+			return "StepCount";
 		}
 		if( iColNum == 7 )
 		{
-			return "RES_01";
+			return "Value";
 		}
 		if( iColNum == 8 )
 		{
-			return "RES_02";
+			return "RES_01";
 		}
 		if( iColNum == 9 )
 		{
-			return "RES_03";
+			return "RES_02";
 		}
 		if( iColNum == 10 )
 		{
-			return "RES_04";
+			return "RES_03";
 		}
 		if( iColNum == 11 )
+		{
+			return "RES_04";
+		}
+		if( iColNum == 12 )
 		{
 			return "RES_05";
 		}
@@ -21103,33 +21137,37 @@ public:
 		{
 			return 4;
 		}
-		if( strColName == "StepCount" )
+		if( strColName == "BigFontSizePt" )
 		{
 			return 5;
 		}
-		if( strColName == "Value" )
+		if( strColName == "StepCount" )
 		{
 			return 6;
 		}
-		if( strColName == "RES_01" )
+		if( strColName == "Value" )
 		{
 			return 7;
 		}
-		if( strColName == "RES_02" )
+		if( strColName == "RES_01" )
 		{
 			return 8;
 		}
-		if( strColName == "RES_03" )
+		if( strColName == "RES_02" )
 		{
 			return 9;
 		}
-		if( strColName == "RES_04" )
+		if( strColName == "RES_03" )
 		{
 			return 10;
 		}
-		if( strColName == "RES_05" )
+		if( strColName == "RES_04" )
 		{
 			return 11;
+		}
+		if( strColName == "RES_05" )
+		{
+			return 12;
 		}
 		return -1;
 	}
@@ -21162,29 +21200,33 @@ public:
 		}
 		if( iColNum == 5 )
 		{
-			return wl::SStrf::b2s(m_StepCount);
+			return wl::SStrf::sltoa(m_BigFontSizePt);
 		}
 		if( iColNum == 6 )
 		{
-			return m_Value.serialize();
+			return wl::SStrf::b2s(m_StepCount);
 		}
 		if( iColNum == 7 )
 		{
-			return wl::SStrf::sltoa(m_RES_01);
+			return m_Value.serialize();
 		}
 		if( iColNum == 8 )
 		{
-			return m_RES_02.ReadString();
+			return wl::SStrf::sltoa(m_RES_01);
 		}
 		if( iColNum == 9 )
 		{
-			return wl::SStrf::sltoa(m_RES_03);
+			return m_RES_02.ReadString();
 		}
 		if( iColNum == 10 )
 		{
-			return wl::SStrf::b2s(m_RES_04);
+			return wl::SStrf::sltoa(m_RES_03);
 		}
 		if( iColNum == 11 )
+		{
+			return wl::SStrf::b2s(m_RES_04);
+		}
+		if( iColNum == 12 )
 		{
 			return wl::SStrf::b2s(m_RES_05);
 		}
@@ -21220,33 +21262,37 @@ public:
 		{
 			return GetColStr<STRINGT>(4);
 		}
-		if( strColName == "StepCount" )
+		if( strColName == "BigFontSizePt" )
 		{
 			return GetColStr<STRINGT>(5);
 		}
-		if( strColName == "Value" )
+		if( strColName == "StepCount" )
 		{
 			return GetColStr<STRINGT>(6);
 		}
-		if( strColName == "RES_01" )
+		if( strColName == "Value" )
 		{
 			return GetColStr<STRINGT>(7);
 		}
-		if( strColName == "RES_02" )
+		if( strColName == "RES_01" )
 		{
 			return GetColStr<STRINGT>(8);
 		}
-		if( strColName == "RES_03" )
+		if( strColName == "RES_02" )
 		{
 			return GetColStr<STRINGT>(9);
 		}
-		if( strColName == "RES_04" )
+		if( strColName == "RES_03" )
 		{
 			return GetColStr<STRINGT>(10);
 		}
-		if( strColName == "RES_05" )
+		if( strColName == "RES_04" )
 		{
 			return GetColStr<STRINGT>(11);
+		}
+		if( strColName == "RES_05" )
+		{
+			return GetColStr<STRINGT>(12);
 		}
 		return GetColStr<STRINGT>(0);
 	}
@@ -21282,29 +21328,33 @@ public:
 		}
 		if( iColNum == 5 )
 		{
-			wl::SStrf::s2b(strValPARA,m_StepCount);
+			m_BigFontSizePt=wl::SStrf::satol(strValPARA);
 		}
 		if( iColNum == 6 )
 		{
-			m_Value.unserialize(strValPARA);
+			wl::SStrf::s2b(strValPARA,m_StepCount);
 		}
 		if( iColNum == 7 )
 		{
-			m_RES_01=(wl::tuint8)wl::SStrf::satol(strValPARA);
+			m_Value.unserialize(strValPARA);
 		}
 		if( iColNum == 8 )
 		{
-			m_RES_02.Make(strValPARA);
+			m_RES_01=(wl::tuint8)wl::SStrf::satol(strValPARA);
 		}
 		if( iColNum == 9 )
 		{
-			m_RES_03=wl::SStrf::satol(strValPARA);
+			m_RES_02.Make(strValPARA);
 		}
 		if( iColNum == 10 )
 		{
-			wl::SStrf::s2b(strValPARA,m_RES_04);
+			m_RES_03=wl::SStrf::satol(strValPARA);
 		}
 		if( iColNum == 11 )
+		{
+			wl::SStrf::s2b(strValPARA,m_RES_04);
+		}
+		if( iColNum == 12 )
 		{
 			wl::SStrf::s2b(strValPARA,m_RES_05);
 		}
@@ -21336,33 +21386,37 @@ public:
 		{
 			SetColVal<STRINGT>(4,strValPARA);
 		}
-		if( strColName == "StepCount" )
+		if( strColName == "BigFontSizePt" )
 		{
 			SetColVal<STRINGT>(5,strValPARA);
 		}
-		if( strColName == "Value" )
+		if( strColName == "StepCount" )
 		{
 			SetColVal<STRINGT>(6,strValPARA);
 		}
-		if( strColName == "RES_01" )
+		if( strColName == "Value" )
 		{
 			SetColVal<STRINGT>(7,strValPARA);
 		}
-		if( strColName == "RES_02" )
+		if( strColName == "RES_01" )
 		{
 			SetColVal<STRINGT>(8,strValPARA);
 		}
-		if( strColName == "RES_03" )
+		if( strColName == "RES_02" )
 		{
 			SetColVal<STRINGT>(9,strValPARA);
 		}
-		if( strColName == "RES_04" )
+		if( strColName == "RES_03" )
 		{
 			SetColVal<STRINGT>(10,strValPARA);
 		}
-		if( strColName == "RES_05" )
+		if( strColName == "RES_04" )
 		{
 			SetColVal<STRINGT>(11,strValPARA);
+		}
+		if( strColName == "RES_05" )
+		{
+			SetColVal<STRINGT>(12,strValPARA);
 		}
 	}
 
@@ -21602,7 +21656,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_TimeStamp==strVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -21631,7 +21685,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_FSA_FuncInt==iVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -21660,7 +21714,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_FSA_Func==strVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -21689,7 +21743,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_strTitle==strVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -21718,7 +21772,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_BigFontFlag==iVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -21743,11 +21797,40 @@ public:
 
 
 
+	void SelE_BigFontSizePt(int iVal, std::vector<long> & vRps, std::vector<long> * pRefRps=NULL) 
+	{
+		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
+		if(m_DATAcorpora[ltmp].m_BigFontSizePt==iVal)
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+	}
+
+
+
+
+	AFWEB02_tbl_t_rowtype & SelE1_BigFontSizePt(int iVal)
+	{
+		std::vector<long> vRps ;
+		SelE_BigFontSizePt( iVal, vRps );
+		return GetRow( vRps, 0 );
+	}
+
+
+
+
+	void SelEc_BigFontSizePt(int iVal, std::vector<long> & vRps, std::vector<long> * pRefRps=NULL) 
+	{
+		vRps.clear();
+		SelE_BigFontSizePt(iVal, vRps, pRefRps);
+	}
+
+
+
+
 	void SelE_StepCount(tuint32 iVal, std::vector<long> & vRps, std::vector<long> * pRefRps=NULL) 
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_StepCount==iVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -21776,7 +21859,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_Value==aVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -21805,7 +21888,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_01==iVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -21834,7 +21917,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_02==strVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -21863,7 +21946,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_03==iVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -21892,7 +21975,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_04==iVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -21921,7 +22004,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_05==aVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -22144,7 +22227,6 @@ public:
 	tbool			m_tSvrGoodFlag;
 	tbool			m_WebFormBeginDoneFlag;
 	tbool			m_RawMode; 
-	int				m_font_size_pt;
 
 	WTcpCells		m_tSvr;
 
@@ -22168,7 +22250,6 @@ public:
 		m_tSvrGoodFlag = 1;
 		m_WebFormBeginDoneFlag = 0;
 		m_RawMode = 0;
-		m_font_size_pt = 40;
 	}
 
 	virtual ~AFlowEle_t()
@@ -22492,7 +22573,7 @@ public:
 			if( m_pafdata->m_env0.m_BigFontFlag )
 			{
 				
-				std::string s1 = SStrf::sltoa(m_font_size_pt);
+				std::string s1 = SStrf::sltoa(m_pafdata->m_env0.m_BigFontSizePt);
 				str1 += "<style type=\"text/css\">*{font-size:" + s1 + "pt;}</style>";
 			}
 			else
@@ -23863,11 +23944,14 @@ public:
 	
 	static std::string Chg2XmlCode( std::string s )
 	{
-		sreplstr( s, "&",  "&amp;"  );
-		sreplstr( s, "<",  "&lt;"   );
-		sreplstr( s, ">",  "&gt;"   );
-		sreplstr( s, " ",  "&nbsp;"  );
-		sreplstr( s, "\"", "&quot;"  );
+		sreplstr( s, "&",  "&amp;" );
+		sreplstr( s, "<",  "&lt;" );
+		sreplstr( s, ">",  "&gt;" );
+		sreplstr( s, " ",  "&nbsp;" );
+		sreplstr( s, "\"", "&quot;" );
+		sreplstr( s, "\r", ""  );
+		sreplstr( s, "\n", "<br>\r\n" );
+
 		return s;
 	}
 
@@ -40848,8 +40932,8 @@ X011_NAMESPACE_BEGIN
 
 
 
-#ifndef V1_3AAFWEB02_TBL_T_20170622_133852
-#define V1_3AAFWEB02_TBL_T_20170622_133852
+#ifndef V1_3AAFWEB02_TBL_T_20171128_110611
+#define V1_3AAFWEB02_TBL_T_20171128_110611
 
 
 
@@ -40863,6 +40947,7 @@ public:
 	std::string		m_FSA_Func;			
 	std::string		m_strTitle;			
 	int		m_BigFontFlag;			
+	int		m_BigFontSizePt;			
 	tuint32		m_StepCount;			
 	NaS2S		m_Value;			
 	wl::tuint8		m_RES_01;			
@@ -40880,6 +40965,7 @@ public:
 		m_FSA_Func = "";
 		m_strTitle = "_----_";
 		m_BigFontFlag = 0;
+		m_BigFontSizePt = 33;
 		m_StepCount = 0;
 		
 		m_RES_01 = 0;
@@ -40997,6 +41083,13 @@ public:
 		en( buf1, len1, buf2 );
 		strOut += std::string(buf2);
 		strOut += std::string("/");
+		buf1 = (const char *)reinterpret_cast<char *>(&reinterpret_cast<char&>(m_BigFontSizePt));
+		len1 = sizeof(m_BigFontSizePt);
+		if( (int)v.size() < ( len1 * 2 + 4 ) ) v.resize( len1 * 2 + 4 );
+		buf2 = (char*)(&(v[0]));
+		en( buf1, len1, buf2 );
+		strOut += std::string(buf2);
+		strOut += std::string("/");
 		buf1 = (const char *)reinterpret_cast<char *>(&reinterpret_cast<char&>(m_StepCount));
 		len1 = sizeof(m_StepCount);
 		if( (int)v.size() < ( len1 * 2 + 4 ) ) v.resize( len1 * 2 + 4 );
@@ -41077,6 +41170,9 @@ public:
 		  m_BigFontFlag = *(int*)buf2; }else return *this;
 		buf2 = (char*)buf1;
 		 if( *buf2!='}') {buf1 = de( buf2 );
+		  m_BigFontSizePt = *(int*)buf2; }else return *this;
+		buf2 = (char*)buf1;
+		 if( *buf2!='}') {buf1 = de( buf2 );
 		  m_StepCount = decode2<tuint32>(buf2); }else return *this;
 		buf2 = (char*)buf1;
 		 if( *buf2!='}') {buf1 = de( buf2 );
@@ -41126,6 +41222,10 @@ public:
 		ckl.add( wl::SCake( buf1, len1 ) );
 		buf1 = (const char *)reinterpret_cast<char *>(&reinterpret_cast<char&>(m_BigFontFlag));
 		len1 = sizeof(m_BigFontFlag);
+		ckl.add( wl::SCake( (wl::tchar*)&len1, 4 ) );
+		ckl.add( wl::SCake( buf1, len1 ) );
+		buf1 = (const char *)reinterpret_cast<char *>(&reinterpret_cast<char&>(m_BigFontSizePt));
+		len1 = sizeof(m_BigFontSizePt);
 		ckl.add( wl::SCake( (wl::tchar*)&len1, 4 ) );
 		ckl.add( wl::SCake( buf1, len1 ) );
 		buf1 = (const char *)reinterpret_cast<char *>(&reinterpret_cast<char&>(m_StepCount));
@@ -41179,6 +41279,9 @@ public:
 		buf2 = (char*)buf1 + 4;
 		buf1 = buf2 + *(wl::tuint32*)buf1;
 		m_BigFontFlag = *(int*)buf2;
+		buf2 = (char*)buf1 + 4;
+		buf1 = buf2 + *(wl::tuint32*)buf1;
+		m_BigFontSizePt = *(int*)buf2;
 		buf2 = (char*)buf1 + 4;
 		buf1 = buf2 + *(wl::tuint32*)buf1;
 		m_StepCount = decode2<tuint32>(buf2);
@@ -41253,6 +41356,14 @@ public:
 
 
 
+	int & GetCol_BigFontSizePt(void)
+	{
+		return m_BigFontSizePt;
+	}
+
+
+
+
 	tuint32 & GetCol_StepCount(void)
 	{
 		return m_StepCount;
@@ -41314,7 +41425,7 @@ public:
 
 	int GetColAmount()
 	{
-		return 12;
+		return 13;
 	}
 
 
@@ -41344,29 +41455,33 @@ public:
 		}
 		if( iColNum == 5 )
 		{
-			return "StepCount";
+			return "BigFontSizePt";
 		}
 		if( iColNum == 6 )
 		{
-			return "Value";
+			return "StepCount";
 		}
 		if( iColNum == 7 )
 		{
-			return "RES_01";
+			return "Value";
 		}
 		if( iColNum == 8 )
 		{
-			return "RES_02";
+			return "RES_01";
 		}
 		if( iColNum == 9 )
 		{
-			return "RES_03";
+			return "RES_02";
 		}
 		if( iColNum == 10 )
 		{
-			return "RES_04";
+			return "RES_03";
 		}
 		if( iColNum == 11 )
+		{
+			return "RES_04";
+		}
+		if( iColNum == 12 )
 		{
 			return "RES_05";
 		}
@@ -41398,33 +41513,37 @@ public:
 		{
 			return 4;
 		}
-		if( strColName == "StepCount" )
+		if( strColName == "BigFontSizePt" )
 		{
 			return 5;
 		}
-		if( strColName == "Value" )
+		if( strColName == "StepCount" )
 		{
 			return 6;
 		}
-		if( strColName == "RES_01" )
+		if( strColName == "Value" )
 		{
 			return 7;
 		}
-		if( strColName == "RES_02" )
+		if( strColName == "RES_01" )
 		{
 			return 8;
 		}
-		if( strColName == "RES_03" )
+		if( strColName == "RES_02" )
 		{
 			return 9;
 		}
-		if( strColName == "RES_04" )
+		if( strColName == "RES_03" )
 		{
 			return 10;
 		}
-		if( strColName == "RES_05" )
+		if( strColName == "RES_04" )
 		{
 			return 11;
+		}
+		if( strColName == "RES_05" )
+		{
+			return 12;
 		}
 		return -1;
 	}
@@ -41457,29 +41576,33 @@ public:
 		}
 		if( iColNum == 5 )
 		{
-			return wl::SStrf::b2s(m_StepCount);
+			return wl::SStrf::sltoa(m_BigFontSizePt);
 		}
 		if( iColNum == 6 )
 		{
-			return m_Value.serialize();
+			return wl::SStrf::b2s(m_StepCount);
 		}
 		if( iColNum == 7 )
 		{
-			return wl::SStrf::sltoa(m_RES_01);
+			return m_Value.serialize();
 		}
 		if( iColNum == 8 )
 		{
-			return m_RES_02.ReadString();
+			return wl::SStrf::sltoa(m_RES_01);
 		}
 		if( iColNum == 9 )
 		{
-			return wl::SStrf::sltoa(m_RES_03);
+			return m_RES_02.ReadString();
 		}
 		if( iColNum == 10 )
 		{
-			return wl::SStrf::b2s(m_RES_04);
+			return wl::SStrf::sltoa(m_RES_03);
 		}
 		if( iColNum == 11 )
+		{
+			return wl::SStrf::b2s(m_RES_04);
+		}
+		if( iColNum == 12 )
 		{
 			return wl::SStrf::b2s(m_RES_05);
 		}
@@ -41515,33 +41638,37 @@ public:
 		{
 			return GetColStr<STRINGT>(4);
 		}
-		if( strColName == "StepCount" )
+		if( strColName == "BigFontSizePt" )
 		{
 			return GetColStr<STRINGT>(5);
 		}
-		if( strColName == "Value" )
+		if( strColName == "StepCount" )
 		{
 			return GetColStr<STRINGT>(6);
 		}
-		if( strColName == "RES_01" )
+		if( strColName == "Value" )
 		{
 			return GetColStr<STRINGT>(7);
 		}
-		if( strColName == "RES_02" )
+		if( strColName == "RES_01" )
 		{
 			return GetColStr<STRINGT>(8);
 		}
-		if( strColName == "RES_03" )
+		if( strColName == "RES_02" )
 		{
 			return GetColStr<STRINGT>(9);
 		}
-		if( strColName == "RES_04" )
+		if( strColName == "RES_03" )
 		{
 			return GetColStr<STRINGT>(10);
 		}
-		if( strColName == "RES_05" )
+		if( strColName == "RES_04" )
 		{
 			return GetColStr<STRINGT>(11);
+		}
+		if( strColName == "RES_05" )
+		{
+			return GetColStr<STRINGT>(12);
 		}
 		return GetColStr<STRINGT>(0);
 	}
@@ -41577,29 +41704,33 @@ public:
 		}
 		if( iColNum == 5 )
 		{
-			wl::SStrf::s2b(strValPARA,m_StepCount);
+			m_BigFontSizePt=wl::SStrf::satol(strValPARA);
 		}
 		if( iColNum == 6 )
 		{
-			m_Value.unserialize(strValPARA);
+			wl::SStrf::s2b(strValPARA,m_StepCount);
 		}
 		if( iColNum == 7 )
 		{
-			m_RES_01=(wl::tuint8)wl::SStrf::satol(strValPARA);
+			m_Value.unserialize(strValPARA);
 		}
 		if( iColNum == 8 )
 		{
-			m_RES_02.Make(strValPARA);
+			m_RES_01=(wl::tuint8)wl::SStrf::satol(strValPARA);
 		}
 		if( iColNum == 9 )
 		{
-			m_RES_03=wl::SStrf::satol(strValPARA);
+			m_RES_02.Make(strValPARA);
 		}
 		if( iColNum == 10 )
 		{
-			wl::SStrf::s2b(strValPARA,m_RES_04);
+			m_RES_03=wl::SStrf::satol(strValPARA);
 		}
 		if( iColNum == 11 )
+		{
+			wl::SStrf::s2b(strValPARA,m_RES_04);
+		}
+		if( iColNum == 12 )
 		{
 			wl::SStrf::s2b(strValPARA,m_RES_05);
 		}
@@ -41631,33 +41762,37 @@ public:
 		{
 			SetColVal<STRINGT>(4,strValPARA);
 		}
-		if( strColName == "StepCount" )
+		if( strColName == "BigFontSizePt" )
 		{
 			SetColVal<STRINGT>(5,strValPARA);
 		}
-		if( strColName == "Value" )
+		if( strColName == "StepCount" )
 		{
 			SetColVal<STRINGT>(6,strValPARA);
 		}
-		if( strColName == "RES_01" )
+		if( strColName == "Value" )
 		{
 			SetColVal<STRINGT>(7,strValPARA);
 		}
-		if( strColName == "RES_02" )
+		if( strColName == "RES_01" )
 		{
 			SetColVal<STRINGT>(8,strValPARA);
 		}
-		if( strColName == "RES_03" )
+		if( strColName == "RES_02" )
 		{
 			SetColVal<STRINGT>(9,strValPARA);
 		}
-		if( strColName == "RES_04" )
+		if( strColName == "RES_03" )
 		{
 			SetColVal<STRINGT>(10,strValPARA);
 		}
-		if( strColName == "RES_05" )
+		if( strColName == "RES_04" )
 		{
 			SetColVal<STRINGT>(11,strValPARA);
+		}
+		if( strColName == "RES_05" )
+		{
+			SetColVal<STRINGT>(12,strValPARA);
 		}
 	}
 
@@ -41897,7 +42032,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_TimeStamp==strVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -41926,7 +42061,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_FSA_FuncInt==iVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -41955,7 +42090,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_FSA_Func==strVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -41984,7 +42119,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_strTitle==strVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -42013,7 +42148,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_BigFontFlag==iVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -42038,11 +42173,40 @@ public:
 
 
 
+	void SelE_BigFontSizePt(int iVal, std::vector<long> & vRps, std::vector<long> * pRefRps=NULL) 
+	{
+		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
+		if(m_DATAcorpora[ltmp].m_BigFontSizePt==iVal)
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+	}
+
+
+
+
+	AFWEB02_tbl_t_rowtype & SelE1_BigFontSizePt(int iVal)
+	{
+		std::vector<long> vRps ;
+		SelE_BigFontSizePt( iVal, vRps );
+		return GetRow( vRps, 0 );
+	}
+
+
+
+
+	void SelEc_BigFontSizePt(int iVal, std::vector<long> & vRps, std::vector<long> * pRefRps=NULL) 
+	{
+		vRps.clear();
+		SelE_BigFontSizePt(iVal, vRps, pRefRps);
+	}
+
+
+
+
 	void SelE_StepCount(tuint32 iVal, std::vector<long> & vRps, std::vector<long> * pRefRps=NULL) 
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_StepCount==iVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -42071,7 +42235,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_Value==aVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -42100,7 +42264,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_01==iVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -42129,7 +42293,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_02==strVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -42158,7 +42322,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_03==iVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -42187,7 +42351,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_04==iVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -42216,7 +42380,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_05==aVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -42439,7 +42603,6 @@ public:
 	tbool			m_tSvrGoodFlag;
 	tbool			m_WebFormBeginDoneFlag;
 	tbool			m_RawMode; 
-	int				m_font_size_pt;
 
 	WTcpCells		m_tSvr;
 
@@ -42463,7 +42626,6 @@ public:
 		m_tSvrGoodFlag = 1;
 		m_WebFormBeginDoneFlag = 0;
 		m_RawMode = 0;
-		m_font_size_pt = 40;
 	}
 
 	virtual ~AFlowEle_t()
@@ -42787,7 +42949,7 @@ public:
 			if( m_pafdata->m_env0.m_BigFontFlag )
 			{
 				
-				std::string s1 = SStrf::sltoa(m_font_size_pt);
+				std::string s1 = SStrf::sltoa(m_pafdata->m_env0.m_BigFontSizePt);
 				str1 += "<style type=\"text/css\">*{font-size:" + s1 + "pt;}</style>";
 			}
 			else

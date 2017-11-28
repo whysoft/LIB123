@@ -33,7 +33,7 @@ if(1)
 	WebAddCr(3);
 	
 	
-	WebAddTextarea(	"TXTA_GOODVALUE", "", 22, 55 );
+	WebAddTextarea(	"TXTA_GOODVALUE", "", 11, 33 );
 	WebAddBr(1);
 
 
@@ -47,11 +47,21 @@ if(1)
 
 
 	//ËùÓÐ¾ä×Ó 
+		
+	WebAddTable2Begin();
+		
 	for( long i = gp_env->m_gt.GetRowCount(); i >= 0; i-- )
 	{
-		WebSendString( gp_env->m_gt.GetRow(i).m_goodvalue );
-		WebAddCr(3);
+		std::vector< std::string > r;
+
+		r.push_back( gp_env->m_gt.GetRow(i).m_goodvalue );
+		r.push_back( gp_env->m_gt.GetRow(i).m_dt_stamp );
+
+		WebAddTable2Row( r );
 	}
+		
+	WebAddTable2End();
+		
 }
 
 
