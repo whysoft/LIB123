@@ -33,7 +33,7 @@ if(1)
 	WebAddCr(3);
 	
 	
-	WebAddTextarea(	"TXTA_GOODVALUE", "", 11, 33 );
+	WebAddTextarea(	"TXTA_GOODVALUE", "", 7, 32 );
 	WebAddBr(1);
 
 
@@ -50,7 +50,7 @@ if(1)
 		
 	WebAddTable2Begin();
 		
-	for( long i = gp_env->m_gt.GetRowCount(); i >= 0; i-- )
+	for( long i = gp_env->m_gt.GetRowCount() - 1; i >= 0; i-- )
 	{
 		std::vector< std::string > r;
 
