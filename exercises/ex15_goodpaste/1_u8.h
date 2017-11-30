@@ -15,7 +15,7 @@
 // library, and the C++ .
 
 /*  
-2017c11c28c周二-11c19c12.19  
+2017c11c30c周四-14c29c07.28  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -22228,6 +22228,9 @@ public:
 	tbool			m_WebFormBeginDoneFlag;
 	tbool			m_RawMode; 
 
+	std::string  m_strFormTableHead;
+
+public:
 	WTcpCells		m_tSvr;
 
 public:
@@ -22250,6 +22253,8 @@ public:
 		m_tSvrGoodFlag = 1;
 		m_WebFormBeginDoneFlag = 0;
 		m_RawMode = 0;
+
+		m_strFormTableHead = "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n";
 	}
 
 	virtual ~AFlowEle_t()
@@ -22439,7 +22444,7 @@ public:
 		WebSendString( "built-in variable: " );
 
 		
-		WebSendString( "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n" );
+		WebSendString( m_strFormTableHead );
 
 		for( int j = 0; j < (int)v1.size(); j++ )
 		{
@@ -22718,7 +22723,7 @@ public:
 		std::string sS2SName;
 
 		
-		WebSendString( "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n" );
+		WebSendString( m_strFormTableHead );
 
 		for( int y = 0; y < height; y++ )
 		{
@@ -22752,7 +22757,7 @@ public:
 
 	void WebAddTable2Begin()
 	{
-		WebSendString( "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n" );
+		WebSendString( m_strFormTableHead );
 	}
 
 	void WebAddTable2End()
@@ -22788,7 +22793,7 @@ public:
 
 	void WebAddTable2( std::vector< std::string > &v1 , std::vector< std::string > &v2 )
 	{
-		WebSendString( "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n" );
+		WebSendString( m_strFormTableHead );
 
 		for( int j = 0; j < (int)v1.size(); j++ )
 		{
@@ -42604,6 +42609,9 @@ public:
 	tbool			m_WebFormBeginDoneFlag;
 	tbool			m_RawMode; 
 
+	std::string  m_strFormTableHead;
+
+public:
 	WTcpCells		m_tSvr;
 
 public:
@@ -42626,6 +42634,8 @@ public:
 		m_tSvrGoodFlag = 1;
 		m_WebFormBeginDoneFlag = 0;
 		m_RawMode = 0;
+
+		m_strFormTableHead = "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n";
 	}
 
 	virtual ~AFlowEle_t()
@@ -42815,7 +42825,7 @@ public:
 		WebSendString( "built-in variable: " );
 
 		
-		WebSendString( "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n" );
+		WebSendString( m_strFormTableHead );
 
 		for( int j = 0; j < (int)v1.size(); j++ )
 		{
@@ -43094,7 +43104,7 @@ public:
 		std::string sS2SName;
 
 		
-		WebSendString( "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n" );
+		WebSendString( m_strFormTableHead );
 
 		for( int y = 0; y < height; y++ )
 		{
@@ -43128,7 +43138,7 @@ public:
 
 	void WebAddTable2Begin()
 	{
-		WebSendString( "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n" );
+		WebSendString( m_strFormTableHead );
 	}
 
 	void WebAddTable2End()
@@ -43164,7 +43174,7 @@ public:
 
 	void WebAddTable2( std::vector< std::string > &v1 , std::vector< std::string > &v2 )
 	{
-		WebSendString( "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n" );
+		WebSendString( m_strFormTableHead );
 
 		for( int j = 0; j < (int)v1.size(); j++ )
 		{

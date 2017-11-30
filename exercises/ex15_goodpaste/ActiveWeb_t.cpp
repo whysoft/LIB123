@@ -8,6 +8,22 @@
 
 
 
+
+//
+ActiveWeb_t::ActiveWeb_t()
+{
+	this->m_strFormTableHead = "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"blue\">\r\n";
+}
+
+
+//
+ActiveWeb_t::~ActiveWeb_t()
+{
+}
+
+
+
+
 //
 std::string ActiveWeb_t::Get_StepCountstr()
 {

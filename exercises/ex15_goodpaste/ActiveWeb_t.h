@@ -9,6 +9,11 @@
 //
 class ActiveWeb_t : public AFWEB02::AWeb_t
 {
+public:
+	ActiveWeb_t();
+	virtual ~ActiveWeb_t();
+
+public:
 	std::string Get_StepCountstr();
 
 public:
