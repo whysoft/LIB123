@@ -13,7 +13,7 @@ env_t::env_t()
 {
 	m_strName = "hello goodpaste!";
 	m_strVer = "V1.02";
-	m_strHelp = "hello goodpaste goodpaste!";
+	m_strHelp = "hello goodpaste help!";
 }
 
 

@@ -28,7 +28,8 @@ int main(int argc, char* argv[] )
 
 	if( nv.get( "--help" ) != "" || nv.get( "-help" ) != "" )
 	{
-		printf( "hello elevator2!\n" );
+		printf( "%s %s\n", gp_env->m_strName.c_str(), gp_env->m_strVer.c_str() );
+		printf( "%s\n", gp_env->m_strHelp.c_str() );
 		
 		exit( 0 );
 	}

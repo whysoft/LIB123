@@ -13,7 +13,7 @@ env_t::env_t()
 {
 	m_strName = "2017 classmates meeting reg service";
 	m_strVer = "V1.00";
-	m_strHelp = "2017 classmates meeting reg service";
+	m_strHelp = "2017 classmates meeting reg service help";
 	bu_backoffi2_mgr_t<>::Def( 9902 );
 	
 	m_ma.InitSDB( "a_mates_t", "." );
