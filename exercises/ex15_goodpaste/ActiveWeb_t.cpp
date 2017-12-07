@@ -12,7 +12,7 @@
 //
 ActiveWeb_t::ActiveWeb_t()
 {
-	this->m_strFormTableHead = "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"blue\">\r\n";
+	this->m_strFormTableHead = "<table border=1 cellspacing=11 cellpadding=70 bordercolor=\"blue\">\r\n";
 }
 
 

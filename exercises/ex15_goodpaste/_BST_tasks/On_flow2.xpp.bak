@@ -26,7 +26,7 @@ void ActiveWeb_t::On_flow2( int *pstate )
 		
 		
 		 
-		LLL_1:; // _LL_窗体开始_aa_X30_句子列表____1
+		LLL_5:; // _LL_窗体开始_aa_X30_句子列表____1
 		
 		
 		//绘制
@@ -40,20 +40,46 @@ void ActiveWeb_t::On_flow2( int *pstate )
 			WebSendString( "X30_句子列表" );
 			WebAddCr(3);
 			
-			
-			WebAddTextarea(	"TXTA_GOODVALUE", "", 7, 32 );
-			WebAddBr(1);
+			////////////////////////////////////////
 		
-		
-			WebAddButt( "OK1", " 保 存 " );
-			WebAddBr(3);
-			
-			
 			WebAddHr();
 			WebAddCr();
 			WebAddBr();
 		
 		
+			////////////////////////////////////////
+			
+			WebAddButt( "OK_REFRESH", "REFRESH" );
+			WebAddBr(3);
+			WebAddHr();
+		
+		
+			////////////////////////////////////////
+			
+			WebAddTextarea(	"TXTA_GOODVALUE", "", 7, 33 );
+			WebAddBr(1);
+		
+			WebAddButt( "OK1", " 保 存 " );
+			WebAddBr(3);
+			WebAddHr();
+			
+			
+			////////////////////////////////////////
+			
+			WebAddTextBox( "TEXTBOX_DEL", "" );
+		
+			WebAddButt( "OK2", "删除" );
+			WebAddBr(3);
+			WebAddHr();
+		
+			////////////////////////////////////////
+		
+			WebAddHr();
+			WebAddCr();
+			WebAddBr();
+		
+		
+			////////////////////////////////////////
 			//所有句子 
 				
 			WebAddTable2Begin();
@@ -80,6 +106,12 @@ void ActiveWeb_t::On_flow2( int *pstate )
 			
 			 
 			 
+			if( GETWEBINPUT("OK_REFRESH") != "" )
+			{
+				goto LLL_5; // to LL_LL_窗体开始_aa_X30_句子列表____1
+			}
+		
+		
 			if( GETWEBINPUT("OK1") != "" )
 			{
 				a_goodtbl_t::ROWTYPE r;
@@ -93,12 +125,33 @@ void ActiveWeb_t::On_flow2( int *pstate )
 				}
 				
 				gp_env->m_gt.SaveF();
-				 
+		
+				goto LLL_5; // to LL_LL_窗体开始_aa_X30_句子列表____1
 			}
 		
 		
+			if( GETWEBINPUT("OK2") != "" )
+			{
+				std::string s1 = GETWEBINPUT_DE( "TEXTBOX_DEL" );
+		
+				wl::SStrf::strim(s1);
+		
+				for( long i = gp_env->m_gt.GetRowCount() - 1; i >= 0; i-- )
+				{
+					if( gp_env->m_gt.GetRow(i).m_dt_stamp == s1 )
+					{
+						gp_env->m_gt.Del( i );
+						gp_env->m_gt.SaveF();
 			
-			goto LLL_1; // to LL_LL_窗体开始_aa_X30_句子列表____1
+						goto LLL_5; // to LL_LL_窗体开始_aa_X30_句子列表____1
+					}
+				}
+				
+				goto LLL_5; // to LL_LL_窗体开始_aa_X30_句子列表____1
+			}
+		
+			
+			goto LLL_5; // to LL_LL_窗体开始_aa_X30_句子列表____1
 		}
 		
 		
