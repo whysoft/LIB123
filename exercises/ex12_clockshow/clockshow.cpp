@@ -57,6 +57,12 @@ public:
 		long iBeginOffset;
 
 		fp = fopen( "/dev/fb0" , "wb" );
+		
+		if( fp == NULL )
+		{
+			printf( "cannot open fb0(OnPoint)\n" );
+		}
+
 		iBeginOffset = y * this->m_width + x;
 		iBeginOffset *= 4;
 		fseek( fp, iBeginOffset, SEEK_SET );
@@ -98,6 +104,12 @@ public:
 		long iBeginOffset;
 
 		fp = fopen( "/dev/fb0" , "wb" );
+		
+		if( fp == NULL )
+		{
+			printf( "cannot open fb0(OnPoint_bg)\n" );
+		}
+
 		iBeginOffset = y * this->m_width + x;
 		iBeginOffset *= 4;
 		fseek( fp, iBeginOffset, SEEK_SET );
@@ -133,6 +145,12 @@ public:
 		long iBeginOffset;
 
 		fp = fopen( "/dev/fb0" , "wb" );
+
+		if( fp == NULL )
+		{
+			printf( "cannot open fb0(DrawScreenPixel)\n" );
+		}
+
 		iBeginOffset = y * this->m_width + x;
 		iBeginOffset *= 4;
 		fseek( fp, iBeginOffset, SEEK_SET );
@@ -184,6 +202,8 @@ public:
 	//
 	std::string get_ip_str()
 	{
+		// 	return "222.333.444.555";
+
 		if( IsOsWin() )
 		{
 			return "222.333.444.555";
