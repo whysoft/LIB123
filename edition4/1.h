@@ -15,7 +15,7 @@
 // library, and the C++ .
 
 /*  
-2018c09c20c周四-10c21c40.43  
+2018c10c15c周一-c9c55c34.73  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -2748,6 +2748,9 @@ public:
 		if( (void*)psource==(void*)m_pbuf ) return;
 
 		redim(isize);
+
+		
+
 		copybuf( psource, m_pbuf, isize );
 	}
 
@@ -3190,7 +3193,7 @@ public:
 	}
 
 	
-	long UnSeri3( const std::string & s1 ) 
+	long UnSeri3__bak_slow( const std::string & s1 ) 
 	{
 		std::string s2;
 		for( std::string::size_type i = 0; i < s1.size(); i++ )
@@ -3199,6 +3202,80 @@ public:
 		}
 		return UnSeri( s2 );
 	}
+
+
+	
+	tsize UnSeri3( const std::string & s1 )
+	{
+		std::vector< tuint8 > v1;
+		char sz[3];
+
+		sz[2] = 0;
+
+		for( std::string::size_type i = 0; i < s1.size();   )
+		{
+			tbool data_valid = 0;
+
+			
+			sz[0] = 0;
+			while(1)
+			{
+				if( i >= s1.size() )
+				{
+					break;
+				}
+
+				if( SStrf::sishex( s1[i] ) )
+				{
+					sz[0] = s1[i];
+					data_valid = 1;
+					i++;
+					break;
+				}
+
+				i++;
+			}
+
+			
+			sz[1] = 0;
+			while(1)
+			{
+				if( i >= s1.size() )
+				{
+					break;
+				}
+
+				if( SStrf::sishex( s1[i] ) )
+				{
+					sz[1] = s1[i];
+					data_valid = 1;
+					i++;
+					break;
+				}
+
+				i++;
+			}
+
+			if( data_valid )
+			{
+				int ii;
+				(SClib::p_sscanf())( sz, "%x", &ii );
+				v1.push_back( (tuint8)ii );
+			}
+		}
+
+		if( v1.size() == 0 )
+		{
+			this->redim(0);
+			return 0;
+		}
+
+		this->redim( (tsize)v1.size() );
+		memcpy( this->buf(), &(v1[0]), v1.size() );
+
+		return this->len();
+	}
+
 
 	
 	long UnSeri10D( const std::string &strData, void * pData ) const
@@ -7549,6 +7626,12 @@ public:
 		j += val;
 		let( name, j );
 		return j;
+	}
+
+	long addvalue( long name, NaLngarr & val , int ratio = 1 )
+	{
+		long j = val.get( name );
+		return this->addvalue( name, j * ratio );
 	}
 };
 
@@ -12105,7 +12188,8 @@ public:
 
 
 	static tbool UnPackFolder(      std::string strWorkPathOrDir,
-									const SCake & ckIn , tbool biCheckSeal = 1 ,
+									const SCake & ckIn ,
+									tbool biCheckSeal = 1 ,
 									tbool biWriteDiskReal = 1 ,
 									const char * pWhitePfn = NULL	,
 									std::vector<std::string> *pvWhiteLst = NULL ,
@@ -12163,13 +12247,12 @@ public:
 			s1 = MkDir2Path( strWorkPathOrDir ) + *it ;
 			vDirFullNameLst.push_back( s1 );
 
-			CString cs1;
-			cs1 = s1.c_str();
-			if( biWriteDiskReal )
-			{
-				::CreateDirectory( cs1, NULL );
-				
-			}
+			
+			
+			
+			
+			
+			makedir( s1 );
 		}
 
 
@@ -23405,30 +23488,59 @@ public:
 class AWeb2_t : public AFlowEle_t
 {
 private:
+	
+	
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+	
+	
+
+
+	
+
+
+	
+	
 	virtual tbool On_StaticFlow()
 	{
+		std::string strChannel;
+		std::string strAfterWen="";
 		std::string s1, s2;
 		std::string::size_type i;
 
-		s1 = this->m_strUPfn;
+		
+		strChannel = this->m_strUPfn;
+		i = strChannel.find_last_of( '?' );
+		if( i != std::string::npos )
+		{
+			strChannel[i] = 0;
+			strAfterWen = strChannel.c_str() + i + 1;
+		}
+
+
+		s1 = strChannel.c_str();
 		i = s1.find_last_of( '/' );
 
 		if( i != std::string::npos )
-			s2 = s1.c_str() + i + 1; 
-
-		if( s2.find("?") != std::string::npos )
-			s1 = SStrvs::vsa_get( s2, std::string("?"), 0, 0 ); 
-
-		std::string::size_type i3;
-		std::string s3;
-
-		if( s2.find("?") != std::string::npos )
 		{
-			i3 = s2.find_first_of( '?' );
-			if( i3 != std::string::npos ) s3 = s2.c_str() + i3 + 1;
+			s2 = s1.c_str() + i + 1; 
+		}
+		else
+		{
+			s2 = s1;
 		}
 
-		this->OnGet( s1 , this->m_nvHTTPGET , s3 );
+
+		this->OnGet( s2 , this->m_nvHTTPGET , strAfterWen );
 
 		return 1;
 	}
@@ -26216,6 +26328,9 @@ public:
 		if( (void*)psource==(void*)m_pbuf ) return;
 
 		redim(isize);
+
+		
+
 		copybuf( psource, m_pbuf, isize );
 	}
 
@@ -26658,7 +26773,7 @@ public:
 	}
 
 	
-	long UnSeri3( const std::string & s1 ) 
+	long UnSeri3__bak_slow( const std::string & s1 ) 
 	{
 		std::string s2;
 		for( std::string::size_type i = 0; i < s1.size(); i++ )
@@ -26667,6 +26782,80 @@ public:
 		}
 		return UnSeri( s2 );
 	}
+
+
+	
+	tsize UnSeri3( const std::string & s1 )
+	{
+		std::vector< tuint8 > v1;
+		char sz[3];
+
+		sz[2] = 0;
+
+		for( std::string::size_type i = 0; i < s1.size();   )
+		{
+			tbool data_valid = 0;
+
+			
+			sz[0] = 0;
+			while(1)
+			{
+				if( i >= s1.size() )
+				{
+					break;
+				}
+
+				if( SStrf::sishex( s1[i] ) )
+				{
+					sz[0] = s1[i];
+					data_valid = 1;
+					i++;
+					break;
+				}
+
+				i++;
+			}
+
+			
+			sz[1] = 0;
+			while(1)
+			{
+				if( i >= s1.size() )
+				{
+					break;
+				}
+
+				if( SStrf::sishex( s1[i] ) )
+				{
+					sz[1] = s1[i];
+					data_valid = 1;
+					i++;
+					break;
+				}
+
+				i++;
+			}
+
+			if( data_valid )
+			{
+				int ii;
+				(SClib::p_sscanf())( sz, "%x", &ii );
+				v1.push_back( (tuint8)ii );
+			}
+		}
+
+		if( v1.size() == 0 )
+		{
+			this->redim(0);
+			return 0;
+		}
+
+		this->redim( (tsize)v1.size() );
+		memcpy( this->buf(), &(v1[0]), v1.size() );
+
+		return this->len();
+	}
+
 
 	
 	long UnSeri10D( const std::string &strData, void * pData ) const
@@ -31017,6 +31206,12 @@ public:
 		let( name, j );
 		return j;
 	}
+
+	long addvalue( long name, NaLngarr & val , int ratio = 1 )
+	{
+		long j = val.get( name );
+		return this->addvalue( name, j * ratio );
+	}
 };
 
 
@@ -33546,7 +33741,8 @@ public:
 
 
 	static tbool UnPackFolder(      std::string strWorkPathOrDir,
-									const SCake & ckIn , tbool biCheckSeal = 1 ,
+									const SCake & ckIn ,
+									tbool biCheckSeal = 1 ,
 									tbool biWriteDiskReal = 1 ,
 									const char * pWhitePfn = NULL	,
 									std::vector<std::string> *pvWhiteLst = NULL ,
@@ -33605,12 +33801,13 @@ public:
 			vDirFullNameLst.push_back( s1 );
 
 			
-			if( biWriteDiskReal )
-			{
 			
 			
-				mkdir(s1.c_str(), 0777);
-			}
+			
+
+			
+
+			makedir( s1 );
 		}
 
 
@@ -44405,30 +44602,59 @@ public:
 class AWeb2_t : public AFlowEle_t
 {
 private:
+	
+	
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+	
+	
+
+
+	
+
+
+	
+	
 	virtual tbool On_StaticFlow()
 	{
+		std::string strChannel;
+		std::string strAfterWen="";
 		std::string s1, s2;
 		std::string::size_type i;
 
-		s1 = this->m_strUPfn;
+		
+		strChannel = this->m_strUPfn;
+		i = strChannel.find_last_of( '?' );
+		if( i != std::string::npos )
+		{
+			strChannel[i] = 0;
+			strAfterWen = strChannel.c_str() + i + 1;
+		}
+
+
+		s1 = strChannel.c_str();
 		i = s1.find_last_of( '/' );
 
 		if( i != std::string::npos )
-			s2 = s1.c_str() + i + 1; 
-
-		if( s2.find("?") != std::string::npos )
-			s1 = SStrvs::vsa_get( s2, std::string("?"), 0, 0 ); 
-
-		std::string::size_type i3;
-		std::string s3;
-
-		if( s2.find("?") != std::string::npos )
 		{
-			i3 = s2.find_first_of( '?' );
-			if( i3 != std::string::npos ) s3 = s2.c_str() + i3 + 1;
+			s2 = s1.c_str() + i + 1; 
+		}
+		else
+		{
+			s2 = s1;
 		}
 
-		this->OnGet( s1 , this->m_nvHTTPGET , s3 );
+
+		this->OnGet( s2 , this->m_nvHTTPGET , strAfterWen );
 
 		return 1;
 	}
