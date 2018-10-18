@@ -15,7 +15,7 @@
 // library, and the C++ .
 
 /*  
-2018c10c15c周一-c9c55c34.73  
+2018c10c18c周四-10c13c26.90  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -12055,7 +12055,7 @@ public:
 
 
 	
-	static void PackFolder( std::string strWorkPathOrDir, SCake & ckOut )
+	static void PackFolder( std::string strWorkPathOrDir, SCake & ckOut , std::string strFnPattern = "*.*" )
 	{
 		
 		std::string strWorkPath;
@@ -12092,7 +12092,8 @@ public:
 
 
 
-		ListAllFile( strWorkPath, "*.*", vFileFullPathNameLst, 0, 1, 1, 1 );
+		
+		ListAllFile( strWorkPath, strFnPattern, vFileFullPathNameLst, 0, 1, 1, 1 );
 
 		for( it = vFileFullPathNameLst.begin(); it != vFileFullPathNameLst.end(); ++it )
 		{
@@ -12252,7 +12253,10 @@ public:
 			
 			
 			
-			makedir( s1 );
+			if( biWriteDiskReal )
+			{
+				makedir( s1 );
+			}
 		}
 
 
@@ -33608,7 +33612,7 @@ public:
 
 
 	
-	static void PackFolder( std::string strWorkPathOrDir, SCake & ckOut )
+	static void PackFolder( std::string strWorkPathOrDir, SCake & ckOut , std::string strFnPattern = "*.*" )
 	{
 		
 		std::string strWorkPath;
@@ -33645,7 +33649,8 @@ public:
 
 
 
-		ListAllFile( strWorkPath, "*.*", vFileFullPathNameLst, 0, 1, 1, 1 );
+		
+		ListAllFile( strWorkPath, strFnPattern, vFileFullPathNameLst, 0, 1, 1, 1 );
 
 		for( it = vFileFullPathNameLst.begin(); it != vFileFullPathNameLst.end(); ++it )
 		{
@@ -33807,7 +33812,10 @@ public:
 
 			
 
-			makedir( s1 );
+			if( biWriteDiskReal )
+			{
+				makedir( s1 );
+			}
 		}
 
 
