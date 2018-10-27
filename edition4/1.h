@@ -15,7 +15,7 @@
 // library, and the C++ .
 
 /*  
-2018c10c18c÷‹Àƒ-10c13c26.90  
+2018c10c27c÷‹¡˘-15c27c09.58  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -13586,6 +13586,9 @@ public:
 class WProcRun
 {
 public:
+	typedef		HANDLE		ProcHandle_t;
+
+public:
     DWORD  m_ExitCode;
 
 private:
@@ -13606,9 +13609,10 @@ protected:
 
 
 public:
-    WProcRun( std::string strProcImg, std::string strCmdLineArgs, tbool isSync = 0 )
+    WProcRun( std::string strProcImg, std::string strCmdLineArgs, tbool isSync = 0 , ProcHandle_t * pProcHndl = NULL )
 	{
 		m_hp = NULL;
+		if( pProcHndl ) *pProcHndl = 0;
 
         m_isSync = isSync;
 
@@ -13626,6 +13630,7 @@ public:
 		ShellExecuteExA(&ShExecInfo);
 
         m_hp = ShExecInfo.hProcess;
+		if( pProcHndl ) *pProcHndl = m_hp;
 
 		if( isSync )
         {
@@ -13645,8 +13650,14 @@ public:
 
     void KillProc()
     {
-        if( m_hp ) TerminateProcess( m_hp , 0 );
+        if( m_hp ) KillProcStatic( m_hp );
     }
+
+
+	static void KillProcStatic( HANDLE h )
+	{
+        if( h ) TerminateProcess( h , 0 );
+	}
 
 };
 
@@ -34516,6 +34527,9 @@ public:
 class WProcRun
 {
 public:
+	typedef		pid_t		ProcHandle_t;
+
+public:
     int  m_ExitCode;
 
 private:
@@ -34536,9 +34550,10 @@ protected:
 
 
 public:
-    WProcRun( std::string strProcImg, std::string strCmdLineArgs, tbool isSync = 0 )
+    WProcRun( std::string strProcImg, std::string strCmdLineArgs, tbool isSync = 0 , ProcHandle_t * pProcHndl = NULL )
 	{
 		m_hp = 0;
+		if( pProcHndl ) *pProcHndl = 0;
 
         m_isSync = isSync;
 
@@ -34565,6 +34580,8 @@ public:
         else 
         {
             m_hp = pid;
+			if( pProcHndl ) *pProcHndl = m_hp;
+
             printf( "m_hp=%d\n", m_hp );
 
 		    if( isSync )
@@ -34591,6 +34608,14 @@ public:
 
     void KillProc()
     {
+        if( m_hp ) KillProcStatic( m_hp );
+    }
+
+
+    static void KillProcStatic( pid_t h )
+    {
+		pid_t  m_hp = h;
+
         if( m_hp )
         {
             
