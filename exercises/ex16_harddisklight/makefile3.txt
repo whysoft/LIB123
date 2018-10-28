@@ -1,0 +1,32 @@
+#CC = arm-linux-gcc
+CC = gcc
+CC1 = $(CC) -c `pkg-config --cflags gtk+-2.0 gthread-2.0`
+CC3 = $(CC) -lpthread `pkg-config --cflags --libs gtk+-2.0 gthread-2.0`
+
+O_FILES = env_t.o ga_t.o bu_asynwork_t.o bu_actweb_t.o bu_quickflow_t.o bu_actweb_base1_t.o harddisklight.o 
+
+harddisklight: $(O_FILES)
+	$(CC) -o harddisklight $(O_FILES) -lpthread `pkg-config --cflags --libs gtk+-2.0 gthread-2.0` -lstdc++
+
+env_t.o :env_t.cpp
+	$(CC1) env_t.cpp
+
+ga_t.o :ga_t.cpp
+	$(CC1) ga_t.cpp
+
+bu_asynwork_t.o :bu_asynwork_t.cpp
+	$(CC1) bu_asynwork_t.cpp
+
+bu_actweb_t.o :bu_actweb_t.cpp
+	$(CC1) bu_actweb_t.cpp
+
+bu_quickflow_t.o :bu_quickflow_t.cpp
+	$(CC1) bu_quickflow_t.cpp
+
+bu_actweb_base1_t.o :bu_actweb_base1_t.cpp
+	$(CC1) bu_actweb_base1_t.cpp
+
+harddisklight.o :harddisklight.cpp
+	$(CC1) harddisklight.cpp
+
+
