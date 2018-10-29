@@ -12,7 +12,7 @@
 class blackboard_t 
 {
 public:
-	long  m_width;
+	int  m_width;
 
 
 public:
@@ -22,8 +22,7 @@ public:
 public:
 	void DrawScreenPixel( int x, int y, SBmp::RGB_t c );
 
-	void DrawLineGreen( long value );  
-	void DrawLineRed( long value );
+	void DrawLine( int valueOld, int valueNew ); 
 
 	long GetValue( std::string strAddr );
 

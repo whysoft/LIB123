@@ -76,7 +76,7 @@ int main( int argc, char* argv[] )
 	if( nvCmdLn.get( "-c" ) == "client" )
 	{
 		gp_blackboard = new blackboard_t();
-		gp_blackboard->m_width = SStrf::satol( nvCmdLn.get( "-width" ) );
+		gp_blackboard->m_width = (int)SStrf::satol( nvCmdLn.get( "-width" ) );
 
 		long valOld, valNew;
 
@@ -85,13 +85,14 @@ int main( int argc, char* argv[] )
 		while(1)
 		{
 			valNew = gp_blackboard->GetValue( nvCmdLn.get( "-addr" ) );
+		
+			valNew = ( valOld + valNew ) / 2;
 	
-			gp_blackboard->DrawLineGreen( valOld );
-			gp_blackboard->DrawLineRed( valNew );
+			gp_blackboard->DrawLine( valOld , valNew );
 
 			valOld = valNew;
 
-			WThrd::tr_sleepu( 0.9 );
+			WThrd::tr_sleepu( 0.19 );
 		}
 
 		goto L_MAINEND;

@@ -84,43 +84,48 @@ void blackboard_t::DrawScreenPixel( int x, int y, SBmp::RGB_t c )
 
 
 //
-void blackboard_t::DrawLineGreen( long value )
+void blackboard_t::DrawLine( int valueOld, int valueNew )
 {
-	long x;
-	SBmp::RGB_t C;
+	int j;
+	SBmp::RGB_t C1, C2;
 
-	C.R = 255;
-	C.G = 255;
-	C.B = 255;
+	C1.R = 255;
+	C1.G = 255;
+	C1.B = 255;
+	
+	C2.R = 255;
+	C2.G = 0;
+	C2.B = 0;
 
-	for( x = 0 ; x < value; x++ )
+	if( valueNew > valueOld )
 	{
-		this->DrawScreenPixel( x, 0, C );
-		this->DrawScreenPixel( x, 1, C );
-		this->DrawScreenPixel( x, 2, C );
-		this->DrawScreenPixel( x, 3, C );
-	}	 
-}
+		for( j = 0 ; j < valueNew; j++ )
+		{
+			for( int k = 0; k < 3; k++ )
+			{
+				this->DrawScreenPixel( k, j, C2 );
+			}
+		}
+		return;
+	}
 
-
-
-//
-void blackboard_t::DrawLineRed( long value )
-{
-	long x;
-	SBmp::RGB_t C;
-
-	C.R = 255;
-	C.G = 0;
-	C.B = 0;
-
-	for( x = 0 ; x < value; x++ )
+	if( valueNew <= valueOld )
 	{
-		this->DrawScreenPixel( x, 0, C );
-		this->DrawScreenPixel( x, 1, C );
-		this->DrawScreenPixel( x, 2, C );
-		this->DrawScreenPixel( x, 3, C );
-	}	 
+		for( j = 0 ; j < valueNew; j++ )
+		{
+			for( int k = 0; k < 3; k++ )
+			{
+				this->DrawScreenPixel( k, j, C2 );
+			}
+		}
+		for( j = valueNew ; j < valueOld; j++ )
+		{
+			for( int k = 0; k < 3; k++ )
+			{
+				this->DrawScreenPixel( k, j, C1 );
+			}
+		}
+	}
 }
 
 
@@ -154,9 +159,9 @@ long blackboard_t::GetValue( std::string strAddr )
 	cc.recv_ln( ck, "\r\n\r\n" );
 	if( ck.len() )
 	{
-		long l;
+		int l;
 
-		l = SStrf::satol( ck.mk_str() );
+		l = (int)SStrf::satol( ck.mk_str() );
 
 		if( l > m_width ) l = m_width;
 
