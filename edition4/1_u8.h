@@ -15,7 +15,7 @@
 // library, and the C++ .
 
 /*  
-2018c10c27c周六-15c27c09.58  
+2018c11c02c周五-c9c47c32.19  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -34622,7 +34622,7 @@ public:
 
 			std::vector< pid_t > allpid;
 
-            for( pid_t pid = m_hp + 1; pid < m_hp + 11; pid ++ )
+            for( pid_t pid = m_hp + 1; pid < m_hp + 33; pid ++ )
             {
                 tuint32 i = (tuint32)pid;
                 FILE *fp;
