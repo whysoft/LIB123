@@ -15,7 +15,7 @@
 // library, and the C++ .
 
 /*  
-2018c11c02c周五-c9c47c32.19  
+2018c11c27c周二-14c17c32.42  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -4901,6 +4901,12 @@ public:
 	}
 
 
+	static std::string GetPathSepOpposite()
+	{
+		return "/";
+	}
+
+
 	static std::string MkDir2Path( std::string strPathOrDir )
 	{
 		if( strPathOrDir.length() )
@@ -7034,7 +7040,7 @@ public:
 		return y;
 	}
 
-	
+
 	void Line( int x1, int y1, int x2, int y2 )
 	{
 		 int dx = x2 - x1;
@@ -7590,19 +7596,25 @@ public:
 	}
 
 	
-	INT_VAL_T get( INT_NAME_T name )
+	INT_VAL_T get( INT_NAME_T name , std::string **pstrMem = NULL ) 
 	{
 		std::stringstream stream1;
 		std::stringstream stream2;
 		INT_VAL_T n;
+
 		stream1 << name;
-		if( NaStrarr_base< INT_NAME_T >::m_navaknl.get(stream1.str()).empty() )
+
+		
+		
+		
 		{
-			stream2 << "0";
-		}
-		else
 			stream2 << NaStrarr_base< INT_NAME_T >::m_navaknl.get(stream1.str());
+
+			if( pstrMem ) *pstrMem = &(NaStrarr_base< INT_NAME_T >::m_navaknl.get(stream1.str()));
+		}
+
 		stream2 >> n;
+
 		return n;
 	}
 
@@ -7658,6 +7670,24 @@ class NaL2L : public NaLngarr
 {
 public:
 	virtual ~NaL2L() {;}
+
+	
+	void ReserveClear( long iMinStep, long iMaxStep, long iStep = 1 , int iReserve = 64 )
+	{
+		this->clear();
+
+		for( long i = iMinStep; i <= iMaxStep * iStep ; i += iStep ) 
+		{
+			this->let( i, 0 );
+
+			std::string *pstrMem;
+
+			this->get( i, &pstrMem );
+
+			pstrMem->reserve(iReserve);
+		}
+	}
+
 };
 
 
@@ -17698,11 +17728,13 @@ public:
 	}
 
 public:
+
 	
 	void LinkCellc( IRice * p )
 	{
 		m_pCellc = p;
 	}
+
 	
 	void LinkCellc( IRice & r )
 	{
@@ -17859,6 +17891,7 @@ public:
 
 		if(pvSubject) pvSubject->clear();
 		if(pvFrom) pvFrom->clear();
+
 		for( statnum1 = 1 ; statnum1 <= statnum; statnum1 ++ )
 		{
 			rc = m_pCellc->send_str( "top " + SStrf::sltoa(statnum1) + " 1\r\n" ); 
@@ -23499,6 +23532,7 @@ public:
 
 
 
+	
 
 class AWeb2_t : public AFlowEle_t
 {
@@ -28491,6 +28525,11 @@ public:
 		return "/";
 	}
 
+	static std::string GetPathSepOpposite()
+	{
+		return "\\";
+	}
+
 
 	static std::string MkDir2Path( std::string strPathOrDir )
 	{
@@ -30628,7 +30667,7 @@ public:
 		return y;
 	}
 
-	
+
 	void Line( int x1, int y1, int x2, int y2 )
 	{
 		 int dx = x2 - x1;
@@ -31184,19 +31223,25 @@ public:
 	}
 
 	
-	INT_VAL_T get( INT_NAME_T name )
+	INT_VAL_T get( INT_NAME_T name , std::string **pstrMem = NULL ) 
 	{
 		std::stringstream stream1;
 		std::stringstream stream2;
 		INT_VAL_T n;
+
 		stream1 << name;
-		if( NaStrarr_base< INT_NAME_T >::m_navaknl.get(stream1.str()).empty() )
+
+		
+		
+		
 		{
-			stream2 << "0";
-		}
-		else
 			stream2 << NaStrarr_base< INT_NAME_T >::m_navaknl.get(stream1.str());
+
+			if( pstrMem ) *pstrMem = &(NaStrarr_base< INT_NAME_T >::m_navaknl.get(stream1.str()));
+		}
+
 		stream2 >> n;
+
 		return n;
 	}
 
@@ -31252,6 +31297,24 @@ class NaL2L : public NaLngarr
 {
 public:
 	virtual ~NaL2L() {;}
+
+	
+	void ReserveClear( long iMinStep, long iMaxStep, long iStep = 1 , int iReserve = 64 )
+	{
+		this->clear();
+
+		for( long i = iMinStep; i <= iMaxStep * iStep ; i += iStep ) 
+		{
+			this->let( i, 0 );
+
+			std::string *pstrMem;
+
+			this->get( i, &pstrMem );
+
+			pstrMem->reserve(iReserve);
+		}
+	}
+
 };
 
 
@@ -38753,11 +38816,13 @@ public:
 	}
 
 public:
+
 	
 	void LinkCellc( IRice * p )
 	{
 		m_pCellc = p;
 	}
+
 	
 	void LinkCellc( IRice & r )
 	{
@@ -38914,6 +38979,7 @@ public:
 
 		if(pvSubject) pvSubject->clear();
 		if(pvFrom) pvFrom->clear();
+
 		for( statnum1 = 1 ; statnum1 <= statnum; statnum1 ++ )
 		{
 			rc = m_pCellc->send_str( "top " + SStrf::sltoa(statnum1) + " 1\r\n" ); 
@@ -44631,6 +44697,7 @@ public:
 
 
 
+	
 
 class AWeb2_t : public AFlowEle_t
 {
