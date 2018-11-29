@@ -15,7 +15,7 @@
 // library, and the C++ .
 
 /*  
-2018c11c27c周二-14c17c32.42  
+2018c11c29c周四-16c11c21.61  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -7672,11 +7672,11 @@ public:
 	virtual ~NaL2L() {;}
 
 	
-	void ReserveClear( long iMinStep, long iMaxStep, long iStep = 1 , int iReserve = 64 )
+	void ReserveClear( long iMin, long iMax, long iStep = 1 , int iReserve = 64 )
 	{
 		this->clear();
 
-		for( long i = iMinStep; i <= iMaxStep * iStep ; i += iStep ) 
+		for( long i = iMin; i <= iMax ; i += iStep ) 
 		{
 			this->let( i, 0 );
 
@@ -13641,6 +13641,7 @@ protected:
 public:
     WProcRun( std::string strProcImg, std::string strCmdLineArgs, tbool isSync = 0 , ProcHandle_t * pProcHndl = NULL )
 	{
+		m_ExitCode = -1;
 		m_hp = NULL;
 		if( pProcHndl ) *pProcHndl = 0;
 
@@ -14430,6 +14431,221 @@ public:
 
 
 
+
+
+
+
+
+
+
+
+
+class WProcRun2
+{
+private:
+
+	
+	class daemon_boy_t : public WThrd
+	{
+	private:
+
+	public:
+		std::string  *m_pstrProcImg;
+		std::string  *m_pstrCmdLn;
+		int  *m_pRc; 
+		int  *m_pExitCode; 
+		int  *m_pIsRunning;
+		WProcRun::ProcHandle_t  *m_pProcHandle;
+		WProcRun2  *m_pFather;
+
+	public:
+		daemon_boy_t()
+		{
+		}
+
+		virtual ~daemon_boy_t(){}
+
+	public:
+		virtual int tr_on_user_run()
+		{
+			if( m_pFather->OnBefore() )
+			{
+				*m_pRc = 1;
+
+				WProcRun aa( *m_pstrProcImg , *m_pstrCmdLn, 1 , m_pProcHandle );
+
+				*m_pExitCode = (int)(tuint32)aa.m_ExitCode;
+			}
+			else
+			{
+				*m_pRc = 0;
+				*m_pExitCode = -1;
+			}
+
+			*m_pIsRunning = 0;
+			return 0;
+		}
+
+		
+		virtual void tr_on_post_thrd()
+		{
+			*m_pProcHandle = 0;
+
+			 m_pFather->OnAfterExit();
+		}
+
+		
+		void ByeBye()
+		{
+			if( *m_pProcHandle )
+			{
+				this->tr_shouldbrk();
+				WProcRun::KillProcStatic( *m_pProcHandle );
+				this->tr_wait();
+			}
+		}
+
+	};
+
+
+private:
+	std::string  m_strProcImg;
+	std::string  m_strCmdLn;
+    int  m_Rc;
+    int  m_ExitCode;
+    int  m_IsRunning;
+	WProcRun::ProcHandle_t  m_ProcHandle;
+	daemon_boy_t  *m_pBoy;
+
+
+private:
+	
+	WProcRun2 & operator = (const WProcRun2 & rhs)
+	{
+		return *this;
+	}
+
+	
+	WProcRun2(const WProcRun & rhs)
+	{;}
+
+
+public:
+	
+	WProcRun2()
+	{
+		m_ExitCode = -1;
+		m_IsRunning = 0;
+		m_ProcHandle = 0;
+
+		m_pBoy = NULL;
+	}
+
+
+	virtual ~WProcRun2()
+	{
+		this->Kill();
+
+		if( m_pBoy )
+		{
+			delete m_pBoy;
+			m_pBoy = NULL;
+		}
+	}
+
+	
+	void Init( std::string strProcImg, std::string strCmdLn )
+	{
+		m_strProcImg = strProcImg;
+		m_strCmdLn = strCmdLn;
+	}
+
+	
+	void Invoke()
+	{
+		this->Kill();
+
+		if( m_pBoy )
+		{
+			delete m_pBoy;
+			m_pBoy = NULL;
+		}
+
+		m_pBoy = new daemon_boy_t;
+
+		m_pBoy->m_pstrProcImg = &m_strProcImg;
+		m_pBoy->m_pstrCmdLn = &m_strCmdLn;
+		m_pBoy->m_pRc = &m_Rc;
+		m_pBoy->m_pExitCode = &m_ExitCode;
+		m_pBoy->m_pIsRunning = &m_IsRunning;
+		m_pBoy->m_pProcHandle = &m_ProcHandle;
+		m_pBoy->m_pFather = this;
+
+		m_IsRunning = 1;
+		m_ProcHandle = 0;
+
+		m_pBoy->tr_open();
+
+		while(1)
+		{
+			if( m_IsRunning == 0 ) break;
+			if( m_ProcHandle ) break;
+			WThrd::tr_sleepu( 0.003 );
+		}
+	}
+
+
+	void Kill()
+	{
+		if( m_pBoy && m_IsRunning )
+		{
+			m_pBoy->ByeBye();
+		}
+	}
+
+	
+	tbool IsRunning()
+	{
+		return m_IsRunning ? 1 : 0 ;
+	}
+
+
+	tbool GetRc()
+	{
+		return m_Rc ? 1 : 0 ;
+	}
+
+	
+	int GetExitCode()
+	{
+		return m_ExitCode;
+	}
+
+
+	void Wait()
+	{
+		if( m_pBoy )
+		{
+			m_pBoy->tr_wait();
+		}
+	}
+
+
+	virtual tbool OnBefore()
+	{
+		return 1;
+	}
+
+	
+	virtual void OnAfterExit()
+	{
+		
+		
+		return;
+	}
+
+
+};
 
 
 
@@ -31299,11 +31515,11 @@ public:
 	virtual ~NaL2L() {;}
 
 	
-	void ReserveClear( long iMinStep, long iMaxStep, long iStep = 1 , int iReserve = 64 )
+	void ReserveClear( long iMin, long iMax, long iStep = 1 , int iReserve = 64 )
 	{
 		this->clear();
 
-		for( long i = iMinStep; i <= iMaxStep * iStep ; i += iStep ) 
+		for( long i = iMin; i <= iMax ; i += iStep ) 
 		{
 			this->let( i, 0 );
 
@@ -34615,6 +34831,7 @@ protected:
 public:
     WProcRun( std::string strProcImg, std::string strCmdLineArgs, tbool isSync = 0 , ProcHandle_t * pProcHndl = NULL )
 	{
+		m_ExitCode = -1;
 		m_hp = 0;
 		if( pProcHndl ) *pProcHndl = 0;
 
@@ -34649,7 +34866,7 @@ public:
 
 		    if( isSync )
             {
-                while(waitpid(pid, &status, 0) < 0)
+                while( waitpid(pid, &status, 0) < 0)
                 {
                     if(errno != EINTR)
                     {
@@ -34657,6 +34874,11 @@ public:
                         break;
                     }
                 }
+
+				if( WIFEXITED(status) )
+				{
+					m_ExitCode = WEXITSTATUS(status) ;
+				}
             }
         }
 
@@ -35479,6 +35701,221 @@ public:
 
 
 
+
+
+
+
+
+
+
+
+
+class WProcRun2
+{
+private:
+
+	
+	class daemon_boy_t : public WThrd
+	{
+	private:
+
+	public:
+		std::string  *m_pstrProcImg;
+		std::string  *m_pstrCmdLn;
+		int  *m_pRc; 
+		int  *m_pExitCode; 
+		int  *m_pIsRunning;
+		WProcRun::ProcHandle_t  *m_pProcHandle;
+		WProcRun2  *m_pFather;
+
+	public:
+		daemon_boy_t()
+		{
+		}
+
+		virtual ~daemon_boy_t(){}
+
+	public:
+		virtual int tr_on_user_run()
+		{
+			if( m_pFather->OnBefore() )
+			{
+				*m_pRc = 1;
+
+				WProcRun aa( *m_pstrProcImg , *m_pstrCmdLn, 1 , m_pProcHandle );
+
+				*m_pExitCode = (int)(tuint32)aa.m_ExitCode;
+			}
+			else
+			{
+				*m_pRc = 0;
+				*m_pExitCode = -1;
+			}
+
+			*m_pIsRunning = 0;
+			return 0;
+		}
+
+		
+		virtual void tr_on_post_thrd()
+		{
+			*m_pProcHandle = 0;
+
+			 m_pFather->OnAfterExit();
+		}
+
+		
+		void ByeBye()
+		{
+			if( *m_pProcHandle )
+			{
+				this->tr_shouldbrk();
+				WProcRun::KillProcStatic( *m_pProcHandle );
+				this->tr_wait();
+			}
+		}
+
+	};
+
+
+private:
+	std::string  m_strProcImg;
+	std::string  m_strCmdLn;
+    int  m_Rc;
+    int  m_ExitCode;
+    int  m_IsRunning;
+	WProcRun::ProcHandle_t  m_ProcHandle;
+	daemon_boy_t  *m_pBoy;
+
+
+private:
+	
+	WProcRun2 & operator = (const WProcRun2 & rhs)
+	{
+		return *this;
+	}
+
+	
+	WProcRun2(const WProcRun & rhs)
+	{;}
+
+
+public:
+	
+	WProcRun2()
+	{
+		m_ExitCode = -1;
+		m_IsRunning = 0;
+		m_ProcHandle = 0;
+
+		m_pBoy = NULL;
+	}
+
+
+	virtual ~WProcRun2()
+	{
+		this->Kill();
+
+		if( m_pBoy )
+		{
+			delete m_pBoy;
+			m_pBoy = NULL;
+		}
+	}
+
+	
+	void Init( std::string strProcImg, std::string strCmdLn )
+	{
+		m_strProcImg = strProcImg;
+		m_strCmdLn = strCmdLn;
+	}
+
+	
+	void Invoke()
+	{
+		this->Kill();
+
+		if( m_pBoy )
+		{
+			delete m_pBoy;
+			m_pBoy = NULL;
+		}
+
+		m_pBoy = new daemon_boy_t;
+
+		m_pBoy->m_pstrProcImg = &m_strProcImg;
+		m_pBoy->m_pstrCmdLn = &m_strCmdLn;
+		m_pBoy->m_pRc = &m_Rc;
+		m_pBoy->m_pExitCode = &m_ExitCode;
+		m_pBoy->m_pIsRunning = &m_IsRunning;
+		m_pBoy->m_pProcHandle = &m_ProcHandle;
+		m_pBoy->m_pFather = this;
+
+		m_IsRunning = 1;
+		m_ProcHandle = 0;
+
+		m_pBoy->tr_open();
+
+		while(1)
+		{
+			if( m_IsRunning == 0 ) break;
+			if( m_ProcHandle ) break;
+			WThrd::tr_sleepu( 0.003 );
+		}
+	}
+
+
+	void Kill()
+	{
+		if( m_pBoy && m_IsRunning )
+		{
+			m_pBoy->ByeBye();
+		}
+	}
+
+	
+	tbool IsRunning()
+	{
+		return m_IsRunning ? 1 : 0 ;
+	}
+
+
+	tbool GetRc()
+	{
+		return m_Rc ? 1 : 0 ;
+	}
+
+	
+	int GetExitCode()
+	{
+		return m_ExitCode;
+	}
+
+
+	void Wait()
+	{
+		if( m_pBoy )
+		{
+			m_pBoy->tr_wait();
+		}
+	}
+
+
+	virtual tbool OnBefore()
+	{
+		return 1;
+	}
+
+	
+	virtual void OnAfterExit()
+	{
+		
+		
+		return;
+	}
+
+
+};
 
 
 
