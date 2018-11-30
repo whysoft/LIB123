@@ -15,7 +15,7 @@
 // library, and the C++ .
 
 /*  
-2018c11c29c周四-16c11c21.61  
+2018c11c30c周五-15c57c02.87  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -7604,9 +7604,11 @@ public:
 
 		stream1 << name;
 
-		
-		
-		
+		if( NaStrarr_base< INT_NAME_T >::m_navaknl.get(stream1.str()).empty() )
+		{
+			stream2 << "0";			
+		}
+		else
 		{
 			stream2 << NaStrarr_base< INT_NAME_T >::m_navaknl.get(stream1.str());
 
@@ -31447,9 +31449,11 @@ public:
 
 		stream1 << name;
 
-		
-		
-		
+		if( NaStrarr_base< INT_NAME_T >::m_navaknl.get(stream1.str()).empty() )
+		{
+			stream2 << "0";			
+		}
+		else
 		{
 			stream2 << NaStrarr_base< INT_NAME_T >::m_navaknl.get(stream1.str());
 
