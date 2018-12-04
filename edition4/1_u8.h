@@ -15,7 +15,7 @@
 // library, and the C++ .
 
 /*  
-2018c11c30c周五-15c57c02.87  
+2018c12c04c周二-c9c54c18.95  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -20184,18 +20184,41 @@ public:
 		return 1;
 	}
 
-	static tbool Def( tuint16 port = 9900 ) 
+	static tbool Def( tuint16 iPort = 9900 , tuint16 *pPortOut = NULL , bu_backoffi2_mgr_t<> **pThis = NULL ) 
 	{
-		bu_backoffi2_mgr_t< > *p;
-		if( SStrf::newobjptr(p) && p->m_tLsn.Listen( (tuint16)port ) )
+		tuint16 iPortOut;
+		bu_backoffi2_mgr_t<> *p;
+
+		SStrf::newobjptr(p);
+
+		for( iPortOut = iPort; iPortOut <= 65531; iPortOut++ )
 		{
-			p->tr_openx();
-			return 1;
+			if( p->m_tLsn.Listen((u_short)iPortOut) )
+			{
+				p->tr_openx();
+				if( pPortOut ) *pPortOut = iPortOut;
+
+				if( pThis ) *pThis = p;
+
+				return 1;
+			}
 		}
+
+		delete p;
+		if( pThis ) *pThis = NULL;
 		return 0;
 	}
 };
 
+
+
+	
+	
+	
+	
+	
+	
+	
 
 
 class bu_backoffi2_client_base_t
@@ -23687,7 +23710,7 @@ public:
 		return 1;
 	}
 
-	static tbool NewFlow( tuint16 iPort = 2000, int iPurgeConfSec = 3456 , tuint16 *pPortOut = NULL ) 
+	static tbool NewFlow( tuint16 iPort = 2000, int iPurgeConfSec = 3456 , tuint16 *pPortOut = NULL , AFlowMgr_t< _T > **pThis = NULL  ) 
 	{
 		tuint16 iPortOut;
 		AFlowMgr_t< _T > *p;
@@ -23701,13 +23724,16 @@ public:
 			if( p->m_Lsn.Listen((u_short)iPortOut) )
 			{
 				p->tr_openx();
-
 				if( pPortOut ) *pPortOut = iPortOut;
+
+				if( pThis ) *pThis = p;
 
 				return 1;
 			}
 		}
 
+		delete p;
+		if( pThis ) *pThis = NULL;
 		return 0;
 	}
 };
@@ -41572,18 +41598,41 @@ public:
 		return 1;
 	}
 
-	static tbool Def( tuint16 port = 9900 ) 
+	static tbool Def( tuint16 iPort = 9900 , tuint16 *pPortOut = NULL , bu_backoffi2_mgr_t<> **pThis = NULL ) 
 	{
-		bu_backoffi2_mgr_t< > *p;
-		if( SStrf::newobjptr(p) && p->m_tLsn.Listen( (tuint16)port ) )
+		tuint16 iPortOut;
+		bu_backoffi2_mgr_t<> *p;
+
+		SStrf::newobjptr(p);
+
+		for( iPortOut = iPort; iPortOut <= 65531; iPortOut++ )
 		{
-			p->tr_openx();
-			return 1;
+			if( p->m_tLsn.Listen((u_short)iPortOut) )
+			{
+				p->tr_openx();
+				if( pPortOut ) *pPortOut = iPortOut;
+
+				if( pThis ) *pThis = p;
+
+				return 1;
+			}
 		}
+
+		delete p;
+		if( pThis ) *pThis = NULL;
 		return 0;
 	}
 };
 
+
+
+	
+	
+	
+	
+	
+	
+	
 
 
 class bu_backoffi2_client_base_t
@@ -45075,7 +45124,7 @@ public:
 		return 1;
 	}
 
-	static tbool NewFlow( tuint16 iPort = 2000, int iPurgeConfSec = 3456 , tuint16 *pPortOut = NULL ) 
+	static tbool NewFlow( tuint16 iPort = 2000, int iPurgeConfSec = 3456 , tuint16 *pPortOut = NULL , AFlowMgr_t< _T > **pThis = NULL  ) 
 	{
 		tuint16 iPortOut;
 		AFlowMgr_t< _T > *p;
@@ -45089,13 +45138,16 @@ public:
 			if( p->m_Lsn.Listen((u_short)iPortOut) )
 			{
 				p->tr_openx();
-
 				if( pPortOut ) *pPortOut = iPortOut;
+
+				if( pThis ) *pThis = p;
 
 				return 1;
 			}
 		}
 
+		delete p;
+		if( pThis ) *pThis = NULL;
 		return 0;
 	}
 };
