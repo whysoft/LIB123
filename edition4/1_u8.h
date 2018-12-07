@@ -15,7 +15,7 @@
 // library, and the C++ .
 
 /*  
-2018c12c04c周二-c9c54c18.95  
+2018c12c07c周五-17c30c03.57  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -29133,8 +29133,7 @@ public:
 		flen=ftell(fp);
 		fseek( fp,0,SEEK_SET );
 
-        printf( "flen=%d\n", (int)flen );
-
+        
 		if( flen == 0)
 		{
 			fclose(fp);
