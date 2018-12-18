@@ -15,7 +15,7 @@
 // library, and the C++ .
 
 /*  
-2018c11c30c周五-15c56c09.82  
+2018c12c18c周二-11c20c51.53  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -852,14 +852,17 @@ public:
 	{
 		toffset i;
 		if(s==NULL) return NULL;
-		for(i=0;s[i]!=0;i++){
-			if(s[i]>='a'&&s[i]<='z')s[i] = s[i] -'a' + 'A' ;
+		for( i=0; s[i]!=0; i++ )
+		{
+			if( s[i]>='a' && s[i]<='z' )
+			{
+				s[i] = s[i] - 'a' + 'A' ;
+			}
 		}
 		return s;
 	}
 
-
-	static std::string & sucase( std::string & str )
+	static std::string & sucase_bak_slow( std::string & str )
 	{
 		tchar * szstr;
 		szstr = (tchar *)smalloc( (tsize)str.size() + 1 );
@@ -870,19 +873,37 @@ public:
 		return str;
 	}
 
+	static std::string & sucase( std::string & str )
+	{
+		for( tsize j = 0; j < (tsize)str.size(); j ++ )
+		{
+			char &c(str[j]);
+
+			if( c>='a' && c<='z' )
+			{
+				c = c - 'a' + 'A' ;
+			}
+		}
+		return str;
+	}
+
 
 	static tchar * slcase( tchar *s )
 	{
 		toffset i;
 		if(s==NULL) return NULL;
-		for(i=0;s[i]!=0;i++){
-			if(s[i]>='A'&&s[i]<='Z')s[i] = s[i] -'A' + 'a' ;
+		for(i=0;s[i]!=0;i++)
+		{
+			if( s[i]>='A' && s[i]<='Z' )
+			{
+				s[i] = s[i] - 'A' + 'a' ;
+			}
 		}
 		return s;
 	}
 
-
-	static std::string & slcase( std::string & str )
+	
+	static std::string & slcase_bak_slow( std::string & str )
 	{
 		tchar * szstr;
 		szstr = (tchar *)smalloc( (tsize)str.size() + 1 );
@@ -890,6 +911,21 @@ public:
 		slcase( szstr );
 		str = szstr;
 		sfree( szstr );
+		return str;
+	}
+
+	
+	static std::string & slcase( std::string & str )
+	{
+		for( tsize j = 0; j < (tsize)str.size(); j ++ )
+		{
+			char &c(str[j]);
+
+			if( c>='A' && c<='Z' )
+			{
+				c = c - 'A' + 'a' ;
+			}
+		}
 		return str;
 	}
 
@@ -1231,9 +1267,9 @@ public:
 	static tchar bs_esc() { return 'b'; }
 
 
-	static tbool bs_inset( tchar c ) 
+	static tbool bs_inset( tchar c , tchar(*apf1)()=bs_esc )	 
 	{
-		if(c==bs_esc()) return 0; 
+		if(c==(*apf1)()) return 0; 
 		if(c>='a'&&c<='z') return 1;
 		if(c>='0'&&c<='9') return 1;
 		if(c>='A'&&c<='Z') return 1;
@@ -1241,7 +1277,7 @@ public:
 	}
 
 
-	static tsize bs_ensize( const tchar *s, tsize len )
+	static tsize bs_ensize( const tchar *s, tsize len , tchar(*apf1)()=bs_esc )
 	{
 		tsize i;
 		tchar *t1, *t2, *t3;
@@ -1250,19 +1286,20 @@ public:
 		t1=(tchar*)s;
 		t3=t1+len;
 		for( t2=t1; t2<t3; t2++ )
-			i += bs_inset(*t2)?(1*sizeof(tchar)):(3*sizeof(tchar));
-
+		{
+			i += bs_inset(*t2,apf1) ? (1*sizeof(tchar)) : (3*sizeof(tchar)) ;
+		}
 		return i+(sizeof(tchar)); 
 	}
 
 
-	static tsize bs_ensize( const tchar *s )
+	static tsize bs_ensize( const tchar *s , tchar(*apf1)()=bs_esc )
 	{
-		return bs_ensize( s, slen(s) + 1 );
+		return bs_ensize( s, slen(s) + 1 , apf1 );
 	}
 
 
-	static tchar * bs_en( const tchar *s, tsize len, tchar *destbuf )
+	static tchar * bs_en( const tchar *s, tsize len, tchar *destbuf , tchar(*apf1)()=bs_esc )
 	{
 		tchar *ss1, *ss2, *ss3, *sd1;
 		tbool rc;
@@ -1278,7 +1315,7 @@ public:
 
 			do 
 			{
-				if( !bs_inset(*ss2) ) 
+				if( !bs_inset(*ss2,apf1) ) 
 				{
 					rc = 1;
 					break;
@@ -1289,9 +1326,10 @@ public:
 
 			}while(0);
 
-			if(rc) {    
+			if(rc)
+			{    
 				l = (tuint8)(*ss2);
-				(*SClib::p_sprintf())( sd1, "%c%02X", bs_esc(), l );
+				(*SClib::p_sprintf())( sd1, "%c%02X", (*apf1)(), l );
 				sd1 += (3*sizeof(tchar));
 			}
 		}
@@ -1300,29 +1338,30 @@ public:
 	}
 
 
-	static tchar * bs_en( const tchar *s, tchar *destbuf )
+	static tchar * bs_en( const tchar *s, tchar *destbuf , tchar(*apf1)()=bs_esc )
 	{
-		return bs_en( s, slen(s) + 1, destbuf );
+		return bs_en( s, slen(s) + 1, destbuf , apf1 );
 	}
 
-	static std::string  & bs_en( std::string & strData ) 
-	{
-		std::string s1( 3 + bs_ensize( strData.c_str(), (tsize)strData.length() ) , 'a' );
 
-		bs_en( strData.c_str(), &(s1[0]) );
+	static std::string  & bs_en( std::string & strData , tchar(*apf1)()=bs_esc ) 
+	{
+		std::string s1( 3 + bs_ensize( strData.c_str(), (tsize)strData.length() , apf1 ) , 'a' );
+
+		bs_en( strData.c_str(), &(s1[0]) , apf1 );
 
 		return strData = s1.c_str();
 	}
 
-	
+
 	static std::string  & bs_de( std::string & strData , tchar(*apf1)()=bs_esc )
 	{
 		std::string s1( strData );
 
-		s1 += (*apf1)( ); 
+		s1 += (*apf1)(); 
 		s1 += "00123";
 
-		strData += (*apf1)( ); 
+		strData += (*apf1)(); 
 		strData += "00123";
 
 		bs_de( strData.c_str(), &(s1[0]) , apf1 );
@@ -1338,8 +1377,9 @@ public:
 		if(s==NULL) return 0;
 
 		for( i=0,j=(toffset)slen(s),k=0;i<j; )
+		{
 			if(	(i+2<j)				&&
-				s[i]==(*apf1)( )	&&
+				s[i]==(*apf1)()		&&
 				sishex(s[i+1])		&&
 				sishex(s[i+2])  )
 			{
@@ -1351,6 +1391,7 @@ public:
 				i++;
 				k++;
 			}
+		}
 		return k;
 	}
 
@@ -1363,9 +1404,10 @@ public:
 		tchar ss[2];
 		ss[1]=0;
 
-		for(i=0,j=(toffset)slen(s),k=0;i<j; ) {
+		for( i=0, j=(toffset)slen(s), k=0; i<j;  )
+		{
 			if(	(i+2<j)			&&
-				s[i]==(*apf1)( )&&
+				s[i]==(*apf1)() &&
 				sishex(s[i+1])	&&
 				sishex(s[i+2])	 )
 			{
@@ -20184,18 +20226,41 @@ public:
 		return 1;
 	}
 
-	static tbool Def( tuint16 port = 9900 ) 
+	static tbool Def( tuint16 iPort = 9900 , tuint16 *pPortOut = NULL , bu_backoffi2_mgr_t<> **pThis = NULL ) 
 	{
-		bu_backoffi2_mgr_t< > *p;
-		if( SStrf::newobjptr(p) && p->m_tLsn.Listen( (tuint16)port ) )
+		tuint16 iPortOut;
+		bu_backoffi2_mgr_t<> *p;
+
+		SStrf::newobjptr(p);
+
+		for( iPortOut = iPort; iPortOut <= 65531; iPortOut++ )
 		{
-			p->tr_openx();
-			return 1;
+			if( p->m_tLsn.Listen((u_short)iPortOut) )
+			{
+				p->tr_openx();
+				if( pPortOut ) *pPortOut = iPortOut;
+
+				if( pThis ) *pThis = p;
+
+				return 1;
+			}
 		}
+
+		delete p;
+		if( pThis ) *pThis = NULL;
 		return 0;
 	}
 };
 
+
+
+	
+	
+	
+	
+	
+	
+	
 
 
 class bu_backoffi2_client_base_t
@@ -30999,7 +31064,7 @@ public:
 		return 1;
 	}
 
-	static tbool NewFlow( tuint16 iPort = 2000, int iPurgeConfSec = 3456 , tuint16 *pPortOut = NULL ) 
+	static tbool NewFlow( tuint16 iPort = 2000, int iPurgeConfSec = 3456 , tuint16 *pPortOut = NULL , AFlowMgr_t< _T > **pThis = NULL  ) 
 	{
 		tuint16 iPortOut;
 		AFlowMgr_t< _T > *p;
@@ -31013,13 +31078,16 @@ public:
 			if( p->m_Lsn.Listen((u_short)iPortOut) )
 			{
 				p->tr_openx();
-
 				if( pPortOut ) *pPortOut = iPortOut;
+
+				if( pThis ) *pThis = p;
 
 				return 1;
 			}
 		}
 
+		delete p;
+		if( pThis ) *pThis = NULL;
 		return 0;
 	}
 };
@@ -32011,14 +32079,17 @@ public:
 	{
 		toffset i;
 		if(s==NULL) return NULL;
-		for(i=0;s[i]!=0;i++){
-			if(s[i]>='a'&&s[i]<='z')s[i] = s[i] -'a' + 'A' ;
+		for( i=0; s[i]!=0; i++ )
+		{
+			if( s[i]>='a' && s[i]<='z' )
+			{
+				s[i] = s[i] - 'a' + 'A' ;
+			}
 		}
 		return s;
 	}
 
-
-	static std::string & sucase( std::string & str )
+	static std::string & sucase_bak_slow( std::string & str )
 	{
 		tchar * szstr;
 		szstr = (tchar *)smalloc( (tsize)str.size() + 1 );
@@ -32029,19 +32100,37 @@ public:
 		return str;
 	}
 
+	static std::string & sucase( std::string & str )
+	{
+		for( tsize j = 0; j < (tsize)str.size(); j ++ )
+		{
+			char &c(str[j]);
+
+			if( c>='a' && c<='z' )
+			{
+				c = c - 'a' + 'A' ;
+			}
+		}
+		return str;
+	}
+
 
 	static tchar * slcase( tchar *s )
 	{
 		toffset i;
 		if(s==NULL) return NULL;
-		for(i=0;s[i]!=0;i++){
-			if(s[i]>='A'&&s[i]<='Z')s[i] = s[i] -'A' + 'a' ;
+		for(i=0;s[i]!=0;i++)
+		{
+			if( s[i]>='A' && s[i]<='Z' )
+			{
+				s[i] = s[i] - 'A' + 'a' ;
+			}
 		}
 		return s;
 	}
 
-
-	static std::string & slcase( std::string & str )
+	
+	static std::string & slcase_bak_slow( std::string & str )
 	{
 		tchar * szstr;
 		szstr = (tchar *)smalloc( (tsize)str.size() + 1 );
@@ -32049,6 +32138,21 @@ public:
 		slcase( szstr );
 		str = szstr;
 		sfree( szstr );
+		return str;
+	}
+
+	
+	static std::string & slcase( std::string & str )
+	{
+		for( tsize j = 0; j < (tsize)str.size(); j ++ )
+		{
+			char &c(str[j]);
+
+			if( c>='A' && c<='Z' )
+			{
+				c = c - 'A' + 'a' ;
+			}
+		}
 		return str;
 	}
 
@@ -32390,9 +32494,9 @@ public:
 	static tchar bs_esc() { return 'b'; }
 
 
-	static tbool bs_inset( tchar c ) 
+	static tbool bs_inset( tchar c , tchar(*apf1)()=bs_esc )	 
 	{
-		if(c==bs_esc()) return 0; 
+		if(c==(*apf1)()) return 0; 
 		if(c>='a'&&c<='z') return 1;
 		if(c>='0'&&c<='9') return 1;
 		if(c>='A'&&c<='Z') return 1;
@@ -32400,7 +32504,7 @@ public:
 	}
 
 
-	static tsize bs_ensize( const tchar *s, tsize len )
+	static tsize bs_ensize( const tchar *s, tsize len , tchar(*apf1)()=bs_esc )
 	{
 		tsize i;
 		tchar *t1, *t2, *t3;
@@ -32409,19 +32513,20 @@ public:
 		t1=(tchar*)s;
 		t3=t1+len;
 		for( t2=t1; t2<t3; t2++ )
-			i += bs_inset(*t2)?(1*sizeof(tchar)):(3*sizeof(tchar));
-
+		{
+			i += bs_inset(*t2,apf1) ? (1*sizeof(tchar)) : (3*sizeof(tchar)) ;
+		}
 		return i+(sizeof(tchar)); 
 	}
 
 
-	static tsize bs_ensize( const tchar *s )
+	static tsize bs_ensize( const tchar *s , tchar(*apf1)()=bs_esc )
 	{
-		return bs_ensize( s, slen(s) + 1 );
+		return bs_ensize( s, slen(s) + 1 , apf1 );
 	}
 
 
-	static tchar * bs_en( const tchar *s, tsize len, tchar *destbuf )
+	static tchar * bs_en( const tchar *s, tsize len, tchar *destbuf , tchar(*apf1)()=bs_esc )
 	{
 		tchar *ss1, *ss2, *ss3, *sd1;
 		tbool rc;
@@ -32437,7 +32542,7 @@ public:
 
 			do 
 			{
-				if( !bs_inset(*ss2) ) 
+				if( !bs_inset(*ss2,apf1) ) 
 				{
 					rc = 1;
 					break;
@@ -32448,9 +32553,10 @@ public:
 
 			}while(0);
 
-			if(rc) {    
+			if(rc)
+			{    
 				l = (tuint8)(*ss2);
-				(*SClib::p_sprintf())( sd1, "%c%02X", bs_esc(), l );
+				(*SClib::p_sprintf())( sd1, "%c%02X", (*apf1)(), l );
 				sd1 += (3*sizeof(tchar));
 			}
 		}
@@ -32459,29 +32565,30 @@ public:
 	}
 
 
-	static tchar * bs_en( const tchar *s, tchar *destbuf )
+	static tchar * bs_en( const tchar *s, tchar *destbuf , tchar(*apf1)()=bs_esc )
 	{
-		return bs_en( s, slen(s) + 1, destbuf );
+		return bs_en( s, slen(s) + 1, destbuf , apf1 );
 	}
 
-	static std::string  & bs_en( std::string & strData ) 
-	{
-		std::string s1( 3 + bs_ensize( strData.c_str(), (tsize)strData.length() ) , 'a' );
 
-		bs_en( strData.c_str(), &(s1[0]) );
+	static std::string  & bs_en( std::string & strData , tchar(*apf1)()=bs_esc ) 
+	{
+		std::string s1( 3 + bs_ensize( strData.c_str(), (tsize)strData.length() , apf1 ) , 'a' );
+
+		bs_en( strData.c_str(), &(s1[0]) , apf1 );
 
 		return strData = s1.c_str();
 	}
 
-	
+
 	static std::string  & bs_de( std::string & strData , tchar(*apf1)()=bs_esc )
 	{
 		std::string s1( strData );
 
-		s1 += (*apf1)( ); 
+		s1 += (*apf1)(); 
 		s1 += "00123";
 
-		strData += (*apf1)( ); 
+		strData += (*apf1)(); 
 		strData += "00123";
 
 		bs_de( strData.c_str(), &(s1[0]) , apf1 );
@@ -32497,8 +32604,9 @@ public:
 		if(s==NULL) return 0;
 
 		for( i=0,j=(toffset)slen(s),k=0;i<j; )
+		{
 			if(	(i+2<j)				&&
-				s[i]==(*apf1)( )	&&
+				s[i]==(*apf1)()		&&
 				sishex(s[i+1])		&&
 				sishex(s[i+2])  )
 			{
@@ -32510,6 +32618,7 @@ public:
 				i++;
 				k++;
 			}
+		}
 		return k;
 	}
 
@@ -32522,9 +32631,10 @@ public:
 		tchar ss[2];
 		ss[1]=0;
 
-		for(i=0,j=(toffset)slen(s),k=0;i<j; ) {
+		for( i=0, j=(toffset)slen(s), k=0; i<j;  )
+		{
 			if(	(i+2<j)			&&
-				s[i]==(*apf1)( )&&
+				s[i]==(*apf1)() &&
 				sishex(s[i+1])	&&
 				sishex(s[i+2])	 )
 			{
@@ -36419,8 +36529,7 @@ public:
 		flen=ftell(fp);
 		fseek( fp,0,SEEK_SET );
 
-        printf( "flen=%d\n", (int)flen );
-
+        
 		if( flen == 0)
 		{
 			fclose(fp);
@@ -48884,18 +48993,41 @@ public:
 		return 1;
 	}
 
-	static tbool Def( tuint16 port = 9900 ) 
+	static tbool Def( tuint16 iPort = 9900 , tuint16 *pPortOut = NULL , bu_backoffi2_mgr_t<> **pThis = NULL ) 
 	{
-		bu_backoffi2_mgr_t< > *p;
-		if( SStrf::newobjptr(p) && p->m_tLsn.Listen( (tuint16)port ) )
+		tuint16 iPortOut;
+		bu_backoffi2_mgr_t<> *p;
+
+		SStrf::newobjptr(p);
+
+		for( iPortOut = iPort; iPortOut <= 65531; iPortOut++ )
 		{
-			p->tr_openx();
-			return 1;
+			if( p->m_tLsn.Listen((u_short)iPortOut) )
+			{
+				p->tr_openx();
+				if( pPortOut ) *pPortOut = iPortOut;
+
+				if( pThis ) *pThis = p;
+
+				return 1;
+			}
 		}
+
+		delete p;
+		if( pThis ) *pThis = NULL;
 		return 0;
 	}
 };
 
+
+
+	
+	
+	
+	
+	
+	
+	
 
 
 class bu_backoffi2_client_base_t
@@ -59699,7 +59831,7 @@ public:
 		return 1;
 	}
 
-	static tbool NewFlow( tuint16 iPort = 2000, int iPurgeConfSec = 3456 , tuint16 *pPortOut = NULL ) 
+	static tbool NewFlow( tuint16 iPort = 2000, int iPurgeConfSec = 3456 , tuint16 *pPortOut = NULL , AFlowMgr_t< _T > **pThis = NULL  ) 
 	{
 		tuint16 iPortOut;
 		AFlowMgr_t< _T > *p;
@@ -59713,13 +59845,16 @@ public:
 			if( p->m_Lsn.Listen((u_short)iPortOut) )
 			{
 				p->tr_openx();
-
 				if( pPortOut ) *pPortOut = iPortOut;
+
+				if( pThis ) *pThis = p;
 
 				return 1;
 			}
 		}
 
+		delete p;
+		if( pThis ) *pThis = NULL;
 		return 0;
 	}
 };

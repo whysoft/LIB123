@@ -15,7 +15,7 @@
 // library, and the C++ .
 
 /*  
-2017c08c18c周五-c8c10c06.74  
+2018c12c18c周二-11c20c21.28  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -287,8 +287,15 @@ public:
 
 	
 	
+
 	
 	
+
+	
+	
+	
+	
+
 	static tbool readbit_s( void * pbin, int iBytesLen, int sufx )
 	{
 		if( sufx < 0 || iBytesLen <= 0 || (sufx / 8) >= iBytesLen )
@@ -845,14 +852,17 @@ public:
 	{
 		toffset i;
 		if(s==NULL) return NULL;
-		for(i=0;s[i]!=0;i++){
-			if(s[i]>='a'&&s[i]<='z')s[i] = s[i] -'a' + 'A' ;
+		for( i=0; s[i]!=0; i++ )
+		{
+			if( s[i]>='a' && s[i]<='z' )
+			{
+				s[i] = s[i] - 'a' + 'A' ;
+			}
 		}
 		return s;
 	}
 
-
-	static std::string & sucase( std::string & str )
+	static std::string & sucase_bak_slow( std::string & str )
 	{
 		tchar * szstr;
 		szstr = (tchar *)smalloc( (tsize)str.size() + 1 );
@@ -863,19 +873,37 @@ public:
 		return str;
 	}
 
+	static std::string & sucase( std::string & str )
+	{
+		for( tsize j = 0; j < (tsize)str.size(); j ++ )
+		{
+			char &c(str[j]);
+
+			if( c>='a' && c<='z' )
+			{
+				c = c - 'a' + 'A' ;
+			}
+		}
+		return str;
+	}
+
 
 	static tchar * slcase( tchar *s )
 	{
 		toffset i;
 		if(s==NULL) return NULL;
-		for(i=0;s[i]!=0;i++){
-			if(s[i]>='A'&&s[i]<='Z')s[i] = s[i] -'A' + 'a' ;
+		for(i=0;s[i]!=0;i++)
+		{
+			if( s[i]>='A' && s[i]<='Z' )
+			{
+				s[i] = s[i] - 'A' + 'a' ;
+			}
 		}
 		return s;
 	}
 
-
-	static std::string & slcase( std::string & str )
+	
+	static std::string & slcase_bak_slow( std::string & str )
 	{
 		tchar * szstr;
 		szstr = (tchar *)smalloc( (tsize)str.size() + 1 );
@@ -883,6 +911,21 @@ public:
 		slcase( szstr );
 		str = szstr;
 		sfree( szstr );
+		return str;
+	}
+
+	
+	static std::string & slcase( std::string & str )
+	{
+		for( tsize j = 0; j < (tsize)str.size(); j ++ )
+		{
+			char &c(str[j]);
+
+			if( c>='A' && c<='Z' )
+			{
+				c = c - 'A' + 'a' ;
+			}
+		}
 		return str;
 	}
 
@@ -1025,11 +1068,14 @@ public:
 	
 	static std::string Chg2XmlCode( std::string s )
 	{
-		sreplstr( s, "&",  "&amp;"  );
-		sreplstr( s, "<",  "&lt;"   );
-		sreplstr( s, ">",  "&gt;"   );
-		sreplstr( s, " ",  "&nbsp;"  );
-		sreplstr( s, "\"", "&quot;"  );
+		sreplstr( s, "&",  "&amp;" );
+		sreplstr( s, "<",  "&lt;" );
+		sreplstr( s, ">",  "&gt;" );
+		sreplstr( s, " ",  "&nbsp;" );
+		sreplstr( s, "\"", "&quot;" );
+		sreplstr( s, "\r", ""  );
+		sreplstr( s, "\n", "<br>\r\n" );
+
 		return s;
 	}
 
@@ -1221,9 +1267,9 @@ public:
 	static tchar bs_esc() { return 'b'; }
 
 
-	static tbool bs_inset( tchar c ) 
+	static tbool bs_inset( tchar c , tchar(*apf1)()=bs_esc )	 
 	{
-		if(c==bs_esc()) return 0; 
+		if(c==(*apf1)()) return 0; 
 		if(c>='a'&&c<='z') return 1;
 		if(c>='0'&&c<='9') return 1;
 		if(c>='A'&&c<='Z') return 1;
@@ -1231,7 +1277,7 @@ public:
 	}
 
 
-	static tsize bs_ensize( const tchar *s, tsize len )
+	static tsize bs_ensize( const tchar *s, tsize len , tchar(*apf1)()=bs_esc )
 	{
 		tsize i;
 		tchar *t1, *t2, *t3;
@@ -1240,19 +1286,20 @@ public:
 		t1=(tchar*)s;
 		t3=t1+len;
 		for( t2=t1; t2<t3; t2++ )
-			i += bs_inset(*t2)?(1*sizeof(tchar)):(3*sizeof(tchar));
-
+		{
+			i += bs_inset(*t2,apf1) ? (1*sizeof(tchar)) : (3*sizeof(tchar)) ;
+		}
 		return i+(sizeof(tchar)); 
 	}
 
 
-	static tsize bs_ensize( const tchar *s )
+	static tsize bs_ensize( const tchar *s , tchar(*apf1)()=bs_esc )
 	{
-		return bs_ensize( s, slen(s) + 1 );
+		return bs_ensize( s, slen(s) + 1 , apf1 );
 	}
 
 
-	static tchar * bs_en( const tchar *s, tsize len, tchar *destbuf )
+	static tchar * bs_en( const tchar *s, tsize len, tchar *destbuf , tchar(*apf1)()=bs_esc )
 	{
 		tchar *ss1, *ss2, *ss3, *sd1;
 		tbool rc;
@@ -1268,7 +1315,7 @@ public:
 
 			do 
 			{
-				if( !bs_inset(*ss2) ) 
+				if( !bs_inset(*ss2,apf1) ) 
 				{
 					rc = 1;
 					break;
@@ -1279,9 +1326,10 @@ public:
 
 			}while(0);
 
-			if(rc) {    
+			if(rc)
+			{    
 				l = (tuint8)(*ss2);
-				(*SClib::p_sprintf())( sd1, "%c%02X", bs_esc(), l );
+				(*SClib::p_sprintf())( sd1, "%c%02X", (*apf1)(), l );
 				sd1 += (3*sizeof(tchar));
 			}
 		}
@@ -1290,29 +1338,30 @@ public:
 	}
 
 
-	static tchar * bs_en( const tchar *s, tchar *destbuf )
+	static tchar * bs_en( const tchar *s, tchar *destbuf , tchar(*apf1)()=bs_esc )
 	{
-		return bs_en( s, slen(s) + 1, destbuf );
+		return bs_en( s, slen(s) + 1, destbuf , apf1 );
 	}
 
-	static std::string  & bs_en( std::string & strData ) 
-	{
-		std::string s1( 3 + bs_ensize( strData.c_str(), (tsize)strData.length() ) , 'a' );
 
-		bs_en( strData.c_str(), &(s1[0]) );
+	static std::string  & bs_en( std::string & strData , tchar(*apf1)()=bs_esc ) 
+	{
+		std::string s1( 3 + bs_ensize( strData.c_str(), (tsize)strData.length() , apf1 ) , 'a' );
+
+		bs_en( strData.c_str(), &(s1[0]) , apf1 );
 
 		return strData = s1.c_str();
 	}
 
-	
+
 	static std::string  & bs_de( std::string & strData , tchar(*apf1)()=bs_esc )
 	{
 		std::string s1( strData );
 
-		s1 += (*apf1)( ); 
+		s1 += (*apf1)(); 
 		s1 += "00123";
 
-		strData += (*apf1)( ); 
+		strData += (*apf1)(); 
 		strData += "00123";
 
 		bs_de( strData.c_str(), &(s1[0]) , apf1 );
@@ -1328,8 +1377,9 @@ public:
 		if(s==NULL) return 0;
 
 		for( i=0,j=(toffset)slen(s),k=0;i<j; )
+		{
 			if(	(i+2<j)				&&
-				s[i]==(*apf1)( )	&&
+				s[i]==(*apf1)()		&&
 				sishex(s[i+1])		&&
 				sishex(s[i+2])  )
 			{
@@ -1341,6 +1391,7 @@ public:
 				i++;
 				k++;
 			}
+		}
 		return k;
 	}
 
@@ -1353,9 +1404,10 @@ public:
 		tchar ss[2];
 		ss[1]=0;
 
-		for(i=0,j=(toffset)slen(s),k=0;i<j; ) {
+		for( i=0, j=(toffset)slen(s), k=0; i<j;  )
+		{
 			if(	(i+2<j)			&&
-				s[i]==(*apf1)( )&&
+				s[i]==(*apf1)() &&
 				sishex(s[i+1])	&&
 				sishex(s[i+2])	 )
 			{
@@ -2461,10 +2513,40 @@ public:
 
 
 	template < class CntnrT, class ELET >
+	static tsize vs_setgroup( const CntnrT & vsource, std::vector<ELET> & rtncontent, std::vector<int> * prtnsubsum )
+	{
+		CntnrT v2, v3; 
+		typedef typename CntnrT::iterator iteratortypeB;
+		iteratortypeB  it1,  itNewEnd2;
+		int i;
+
+		v2 = vsource;
+		std::sort( v2.begin(), v2.end() );
+		v3 = v2;
+
+		itNewEnd2 = std::unique( v2.begin(), v2.end() );
+
+		for( it1=v2.begin(); it1!=itNewEnd2; it1++)
+		{
+			rtncontent.push_back( *it1 );
+			if( prtnsubsum )
+			{
+				i = (int)std::count( v3.begin(), v3.end(), *it1 );
+				prtnsubsum->push_back(i);
+			}
+		}
+		return (tsize)v2.size();
+	}
+
+
+	
+	
+	
+	
+	template < class CntnrT, class ELET >
 	static tsize vs_setgroup( const CntnrT & vsource, std::vector<ELET> & rtncontent )
 	{
-		std::vector<int> v;
-		return vs_setgroup( vsource, rtncontent, v );
+		return vs_setgroup( vsource, rtncontent, NULL );
 	}
 
 
@@ -2708,6 +2790,9 @@ public:
 		if( (void*)psource==(void*)m_pbuf ) return;
 
 		redim(isize);
+
+		
+
 		copybuf( psource, m_pbuf, isize );
 	}
 
@@ -3150,15 +3235,89 @@ public:
 	}
 
 	
-	long UnSeri3( const std::string & s1 ) 
+	long UnSeri3__bak_slow( const std::string & s1 ) 
 	{
 		std::string s2;
 		for( std::string::size_type i = 0; i < s1.size(); i++ )
 		{
-			if( wl::SStrf::sishex( s1[i] ) ) s2 += *( s1.c_str() + i );
+			if( SStrf::sishex( s1[i] ) ) s2 += *( s1.c_str() + i );
 		}
 		return UnSeri( s2 );
 	}
+
+
+	
+	tsize UnSeri3( const std::string & s1 )
+	{
+		std::vector< tuint8 > v1;
+		char sz[3];
+
+		sz[2] = 0;
+
+		for( std::string::size_type i = 0; i < s1.size();   )
+		{
+			tbool data_valid = 0;
+
+			
+			sz[0] = 0;
+			while(1)
+			{
+				if( i >= s1.size() )
+				{
+					break;
+				}
+
+				if( SStrf::sishex( s1[i] ) )
+				{
+					sz[0] = s1[i];
+					data_valid = 1;
+					i++;
+					break;
+				}
+
+				i++;
+			}
+
+			
+			sz[1] = 0;
+			while(1)
+			{
+				if( i >= s1.size() )
+				{
+					break;
+				}
+
+				if( SStrf::sishex( s1[i] ) )
+				{
+					sz[1] = s1[i];
+					data_valid = 1;
+					i++;
+					break;
+				}
+
+				i++;
+			}
+
+			if( data_valid )
+			{
+				int ii;
+				(SClib::p_sscanf())( sz, "%x", &ii );
+				v1.push_back( (tuint8)ii );
+			}
+		}
+
+		if( v1.size() == 0 )
+		{
+			this->redim(0);
+			return 0;
+		}
+
+		this->redim( (tsize)v1.size() );
+		memcpy( this->buf(), &(v1[0]), v1.size() );
+
+		return this->len();
+	}
+
 
 	
 	long UnSeri10D( const std::string &strData, void * pData ) const
@@ -3943,8 +4102,6 @@ class SDte : public SDte_bare
 
 public:
 
-private:
-
 	static tbool d_is_leap_year(int y)
 	{
 		
@@ -3956,6 +4113,8 @@ private:
 				( ( y % 4 == 0 ) && ( y % 100 != 0 ) );
 	}
 
+
+private:
 
 	static int d_day_of_year(int y)
 	{
@@ -4781,6 +4940,12 @@ public:
 	static std::string GetPathSep()
 	{
 		return "\\";
+	}
+
+
+	static std::string GetPathSepOpposite()
+	{
+		return "/";
 	}
 
 
@@ -6917,7 +7082,7 @@ public:
 		return y;
 	}
 
-	
+
 	void Line( int x1, int y1, int x2, int y2 )
 	{
 		 int dx = x2 - x1;
@@ -7473,19 +7638,27 @@ public:
 	}
 
 	
-	INT_VAL_T get( INT_NAME_T name )
+	INT_VAL_T get( INT_NAME_T name , std::string **pstrMem = NULL ) 
 	{
 		std::stringstream stream1;
 		std::stringstream stream2;
 		INT_VAL_T n;
+
 		stream1 << name;
+
 		if( NaStrarr_base< INT_NAME_T >::m_navaknl.get(stream1.str()).empty() )
 		{
-			stream2 << "0";
+			stream2 << "0";			
 		}
 		else
+		{
 			stream2 << NaStrarr_base< INT_NAME_T >::m_navaknl.get(stream1.str());
+
+			if( pstrMem ) *pstrMem = &(NaStrarr_base< INT_NAME_T >::m_navaknl.get(stream1.str()));
+		}
+
 		stream2 >> n;
+
 		return n;
 	}
 
@@ -7509,6 +7682,12 @@ public:
 		j += val;
 		let( name, j );
 		return j;
+	}
+
+	long addvalue( long name, NaLngarr & val , int ratio = 1 )
+	{
+		long j = val.get( name );
+		return this->addvalue( name, j * ratio );
 	}
 };
 
@@ -7535,6 +7714,24 @@ class NaL2L : public NaLngarr
 {
 public:
 	virtual ~NaL2L() {;}
+
+	
+	void ReserveClear( long iMin, long iMax, long iStep = 1 , int iReserve = 64 )
+	{
+		this->clear();
+
+		for( long i = iMin; i <= iMax ; i += iStep ) 
+		{
+			this->let( i, 0 );
+
+			std::string *pstrMem;
+
+			this->get( i, &pstrMem );
+
+			pstrMem->reserve(iReserve);
+		}
+	}
+
 };
 
 
@@ -7914,7 +8111,8 @@ X011_NAMESPACE_BEGIN
 class IRice
 {
 public:
-	tbool m_biRecv0Flag;
+    tuint32 m_iRecvLenSum;
+	tbool   m_biRecv0Flag;
 
 protected:
 	SCake m_ckDataL2CacheBuf;
@@ -7928,12 +8126,16 @@ protected:
 		int i = on_sys_recv(ckDataBuf); 
 		if(i)
 		{
+            m_iRecvLenSum += i;
+
 			return i;
 		}
 		else
 		{
 			ckDataBuf.redim(0);
+
 			m_biRecv0Flag = 1;
+
 			return 0;
 		}
 	}
@@ -7951,6 +8153,7 @@ public:
 
 	IRice( )
 	{
+        m_iRecvLenSum = 0;
 		m_biRecv0Flag = 0;
 	}
 
@@ -8294,6 +8497,66 @@ public:
 		m_ckDataL2CacheBuf.redim(0);
 		return ckData.len()==0?0:1;
 	}
+
+
+
+	
+	tbool recv_frame( SCake & ckData , char cSeperate )
+	{
+		char strSeperate[3];
+		SCake ckTmp;
+		tchar *pSep;
+
+		strSeperate[0] = cSeperate;
+		strSeperate[1] = 0;
+
+		SCake ckSepDumpTmp(strSeperate);
+
+
+		ckSepDumpTmp.redim(1);
+		*(ckSepDumpTmp.buf()) = cSeperate;
+
+		do
+		{
+			SCake ckTmpL2Cache2;
+			ckTmpL2Cache2 = m_ckDataL2CacheBuf;
+			ckTmpL2Cache2.mk_sz();
+
+			
+			pSep = NULL;
+			for( tsize ii = 0; ii < m_ckDataL2CacheBuf.len(); ii ++ )
+			{
+				tchar *p = m_ckDataL2CacheBuf.buf() + ii;
+				if( *p == cSeperate )
+				{
+					pSep = p;
+					break;
+				}
+			}
+
+			if( pSep )
+			{
+				ckData.redim( (tsize)(pSep - m_ckDataL2CacheBuf.buf() ) );
+				
+
+				m_ckDataL2CacheBuf.dump( ckData );
+				m_ckDataL2CacheBuf.dump( ckSepDumpTmp ); 
+				return 1;
+			}
+
+			if( !sys_recv( ckTmp ) ) break;
+
+			m_ckDataL2CacheBuf.append(ckTmp);
+
+			if( !on_chk_L2CacheLen( m_ckDataL2CacheBuf ) ) break; 
+
+		}while(ckTmp.len()>0);
+
+		ckData = m_ckDataL2CacheBuf;	
+		m_ckDataL2CacheBuf.redim(0);
+		return ckData.len()==0?0:1;
+	}
+
 
 
 public:
@@ -11866,7 +12129,7 @@ public:
 
 
 	
-	static void PackFolder( std::string strWorkPathOrDir, SCake & ckOut )
+	static void PackFolder( std::string strWorkPathOrDir, SCake & ckOut , std::string strFnPattern = "*.*" )
 	{
 		
 		std::string strWorkPath;
@@ -11903,7 +12166,8 @@ public:
 
 
 
-		ListAllFile( strWorkPath, "*.*", vFileFullPathNameLst, 0, 1, 1, 1 );
+		
+		ListAllFile( strWorkPath, strFnPattern, vFileFullPathNameLst, 0, 1, 1, 1 );
 
 		for( it = vFileFullPathNameLst.begin(); it != vFileFullPathNameLst.end(); ++it )
 		{
@@ -11999,7 +12263,8 @@ public:
 
 
 	static tbool UnPackFolder(      std::string strWorkPathOrDir,
-									const SCake & ckIn , tbool biCheckSeal = 1 ,
+									const SCake & ckIn ,
+									tbool biCheckSeal = 1 ,
 									tbool biWriteDiskReal = 1 ,
 									const char * pWhitePfn = NULL	,
 									std::vector<std::string> *pvWhiteLst = NULL ,
@@ -12057,12 +12322,14 @@ public:
 			s1 = MkDir2Path( strWorkPathOrDir ) + *it ;
 			vDirFullNameLst.push_back( s1 );
 
-			CString cs1;
-			cs1 = s1.c_str();
+			
+			
+			
+			
+			
 			if( biWriteDiskReal )
 			{
-				::CreateDirectory( cs1, NULL );
-				
+				makedir( s1 );
 			}
 		}
 
@@ -13387,6 +13654,95 @@ public:
 
 
 
+
+
+
+class WProcRun
+{
+public:
+	typedef		HANDLE		ProcHandle_t;
+
+public:
+    DWORD  m_ExitCode;
+
+private:
+    HANDLE m_hp;
+    tbool  m_isSync;
+
+private:
+	WProcRun & operator = (const WProcRun & rhs)
+	{
+		return *this;
+	}
+
+	WProcRun(const WProcRun & rhs)
+	{;}
+
+
+protected:
+
+
+public:
+    WProcRun( std::string strProcImg, std::string strCmdLineArgs, tbool isSync = 0 , ProcHandle_t * pProcHndl = NULL )
+	{
+		m_ExitCode = -1;
+		m_hp = NULL;
+		if( pProcHndl ) *pProcHndl = 0;
+
+        m_isSync = isSync;
+
+		SHELLEXECUTEINFOA ShExecInfo = {0};
+
+		ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFOA);
+		ShExecInfo.fMask  = SEE_MASK_NOCLOSEPROCESS;
+		ShExecInfo.hwnd   = NULL;
+		ShExecInfo.lpVerb = NULL;
+		ShExecInfo.lpFile = strProcImg.c_str(); 
+		ShExecInfo.lpParameters  = strCmdLineArgs.c_str(); 
+		ShExecInfo.lpDirectory   = NULL;
+		ShExecInfo.nShow    = SW_MINIMIZE; 
+		ShExecInfo.hInstApp = NULL;
+		ShellExecuteExA(&ShExecInfo);
+
+        m_hp = ShExecInfo.hProcess;
+		if( pProcHndl ) *pProcHndl = m_hp;
+
+		if( isSync )
+        {
+            WaitForSingleObject( ShExecInfo.hProcess, INFINITE );
+
+			GetExitCodeProcess( ShExecInfo.hProcess, &m_ExitCode );
+			
+        }
+	}
+
+
+	virtual ~WProcRun()
+	{
+        if( !m_isSync ) KillProc();
+	}
+
+
+    void KillProc()
+    {
+        if( m_hp ) KillProcStatic( m_hp );
+    }
+
+
+	static void KillProcStatic( HANDLE h )
+	{
+        if( h ) TerminateProcess( h , 0 );
+	}
+
+};
+
+
+
+
+
+
+
+
 X011_NAMESPACE_END
 
 #endif
@@ -14119,6 +14475,221 @@ public:
 
 
 
+
+
+
+
+
+
+
+
+
+class WProcRun2
+{
+private:
+
+	
+	class daemon_boy_t : public WThrd
+	{
+	private:
+
+	public:
+		std::string  *m_pstrProcImg;
+		std::string  *m_pstrCmdLn;
+		int  *m_pRc; 
+		int  *m_pExitCode; 
+		int  *m_pIsRunning;
+		WProcRun::ProcHandle_t  *m_pProcHandle;
+		WProcRun2  *m_pFather;
+
+	public:
+		daemon_boy_t()
+		{
+		}
+
+		virtual ~daemon_boy_t(){}
+
+	public:
+		virtual int tr_on_user_run()
+		{
+			if( m_pFather->OnBefore() )
+			{
+				*m_pRc = 1;
+
+				WProcRun aa( *m_pstrProcImg , *m_pstrCmdLn, 1 , m_pProcHandle );
+
+				*m_pExitCode = (int)(tuint32)aa.m_ExitCode;
+			}
+			else
+			{
+				*m_pRc = 0;
+				*m_pExitCode = -1;
+			}
+
+			*m_pIsRunning = 0;
+			return 0;
+		}
+
+		
+		virtual void tr_on_post_thrd()
+		{
+			*m_pProcHandle = 0;
+
+			 m_pFather->OnAfterExit();
+		}
+
+		
+		void ByeBye()
+		{
+			if( *m_pProcHandle )
+			{
+				this->tr_shouldbrk();
+				WProcRun::KillProcStatic( *m_pProcHandle );
+				this->tr_wait();
+			}
+		}
+
+	};
+
+
+private:
+	std::string  m_strProcImg;
+	std::string  m_strCmdLn;
+    int  m_Rc;
+    int  m_ExitCode;
+    int  m_IsRunning;
+	WProcRun::ProcHandle_t  m_ProcHandle;
+	daemon_boy_t  *m_pBoy;
+
+
+private:
+	
+	WProcRun2 & operator = (const WProcRun2 & rhs)
+	{
+		return *this;
+	}
+
+	
+	WProcRun2(const WProcRun & rhs)
+	{;}
+
+
+public:
+	
+	WProcRun2()
+	{
+		m_ExitCode = -1;
+		m_IsRunning = 0;
+		m_ProcHandle = 0;
+
+		m_pBoy = NULL;
+	}
+
+
+	virtual ~WProcRun2()
+	{
+		this->Kill();
+
+		if( m_pBoy )
+		{
+			delete m_pBoy;
+			m_pBoy = NULL;
+		}
+	}
+
+	
+	void Init( std::string strProcImg, std::string strCmdLn )
+	{
+		m_strProcImg = strProcImg;
+		m_strCmdLn = strCmdLn;
+	}
+
+	
+	void Invoke()
+	{
+		this->Kill();
+
+		if( m_pBoy )
+		{
+			delete m_pBoy;
+			m_pBoy = NULL;
+		}
+
+		m_pBoy = new daemon_boy_t;
+
+		m_pBoy->m_pstrProcImg = &m_strProcImg;
+		m_pBoy->m_pstrCmdLn = &m_strCmdLn;
+		m_pBoy->m_pRc = &m_Rc;
+		m_pBoy->m_pExitCode = &m_ExitCode;
+		m_pBoy->m_pIsRunning = &m_IsRunning;
+		m_pBoy->m_pProcHandle = &m_ProcHandle;
+		m_pBoy->m_pFather = this;
+
+		m_IsRunning = 1;
+		m_ProcHandle = 0;
+
+		m_pBoy->tr_open();
+
+		while(1)
+		{
+			if( m_IsRunning == 0 ) break;
+			if( m_ProcHandle ) break;
+			WThrd::tr_sleepu( 0.003 );
+		}
+	}
+
+
+	void Kill()
+	{
+		if( m_pBoy && m_IsRunning )
+		{
+			m_pBoy->ByeBye();
+		}
+	}
+
+	
+	tbool IsRunning()
+	{
+		return m_IsRunning ? 1 : 0 ;
+	}
+
+
+	tbool GetRc()
+	{
+		return m_Rc ? 1 : 0 ;
+	}
+
+	
+	int GetExitCode()
+	{
+		return m_ExitCode;
+	}
+
+
+	void Wait()
+	{
+		if( m_pBoy )
+		{
+			m_pBoy->tr_wait();
+		}
+	}
+
+
+	virtual tbool OnBefore()
+	{
+		return 1;
+	}
+
+	
+	virtual void OnAfterExit()
+	{
+		
+		
+		return;
+	}
+
+
+};
 
 
 
@@ -14897,7 +15468,10 @@ private:
 
 				s1 = m_vProfile[i].first;
 				s2 = m_vProfile[i].second;
-				wf.bind( m_strWorkPath + s1 + "_" + s2 + ".txt" );
+
+				
+								wf.bind( get_PFn( s1, s2 ) );
+
 				k += (long)wf.len();
 			}
 			k /= 1000;
@@ -14934,7 +15508,13 @@ private:
 		return 0;
 	}
 
-	
+
+	std::string get_PFn( std::string s1Num, std::string s2Dte )
+	{
+		return m_strWorkPath + s1Num + "_" + s2Dte + ".log";
+	}
+
+
 	void add_file()
 	{
 		std::string s1, s2;
@@ -14986,7 +15566,10 @@ private:
 
 		s1 = m_vProfile[0].first;
 		s2 = m_vProfile[0].second;
-		wf.bind( m_strWorkPath + s1 + "_" + s2 + ".txt" );
+
+		
+		wf.bind( get_PFn( s1, s2 ) );
+
 		if( !wf.erase() )
 		{
 			wf.bind( m_strWorkPath + s1 );
@@ -15007,6 +15590,7 @@ public:
 		WFile wf;
 
 		m_strWorkPath = WFile::MkDir2Path( WFile::MkDir2Path( strBeginWorkPath ) + strPrefixName );
+		m_strWorkPath = WFile::MkDir2Path( m_strWorkPath );
 		wf.makedir(m_strWorkPath);
 		load_profile();
 
@@ -15035,7 +15619,9 @@ public:
 		if( m_vProfile.empty() )
 			add_file();
 
-		fl.bind( m_strWorkPath + m_vProfile.rbegin()->first + "_" + m_vProfile.rbegin()->second + ".txt" );
+		
+		fl.bind( get_PFn( m_vProfile.rbegin()->first,  m_vProfile.rbegin()->second ) );
+
 		fl.write_str( s1 + "\r\n", 1 );
 
 		if( get_small_probability() && numberX_reach() )
@@ -16916,9 +17502,9 @@ public:
 
 private:
 
-	MAP_HTTPHEADPARA m_mapUrlHeadPara;
+	MAP_HTTPHEADPARA m_mapUrlHeadPara;  
 
-	MAP_HTTPHEADPARA m_mapSvrRtnHeadPara;
+	MAP_HTTPHEADPARA m_mapSvrRtnHeadPara; 
 
 
 private:
@@ -17037,7 +17623,8 @@ public:
 
 		std::vector<std::string> vecTmpTR, vecTmpTD;
 		std::vector<std::string>::iterator itTR;
-		SStrvs::vsa_imp( strHeadPart, std::string("\r\n"), 1, vecTmpTR );
+		
+		SStrvs::vsa_imp( strHeadPart, std::string("\n"), 1, vecTmpTR );
 		for( itTR = vecTmpTR.begin(); itTR!=vecTmpTR.end(); ++itTR )
 		{
 			SCake ck;
@@ -17401,11 +17988,13 @@ public:
 	}
 
 public:
+
 	
 	void LinkCellc( IRice * p )
 	{
 		m_pCellc = p;
 	}
+
 	
 	void LinkCellc( IRice & r )
 	{
@@ -17562,6 +18151,7 @@ public:
 
 		if(pvSubject) pvSubject->clear();
 		if(pvFrom) pvFrom->clear();
+
 		for( statnum1 = 1 ; statnum1 <= statnum; statnum1 ++ )
 		{
 			rc = m_pCellc->send_str( "top " + SStrf::sltoa(statnum1) + " 1\r\n" ); 
@@ -19636,18 +20226,41 @@ public:
 		return 1;
 	}
 
-	static tbool Def( tuint16 port = 9900 ) 
+	static tbool Def( tuint16 iPort = 9900 , tuint16 *pPortOut = NULL , bu_backoffi2_mgr_t<> **pThis = NULL ) 
 	{
-		bu_backoffi2_mgr_t< > *p;
-		if( SStrf::newobjptr(p) && p->m_tLsn.Listen( (tuint16)port ) )
+		tuint16 iPortOut;
+		bu_backoffi2_mgr_t<> *p;
+
+		SStrf::newobjptr(p);
+
+		for( iPortOut = iPort; iPortOut <= 65531; iPortOut++ )
 		{
-			p->tr_openx();
-			return 1;
+			if( p->m_tLsn.Listen((u_short)iPortOut) )
+			{
+				p->tr_openx();
+				if( pPortOut ) *pPortOut = iPortOut;
+
+				if( pThis ) *pThis = p;
+
+				return 1;
+			}
 		}
+
+		delete p;
+		if( pThis ) *pThis = NULL;
 		return 0;
 	}
 };
 
+
+
+	
+	
+	
+	
+	
+	
+	
 
 
 class bu_backoffi2_client_base_t
@@ -20153,25 +20766,26 @@ X011_NAMESPACE_END
 X011_NAMESPACE_BEGIN
 
 
+
 #ifdef VC6_COMPATIBLE_X011_
 
 #else
 
 
-template < class THREADBASE_T = WThrd, class THREADBASE_T_toutman = WThrd >
+template < class THREADBASE_T = WThrd, class THREADBASE_T_timeoutman = WThrd >
 class WKeyinput : public WIdleThrd< std::string > , public THREADBASE_T
 {
 public:
 
 private:
-	class TimeoutMan : public THREADBASE_T_toutman
+	class TimeoutMan : public THREADBASE_T_timeoutman
 	{
 	public:
 		WKeyinput * m_pFather;
 
 		TimeoutMan(){ m_pFather = NULL; }
 
-		virtual ~TimeoutMan(){ THREADBASE_T_toutman::tr_destruct(); }
+		virtual ~TimeoutMan(){ THREADBASE_T_timeoutman::tr_destruct(); }
 
 		virtual int tr_on_user_run()
 		{
@@ -20191,18 +20805,19 @@ private:
 	WTcpListener  m_tLsn;
 	WTcpCells     m_ts;
 	WTcpCellc     m_tc;
+
 	WCrsc					  m_KeyBufLck;
 	std::list< std::string >  m_KeyBuf;
 	volatile WCrsc			* m_pKeyBufTempLock;
 
 	volatile double m_timeout_dSec;
 
-	TimeoutMan	*m_pto;
+	TimeoutMan	*m_ptimeoutman;
 
 public:
 	WKeyinput()
 	{
-		m_pto = new TimeoutMan;
+		m_ptimeoutman = new TimeoutMan;
 
 		m_pKeyBufTempLock = NULL;
 		m_timeout_dSec = 0.0;
@@ -20210,9 +20825,9 @@ public:
 
 	virtual ~WKeyinput()
 	{
-		m_pto->tr_shouldbrk();
-		m_pto->m_pFather = NULL;
-		delete m_pto;
+		m_ptimeoutman->tr_shouldbrk();
+		m_ptimeoutman->m_pFather = NULL;
+		delete m_ptimeoutman;
 
 		THREADBASE_T::tr_destruct();
 	}
@@ -20226,7 +20841,7 @@ public:
 
 		m_KeyBuf.clear();
 
-		for( int i = 0; i < 9999; i++ )
+		for( int i = 2090; i <= 63999; i++ )
 		{
 			m_strkeyaddress = "127.0.0.1:" + SStrf::sltoa( iPortOut = (i + iPort) );
 
@@ -20235,10 +20850,10 @@ public:
 				this->tr_open();
 
 				this->PostTask( "<connect>" );
-				WThrd::tr_sleepu(0.61);
+				WThrd::tr_sleepu(1.61);
 
-				m_pto->m_pFather = this;
-				m_pto->tr_open();
+				m_ptimeoutman->m_pFather = this;
+				m_ptimeoutman->tr_open();
 				
 
 				if( pPortOut ) *pPortOut = iPortOut;
@@ -20249,75 +20864,20 @@ public:
 		return 0;
 	}
 
-	
+
 	void SetTimeout( double dSec = 0.0 )
 	{
 		m_timeout_dSec = dSec;
 	}
 
-	
+
 	void Clear()
 	{
 		WCrsc aLock( &m_KeyBufLck );
 		m_KeyBuf.clear();
 	}
 
-	
-	
-	
 
-
-	std::string GetKey( tbool biWithWait = 1 )
-	{
-		std::string s;
-
-		do
-		{
-			if(1)
-			{
-				volatile WCrsc aLock( &m_KeyBufLck );
-
-				if( m_KeyBuf.empty() )
-				{
-					if( biWithWait )
-						this->PostTask( "<lock>", 0, 1 );
-					else
-						return "";
-				}
-				else
-				{
-					s = *(m_KeyBuf.begin());
-					m_KeyBuf.pop_front();
-					break;
-				}
-			}
-
-			WThrd::tr_sleep( 0, 0.25 );
-			continue;
-
-		}while(1);
-
-		return s;
-	}
-
-	virtual void OnRunTask( std::string t )
-	{
-		if( t.empty() )
-		{
-			return;
-		}
-
-		if( t == "<connect>" )
-		{
-			this->m_tc.Conn( m_strkeyaddress );
-			return;
-		}
-
-		
-		this->m_tc.send_str( t + "\n" );
-	}
-
-	
 	virtual int tr_on_user_run()
 	{
 		if( !this->m_ts.Conn( this->m_tLsn ) )
@@ -20416,6 +20976,71 @@ public:
 		return 1;
 	}
 
+
+	virtual void OnRunTask( std::string t )
+	{
+		if( t.empty() )
+		{
+			return;
+		}
+
+		if( t == "<connect>" )
+		{
+			this->m_tc.Conn( m_strkeyaddress );
+			return;
+		}
+
+		
+		this->m_tc.send_str( t + "\n" );
+	}
+
+
+	
+	
+	
+	void PutKey( const std::string &s )
+	{
+		PostTask( s, 0, 1 );
+	}
+
+
+	std::string GetKey( tbool biWithWait = 1 )
+	{
+		std::string s;
+
+		do
+		{
+			if(1)
+			{
+				volatile WCrsc aLock( &m_KeyBufLck );
+
+				if( m_KeyBuf.empty() )
+				{
+					if( biWithWait )
+					{
+						this->PostTask( "<lock>", 0, 1 );
+
+						WThrd::tr_sleep( 0, 0.05 );
+						continue;
+					}
+					else
+					{
+						return "";
+					}
+				}
+				else
+				{
+					s = *(m_KeyBuf.begin());
+					m_KeyBuf.pop_front();
+					break;
+				}
+			}
+
+		}while(1);
+
+		return s;
+	}
+
 };
 
 #endif	
@@ -20425,36 +21050,398 @@ public:
 
 
 
-class WClimbUp_t
+
+template < class THRD_CONN_TIMEOUT_T = WThrd , class KEYQUE_ITEM_T = std::string >
+class WKeyinput2
 {
 public:
+	typedef  KEYQUE_ITEM_T  KEYQUE_ITEM_t;
 
 private:
+	volatile double m_timeout_fSec;
+	std::string		m_strConnAddress;
+	WTcpListener	m_Lsn;
+	WTcpCells		m_ts;
+	WTcpCellc		m_tc;
+	bool			m_isConnOk;
+	WCrsc							m_KeyQueLck;
+	std::list< KEYQUE_ITEM_T >		m_KeyQue;
+	bool			m_isGot; 
+	WCrsc							m_GetKeyFuncLck;
+	WCrsc							m_PutKeyFuncLck;
 
-	volatile int  m_iKeepType; 
 
-
-public:
-
-	
-	WClimbUp_t()
+private:
+	class ConnTimeoutMan_t : public THRD_CONN_TIMEOUT_T
 	{
-		m_iKeepType = 1;
-	}
+	public:
+		WKeyinput2 * m_pFather;
 
-	
-	 ~WClimbUp_t()
-	{
-	}
+		ConnTimeoutMan_t()
+		{
+			m_pFather = NULL;
+		}
 
-public:
+		virtual ~ConnTimeoutMan_t()
+		{
+			THRD_CONN_TIMEOUT_T::tr_destruct();
+		}
 
-	
-	void SetKeepType( int i )
-	{
 		
+		virtual void tr_on_pre_thrd()
+		{
+			while(1)
+			{
+				WThrd::tr_sleepu( 0.003 );
+
+				if( m_pFather->m_tc.Conn( m_pFather->m_strConnAddress ) )
+				{
+					m_pFather->m_isConnOk = true;
+					break;
+				}
+			}
+		}
+
+		virtual int tr_on_user_run()
+		{
+			if( m_pFather == NULL || m_pFather->m_timeout_fSec <= 0.003 )
+			{
+				WThrd::tr_sleepu( 0.93 );
+			}
+			else
+			{
+				WThrd::tr_sleepu( m_pFather->m_timeout_fSec );
+			}
+
+			
+			if( m_pFather && m_pFather->m_isGot )
+			{
+				 m_pFather->m_isGot = false;
+			}
+			else
+			{
+				if( m_pFather )
+				{
+					m_pFather->PutNop();
+				}
+			}
+
+			return 1;
+		}
+
+		
+		virtual void tr_on_post_thrd()
+		{
+			m_pFather = NULL;
+		}
+	};
+
+
+	ConnTimeoutMan_t	m_ConnTimeoutMan;
+
+
+public:
+
+	WKeyinput2()
+	{
+		m_timeout_fSec = 0.93;
+		m_isConnOk = false;
+		m_ConnTimeoutMan.m_pFather = this;
+		m_isGot = false;
 	}
 
+	virtual ~WKeyinput2()
+	{
+		m_ConnTimeoutMan.tr_shouldbrk();
+		while(1)
+		{
+			if( m_ConnTimeoutMan.m_pFather == NULL ) break;
+			WThrd::tr_sleepu( 0.93 );
+		}
+	}
+
+public:
+	
+	tbool KeyInit( tuint16 iBeginPort = 32000 , tuint16 *pPortOut = NULL ) 
+	{
+		WCrsc aLock( &m_KeyQueLck );
+		tuint16 iPortOut;
+
+		m_KeyQue.clear();
+
+		for( iPortOut = iBeginPort; iPortOut <= 65531; iPortOut++ )
+		{
+			m_strConnAddress = "127.0.0.1:" + SStrf::sltoa( iPortOut );
+
+			if( m_Lsn.Listen( m_strConnAddress ) )
+			{
+				m_ConnTimeoutMan.tr_open();
+
+				m_ts.Conn( m_Lsn );
+				m_Lsn.StopListen();
+
+				while(1)
+				{
+					WThrd::tr_sleepu( 0.003 );
+					if( m_isConnOk ) break;
+				}
+
+				if( pPortOut ) *pPortOut = iPortOut;
+
+				return 1;
+			}
+		}
+
+		return 0;
+	}
+
+
+	void SetTimeout( double fSec = 1 )
+	{
+		m_timeout_fSec = fSec;
+	}
+
+
+	void PutKey( const KEYQUE_ITEM_t &k )
+	{
+		WCrsc aLock( &m_PutKeyFuncLck );
+
+		if(1)
+		{
+			WCrsc aLock( &m_KeyQueLck );
+
+			m_KeyQue.push_back( k );
+
+		}
+
+		
+		this->m_ts.send_str( "a" );
+	}
+
+
+	
+	void PutNop()
+	{
+		if( this->m_isConnOk )
+			this->m_ts.send_str( "n" );
+	}
+
+
+	
+	tbool GetKey( KEYQUE_ITEM_t *pItemOut , tbool isWithWait = 1 , tbool isTimeoutRtn = 1 )
+	{
+		if( isWithWait )
+		{
+			WCrsc aLock( &m_GetKeyFuncLck );
+
+			while(1)
+			{
+				SCake ckTmp;
+				const char *p;
+
+				m_tc.recv_len( ckTmp, 1 );
+
+				WCrsc aLock( &m_KeyQueLck );
+
+
+				p = (const char *)ckTmp.buf();
+
+
+				if( ckTmp.len() >= 1 &&
+					(*p != 'a') &&
+					(m_KeyQue.empty()) )
+				{
+					if( isTimeoutRtn )
+					{
+						return 0;
+					}
+				}
+
+
+				if( ckTmp.len() >= 1 &&
+					(*p == 'a') &&
+					(m_KeyQue.empty()) )
+				{
+					if( isTimeoutRtn )
+					{
+						return 0;
+					}
+				}
+
+
+				if( ckTmp.len() >= 1 &&
+					(*p == 'a') &&
+					(!m_KeyQue.empty()) )
+				{
+					KEYQUE_ITEM_t k;
+
+					if( 1 )
+					{
+						
+						k = *(m_KeyQue.begin());
+						m_KeyQue.pop_front();
+					}
+					m_isGot = true;
+
+					if( pItemOut ) *pItemOut = k;
+
+					return 1;
+				}
+			}
+		}
+		else
+		{
+			
+
+			if( m_KeyQue.empty() ) return 0;
+			else
+			{
+				return this->GetKey( pItemOut, 1, 0 );
+			}
+		}
+
+		return 0;
+	}
+
+
+	KEYQUE_ITEM_t GetKey(void)
+	{
+		tbool rc;
+		KEYQUE_ITEM_t ss;
+		KEYQUE_ITEM_t ss2;
+
+		rc = this->GetKey( &ss , 1 , 1 );
+
+		return rc ? ss : ss2;
+	}
+
+
+	
+	void Clear()
+	{
+		WCrsc aLock( &m_KeyQueLck );
+		m_KeyQue.clear();
+	}
+
+};
+
+
+
+
+
+
+
+
+class WClimbUp_t : public WThrd
+{
+public:
+	enum KeepType_t { KEEP_FIRST , KEEP_SECOND };
+
+private:
+	WTcpListener  m_LsnTer;
+	KeepType_t  m_KeepType; 
+	tuint16  m_alertport;
+	void(*m_pfTer)();
+	volatile int m_isReady;
+
+public:
+
+	
+	WClimbUp_t( tuint16 alertport , KeepType_t KeepType = KEEP_FIRST , void(*pfTer)() = NULL )
+	{
+		m_KeepType = KeepType;
+		m_alertport = alertport;
+		m_pfTer = pfTer;
+		m_isReady = 0;
+
+		if( KeepType == KEEP_FIRST )
+		{
+			if( m_LsnTer.Listen( alertport ) )
+			{
+				
+				m_isReady = 1;
+			}
+			else
+			{
+				m_isReady = 1;
+
+				if( pfTer == NULL )
+				{
+					exit( 0 );
+				}
+				else
+				{
+					(*pfTer)();
+				}
+			}
+		}
+
+		if( KeepType == KEEP_SECOND )
+		{
+			this->tr_open();
+		}
+
+	}
+
+	
+	virtual ~WClimbUp_t()
+	{
+		if( m_KeepType == KEEP_FIRST )
+			m_LsnTer.StopListen();
+	}
+
+
+public:
+	virtual void tr_on_pre_thrd()
+	{
+		m_LsnTer.Listen( m_alertport );
+
+		WThrd::tr_sleepu( 1.5 );
+		
+
+		m_LsnTer.StopListen();
+
+		WThrd::tr_sleepu( 0.13 );
+	}
+
+	virtual int tr_on_user_run()
+	{
+		wl::WTcpCellc tCc;
+
+		tCc.killer_up( 0.7 );
+
+		if( tCc.Conn( "127.0.0.1", m_alertport ) )
+		{
+			m_isReady = 1;
+
+			if( m_pfTer == NULL )
+			{
+				exit( 0 );
+			}
+			else
+			{
+				(*m_pfTer)();
+			}
+		}
+
+		m_isReady = 1;
+
+		WThrd::tr_sleepu( 0.13 );
+
+		return 1;
+	}
+
+
+	void WaitReady()
+	{
+		while(1)
+		{
+			if( m_isReady ) break;
+			WThrd::tr_sleepu( 0.13 );
+		}
+
+		return;
+	}
 
 };
 
@@ -21121,8 +22108,8 @@ X011_NAMESPACE_BEGIN
 
 
 
-#ifndef V1_3AAFWEB02_TBL_T_20170622_133852
-#define V1_3AAFWEB02_TBL_T_20170622_133852
+#ifndef V1_3AAFWEB02_TBL_T_20171128_110611
+#define V1_3AAFWEB02_TBL_T_20171128_110611
 
 
 
@@ -21136,6 +22123,7 @@ public:
 	std::string		m_FSA_Func;			
 	std::string		m_strTitle;			
 	int		m_BigFontFlag;			
+	int		m_BigFontSizePt;			
 	tuint32		m_StepCount;			
 	NaS2S		m_Value;			
 	wl::tuint8		m_RES_01;			
@@ -21153,6 +22141,7 @@ public:
 		m_FSA_Func = "";
 		m_strTitle = "_----_";
 		m_BigFontFlag = 0;
+		m_BigFontSizePt = 33;
 		m_StepCount = 0;
 		
 		m_RES_01 = 0;
@@ -21270,6 +22259,13 @@ public:
 		en( buf1, len1, buf2 );
 		strOut += std::string(buf2);
 		strOut += std::string("/");
+		buf1 = (const char *)reinterpret_cast<char *>(&reinterpret_cast<char&>(m_BigFontSizePt));
+		len1 = sizeof(m_BigFontSizePt);
+		if( (int)v.size() < ( len1 * 2 + 4 ) ) v.resize( len1 * 2 + 4 );
+		buf2 = (char*)(&(v[0]));
+		en( buf1, len1, buf2 );
+		strOut += std::string(buf2);
+		strOut += std::string("/");
 		buf1 = (const char *)reinterpret_cast<char *>(&reinterpret_cast<char&>(m_StepCount));
 		len1 = sizeof(m_StepCount);
 		if( (int)v.size() < ( len1 * 2 + 4 ) ) v.resize( len1 * 2 + 4 );
@@ -21350,6 +22346,9 @@ public:
 		  m_BigFontFlag = *(int*)buf2; }else return *this;
 		buf2 = (char*)buf1;
 		 if( *buf2!='}') {buf1 = de( buf2 );
+		  m_BigFontSizePt = *(int*)buf2; }else return *this;
+		buf2 = (char*)buf1;
+		 if( *buf2!='}') {buf1 = de( buf2 );
 		  m_StepCount = decode2<tuint32>(buf2); }else return *this;
 		buf2 = (char*)buf1;
 		 if( *buf2!='}') {buf1 = de( buf2 );
@@ -21399,6 +22398,10 @@ public:
 		ckl.add( wl::SCake( buf1, len1 ) );
 		buf1 = (const char *)reinterpret_cast<char *>(&reinterpret_cast<char&>(m_BigFontFlag));
 		len1 = sizeof(m_BigFontFlag);
+		ckl.add( wl::SCake( (wl::tchar*)&len1, 4 ) );
+		ckl.add( wl::SCake( buf1, len1 ) );
+		buf1 = (const char *)reinterpret_cast<char *>(&reinterpret_cast<char&>(m_BigFontSizePt));
+		len1 = sizeof(m_BigFontSizePt);
 		ckl.add( wl::SCake( (wl::tchar*)&len1, 4 ) );
 		ckl.add( wl::SCake( buf1, len1 ) );
 		buf1 = (const char *)reinterpret_cast<char *>(&reinterpret_cast<char&>(m_StepCount));
@@ -21452,6 +22455,9 @@ public:
 		buf2 = (char*)buf1 + 4;
 		buf1 = buf2 + *(wl::tuint32*)buf1;
 		m_BigFontFlag = *(int*)buf2;
+		buf2 = (char*)buf1 + 4;
+		buf1 = buf2 + *(wl::tuint32*)buf1;
+		m_BigFontSizePt = *(int*)buf2;
 		buf2 = (char*)buf1 + 4;
 		buf1 = buf2 + *(wl::tuint32*)buf1;
 		m_StepCount = decode2<tuint32>(buf2);
@@ -21526,6 +22532,14 @@ public:
 
 
 
+	int & GetCol_BigFontSizePt(void)
+	{
+		return m_BigFontSizePt;
+	}
+
+
+
+
 	tuint32 & GetCol_StepCount(void)
 	{
 		return m_StepCount;
@@ -21587,7 +22601,7 @@ public:
 
 	int GetColAmount()
 	{
-		return 12;
+		return 13;
 	}
 
 
@@ -21617,29 +22631,33 @@ public:
 		}
 		if( iColNum == 5 )
 		{
-			return "StepCount";
+			return "BigFontSizePt";
 		}
 		if( iColNum == 6 )
 		{
-			return "Value";
+			return "StepCount";
 		}
 		if( iColNum == 7 )
 		{
-			return "RES_01";
+			return "Value";
 		}
 		if( iColNum == 8 )
 		{
-			return "RES_02";
+			return "RES_01";
 		}
 		if( iColNum == 9 )
 		{
-			return "RES_03";
+			return "RES_02";
 		}
 		if( iColNum == 10 )
 		{
-			return "RES_04";
+			return "RES_03";
 		}
 		if( iColNum == 11 )
+		{
+			return "RES_04";
+		}
+		if( iColNum == 12 )
 		{
 			return "RES_05";
 		}
@@ -21671,33 +22689,37 @@ public:
 		{
 			return 4;
 		}
-		if( strColName == "StepCount" )
+		if( strColName == "BigFontSizePt" )
 		{
 			return 5;
 		}
-		if( strColName == "Value" )
+		if( strColName == "StepCount" )
 		{
 			return 6;
 		}
-		if( strColName == "RES_01" )
+		if( strColName == "Value" )
 		{
 			return 7;
 		}
-		if( strColName == "RES_02" )
+		if( strColName == "RES_01" )
 		{
 			return 8;
 		}
-		if( strColName == "RES_03" )
+		if( strColName == "RES_02" )
 		{
 			return 9;
 		}
-		if( strColName == "RES_04" )
+		if( strColName == "RES_03" )
 		{
 			return 10;
 		}
-		if( strColName == "RES_05" )
+		if( strColName == "RES_04" )
 		{
 			return 11;
+		}
+		if( strColName == "RES_05" )
+		{
+			return 12;
 		}
 		return -1;
 	}
@@ -21730,29 +22752,33 @@ public:
 		}
 		if( iColNum == 5 )
 		{
-			return wl::SStrf::b2s(m_StepCount);
+			return wl::SStrf::sltoa(m_BigFontSizePt);
 		}
 		if( iColNum == 6 )
 		{
-			return m_Value.serialize();
+			return wl::SStrf::b2s(m_StepCount);
 		}
 		if( iColNum == 7 )
 		{
-			return wl::SStrf::sltoa(m_RES_01);
+			return m_Value.serialize();
 		}
 		if( iColNum == 8 )
 		{
-			return m_RES_02.ReadString();
+			return wl::SStrf::sltoa(m_RES_01);
 		}
 		if( iColNum == 9 )
 		{
-			return wl::SStrf::sltoa(m_RES_03);
+			return m_RES_02.ReadString();
 		}
 		if( iColNum == 10 )
 		{
-			return wl::SStrf::b2s(m_RES_04);
+			return wl::SStrf::sltoa(m_RES_03);
 		}
 		if( iColNum == 11 )
+		{
+			return wl::SStrf::b2s(m_RES_04);
+		}
+		if( iColNum == 12 )
 		{
 			return wl::SStrf::b2s(m_RES_05);
 		}
@@ -21788,33 +22814,37 @@ public:
 		{
 			return GetColStr<STRINGT>(4);
 		}
-		if( strColName == "StepCount" )
+		if( strColName == "BigFontSizePt" )
 		{
 			return GetColStr<STRINGT>(5);
 		}
-		if( strColName == "Value" )
+		if( strColName == "StepCount" )
 		{
 			return GetColStr<STRINGT>(6);
 		}
-		if( strColName == "RES_01" )
+		if( strColName == "Value" )
 		{
 			return GetColStr<STRINGT>(7);
 		}
-		if( strColName == "RES_02" )
+		if( strColName == "RES_01" )
 		{
 			return GetColStr<STRINGT>(8);
 		}
-		if( strColName == "RES_03" )
+		if( strColName == "RES_02" )
 		{
 			return GetColStr<STRINGT>(9);
 		}
-		if( strColName == "RES_04" )
+		if( strColName == "RES_03" )
 		{
 			return GetColStr<STRINGT>(10);
 		}
-		if( strColName == "RES_05" )
+		if( strColName == "RES_04" )
 		{
 			return GetColStr<STRINGT>(11);
+		}
+		if( strColName == "RES_05" )
+		{
+			return GetColStr<STRINGT>(12);
 		}
 		return GetColStr<STRINGT>(0);
 	}
@@ -21850,29 +22880,33 @@ public:
 		}
 		if( iColNum == 5 )
 		{
-			wl::SStrf::s2b(strValPARA,m_StepCount);
+			m_BigFontSizePt=wl::SStrf::satol(strValPARA);
 		}
 		if( iColNum == 6 )
 		{
-			m_Value.unserialize(strValPARA);
+			wl::SStrf::s2b(strValPARA,m_StepCount);
 		}
 		if( iColNum == 7 )
 		{
-			m_RES_01=(wl::tuint8)wl::SStrf::satol(strValPARA);
+			m_Value.unserialize(strValPARA);
 		}
 		if( iColNum == 8 )
 		{
-			m_RES_02.Make(strValPARA);
+			m_RES_01=(wl::tuint8)wl::SStrf::satol(strValPARA);
 		}
 		if( iColNum == 9 )
 		{
-			m_RES_03=wl::SStrf::satol(strValPARA);
+			m_RES_02.Make(strValPARA);
 		}
 		if( iColNum == 10 )
 		{
-			wl::SStrf::s2b(strValPARA,m_RES_04);
+			m_RES_03=wl::SStrf::satol(strValPARA);
 		}
 		if( iColNum == 11 )
+		{
+			wl::SStrf::s2b(strValPARA,m_RES_04);
+		}
+		if( iColNum == 12 )
 		{
 			wl::SStrf::s2b(strValPARA,m_RES_05);
 		}
@@ -21904,33 +22938,37 @@ public:
 		{
 			SetColVal<STRINGT>(4,strValPARA);
 		}
-		if( strColName == "StepCount" )
+		if( strColName == "BigFontSizePt" )
 		{
 			SetColVal<STRINGT>(5,strValPARA);
 		}
-		if( strColName == "Value" )
+		if( strColName == "StepCount" )
 		{
 			SetColVal<STRINGT>(6,strValPARA);
 		}
-		if( strColName == "RES_01" )
+		if( strColName == "Value" )
 		{
 			SetColVal<STRINGT>(7,strValPARA);
 		}
-		if( strColName == "RES_02" )
+		if( strColName == "RES_01" )
 		{
 			SetColVal<STRINGT>(8,strValPARA);
 		}
-		if( strColName == "RES_03" )
+		if( strColName == "RES_02" )
 		{
 			SetColVal<STRINGT>(9,strValPARA);
 		}
-		if( strColName == "RES_04" )
+		if( strColName == "RES_03" )
 		{
 			SetColVal<STRINGT>(10,strValPARA);
 		}
-		if( strColName == "RES_05" )
+		if( strColName == "RES_04" )
 		{
 			SetColVal<STRINGT>(11,strValPARA);
+		}
+		if( strColName == "RES_05" )
+		{
+			SetColVal<STRINGT>(12,strValPARA);
 		}
 	}
 
@@ -22170,7 +23208,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_TimeStamp==strVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -22199,7 +23237,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_FSA_FuncInt==iVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -22228,7 +23266,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_FSA_Func==strVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -22257,7 +23295,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_strTitle==strVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -22286,7 +23324,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_BigFontFlag==iVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -22311,11 +23349,40 @@ public:
 
 
 
+	void SelE_BigFontSizePt(int iVal, std::vector<long> & vRps, std::vector<long> * pRefRps=NULL) 
+	{
+		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
+		if(m_DATAcorpora[ltmp].m_BigFontSizePt==iVal)
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+	}
+
+
+
+
+	AFWEB02_tbl_t_rowtype & SelE1_BigFontSizePt(int iVal)
+	{
+		std::vector<long> vRps ;
+		SelE_BigFontSizePt( iVal, vRps );
+		return GetRow( vRps, 0 );
+	}
+
+
+
+
+	void SelEc_BigFontSizePt(int iVal, std::vector<long> & vRps, std::vector<long> * pRefRps=NULL) 
+	{
+		vRps.clear();
+		SelE_BigFontSizePt(iVal, vRps, pRefRps);
+	}
+
+
+
+
 	void SelE_StepCount(tuint32 iVal, std::vector<long> & vRps, std::vector<long> * pRefRps=NULL) 
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_StepCount==iVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -22344,7 +23411,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_Value==aVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -22373,7 +23440,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_01==iVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -22402,7 +23469,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_02==strVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -22431,7 +23498,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_03==iVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -22460,7 +23527,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_04==iVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -22489,7 +23556,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_05==aVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -22711,7 +23778,11 @@ class AFlowEle_t : public WThrd
 public:
 	tbool			m_tSvrGoodFlag;
 	tbool			m_WebFormBeginDoneFlag;
+	tbool			m_RawMode; 
 
+	std::string  m_strFormTableHead;
+
+public:
 	WTcpCells		m_tSvr;
 
 public:
@@ -22733,6 +23804,9 @@ public:
 	{
 		m_tSvrGoodFlag = 1;
 		m_WebFormBeginDoneFlag = 0;
+		m_RawMode = 0;
+
+		m_strFormTableHead = "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n";
 	}
 
 	virtual ~AFlowEle_t()
@@ -22922,7 +23996,7 @@ public:
 		WebSendString( "built-in variable: " );
 
 		
-		WebSendString( "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n" );
+		WebSendString( m_strFormTableHead );
 
 		for( int j = 0; j < (int)v1.size(); j++ )
 		{
@@ -22962,13 +24036,16 @@ public:
 		if( On_StaticFlow() ) 
 		{
 			m_tSvr.DisConn();
+
 			return 0;
 		}
+
 
 		m_SessionId = m_nvHTTPGET.get("sessionid");
 		m_pFolder->folder_purge();
 
 		m_pafdata = m_pFolder->folder_takeout( m_SessionId ); 	
+
 
 		if( NULL == m_pafdata ) 
 		{
@@ -22995,7 +24072,9 @@ public:
 		m_pFolder->folder_put( m_SessionId, m_pafdata );	
 
 		WebFormEnd();
+
 		m_tSvr.DisConn();
+
 
 		return 0;
 	}
@@ -23009,7 +24088,37 @@ public:
 
 			std::string str1;
 
-			str1 = "HTTP/1.0 200 OK\r\n\r\n";
+
+		std::string strOut;
+
+		strOut = "HTTP/1.0 200 OK\r\n";
+		strOut += "Server: NotApache/" + wl::SDte::GetNow().ReadStringPack() + "\r\n";
+		strOut += "Cache-Control: no-cache\r\n";
+		strOut += "Pragma: no-cache\r\n";
+
+		
+		if( m_RawMode )
+		{
+			strOut += "Content-Type: text/plain; charset=gb2312\r\n";
+		}
+		else
+		{
+			strOut += "Content-Type: text/html; charset=gb2312\r\n";
+		}
+
+		strOut += "Connection: close\r\n";
+		strOut += "\r\n";
+
+			if( m_RawMode )
+			{
+				WebSendString( strOut );
+
+				return;
+			}
+
+
+			str1 = strOut;
+
 			str1 += "<html><head>\r\n";
 			
 			str1 += "<meta http-equiv=\"Content-Type\" content=\"application/xhtml+xml; charset=gb2312\"/>\r\n";
@@ -23020,7 +24129,9 @@ public:
 			
 			if( m_pafdata->m_env0.m_BigFontFlag )
 			{
-				str1 += "<style type=\"text/css\">*{font-size:41pt;}</style>";
+				
+				std::string s1 = SStrf::sltoa(m_pafdata->m_env0.m_BigFontSizePt);
+				str1 += "<style type=\"text/css\">*{font-size:" + s1 + "pt;}</style>";
 			}
 			else
 			{
@@ -23039,7 +24150,8 @@ public:
 			str1 += "<input type=\"hidden\" name=\"sessionid\" size=\"60\" value=\""+ m_SessionId +"\">\r\n";
 			str1 += "<p>\r\n";
 
-			str1 += "<input type=\"hidden\" name=\"sessionidupup\" size=\"60\" value=\""+ WFile::MkRUStr() +"\">\r\n";
+			static tuint8 i = 0;
+			str1 += "<input type=\"hidden\" name=\"s_i_u\" size=\"60\" value=\""+ SStrf::sltoa(i++) +"\">\r\n";
 			str1 += "<p>\r\n";
 
 			WebSendString( str1 );
@@ -23058,12 +24170,19 @@ public:
 	{
 		std::string str1;
 
+		str1 = "";
 		str1 += "</form>\r\n";
 		str1 += "</body>\r\n";
 		str1 += "</html>\r\n";
 
+			if( m_RawMode )
+			{
+				str1 = "\r\n";
+			}
+
 		WebSendString( str1 );
 	}
+
 
 	void WebAddBr( int i = 1 ) 
 	{
@@ -23075,6 +24194,7 @@ public:
 		WebSendString( "\r\n" );
 	}
 
+
 	void WebAddCr( int i = 1 ) 
 	{
 		std::string sOut = "<p></p>\r\n";
@@ -23084,6 +24204,7 @@ public:
 		}
 		WebSendString( "\r\n" );
 	}
+
 
 	void WebAddHr( int i = 1 ) 
 	{
@@ -23095,6 +24216,7 @@ public:
 		WebSendString( "\r\n" );
 	}
 
+
 	void WebAddSpace( int i = 1 )
 	{
 		std::string sOut = "&nbsp;";
@@ -23104,6 +24226,15 @@ public:
 		}
 		WebSendString( "\r\n" );
 	}
+
+
+	void WebAddHiLink( std::string strHref, std::string strText )
+	{
+		
+		std::string sOut = "<a href=\"" + strHref + "\">" + strText + "</a>";
+		WebSendString( sOut );
+	}
+
 
 	void WebAddButt( std::string strName, std::string strValue )
 	{
@@ -23144,7 +24275,7 @@ public:
 		std::string sS2SName;
 
 		
-		WebSendString( "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n" );
+		WebSendString( m_strFormTableHead );
 
 		for( int y = 0; y < height; y++ )
 		{
@@ -23178,7 +24309,7 @@ public:
 
 	void WebAddTable2Begin()
 	{
-		WebSendString( "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n" );
+		WebSendString( m_strFormTableHead );
 	}
 
 	void WebAddTable2End()
@@ -23214,7 +24345,7 @@ public:
 
 	void WebAddTable2( std::vector< std::string > &v1 , std::vector< std::string > &v2 )
 	{
-		WebSendString( "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n" );
+		WebSendString( m_strFormTableHead );
 
 		for( int j = 0; j < (int)v1.size(); j++ )
 		{
@@ -23269,22 +24400,35 @@ public:
 		return 1;
 	}
 
-	static tbool NewFlow( int iPort = 3456, int iPurgeConfSec = 3456 )
+	static tbool NewFlow( tuint16 iPort = 2000, int iPurgeConfSec = 3456 , tuint16 *pPortOut = NULL , AFlowMgr_t< _T > **pThis = NULL  ) 
 	{
-		AFlowMgr_t *p;
-		p = new AFlowMgr_t;
+		tuint16 iPortOut;
+		AFlowMgr_t< _T > *p;
+
+		p = new AFlowMgr_t< _T >;
 
 		p->m_aFolder.m_iPurgeConfSec = iPurgeConfSec;
 
-		if( p->m_Lsn.Listen((u_short)iPort) )
+		for( iPortOut = iPort; iPortOut <= 65531; iPortOut++ )
 		{
-			p->tr_openx();
-			return 1;
+			if( p->m_Lsn.Listen((u_short)iPortOut) )
+			{
+				p->tr_openx();
+				if( pPortOut ) *pPortOut = iPortOut;
+
+				if( pThis ) *pThis = p;
+
+				return 1;
+			}
 		}
 
+		delete p;
+		if( pThis ) *pThis = NULL;
 		return 0;
 	}
 };
+
+
 
 
 
@@ -23319,6 +24463,78 @@ public:
 
 };
 
+
+
+
+	
+
+class AWeb2_t : public AFlowEle_t
+{
+private:
+	
+	
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+	
+	
+
+
+	
+
+
+	
+	
+	virtual tbool On_StaticFlow()
+	{
+		std::string strChannel;
+		std::string strAfterWen="";
+		std::string s1, s2;
+		std::string::size_type i;
+
+		
+		strChannel = this->m_strUPfn;
+		i = strChannel.find_last_of( '?' );
+		if( i != std::string::npos )
+		{
+			strChannel[i] = 0;
+			strAfterWen = strChannel.c_str() + i + 1;
+		}
+
+
+		s1 = strChannel.c_str();
+		i = s1.find_last_of( '/' );
+
+		if( i != std::string::npos )
+		{
+			s2 = s1.c_str() + i + 1; 
+		}
+		else
+		{
+			s2 = s1;
+		}
+
+
+		this->OnGet( s2 , this->m_nvHTTPGET , strAfterWen );
+
+		return 1;
+	}
+
+public:
+	AWeb2_t(){}
+	virtual ~AWeb2_t(){}
+
+public:
+	virtual void OnGet( const std::string &strFn , WNava &para , const std::string &strWholePara ) {} 	
+};
 
 
 
@@ -23369,6 +24585,7 @@ X011_NAMESPACE_END
 #include <sys/dir.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <sys/time.h>
 #include <unistd.h>  
 #include <pthread.h>
@@ -23381,6 +24598,7 @@ X011_NAMESPACE_END
 #include <fcntl.h>
 #include <termios.h>
 #include <errno.h>
+#include <signal.h>
 
 #include "iconv.h"
 
@@ -23632,8 +24850,15 @@ public:
 
 	
 	
+
 	
 	
+
+	
+	
+	
+	
+
 	static tbool readbit_s( void * pbin, int iBytesLen, int sufx )
 	{
 		if( sufx < 0 || iBytesLen <= 0 || (sufx / 8) >= iBytesLen )
@@ -24190,14 +25415,17 @@ public:
 	{
 		toffset i;
 		if(s==NULL) return NULL;
-		for(i=0;s[i]!=0;i++){
-			if(s[i]>='a'&&s[i]<='z')s[i] = s[i] -'a' + 'A' ;
+		for( i=0; s[i]!=0; i++ )
+		{
+			if( s[i]>='a' && s[i]<='z' )
+			{
+				s[i] = s[i] - 'a' + 'A' ;
+			}
 		}
 		return s;
 	}
 
-
-	static std::string & sucase( std::string & str )
+	static std::string & sucase_bak_slow( std::string & str )
 	{
 		tchar * szstr;
 		szstr = (tchar *)smalloc( (tsize)str.size() + 1 );
@@ -24208,19 +25436,37 @@ public:
 		return str;
 	}
 
+	static std::string & sucase( std::string & str )
+	{
+		for( tsize j = 0; j < (tsize)str.size(); j ++ )
+		{
+			char &c(str[j]);
+
+			if( c>='a' && c<='z' )
+			{
+				c = c - 'a' + 'A' ;
+			}
+		}
+		return str;
+	}
+
 
 	static tchar * slcase( tchar *s )
 	{
 		toffset i;
 		if(s==NULL) return NULL;
-		for(i=0;s[i]!=0;i++){
-			if(s[i]>='A'&&s[i]<='Z')s[i] = s[i] -'A' + 'a' ;
+		for(i=0;s[i]!=0;i++)
+		{
+			if( s[i]>='A' && s[i]<='Z' )
+			{
+				s[i] = s[i] - 'A' + 'a' ;
+			}
 		}
 		return s;
 	}
 
-
-	static std::string & slcase( std::string & str )
+	
+	static std::string & slcase_bak_slow( std::string & str )
 	{
 		tchar * szstr;
 		szstr = (tchar *)smalloc( (tsize)str.size() + 1 );
@@ -24228,6 +25474,21 @@ public:
 		slcase( szstr );
 		str = szstr;
 		sfree( szstr );
+		return str;
+	}
+
+	
+	static std::string & slcase( std::string & str )
+	{
+		for( tsize j = 0; j < (tsize)str.size(); j ++ )
+		{
+			char &c(str[j]);
+
+			if( c>='A' && c<='Z' )
+			{
+				c = c - 'A' + 'a' ;
+			}
+		}
 		return str;
 	}
 
@@ -24370,11 +25631,14 @@ public:
 	
 	static std::string Chg2XmlCode( std::string s )
 	{
-		sreplstr( s, "&",  "&amp;"  );
-		sreplstr( s, "<",  "&lt;"   );
-		sreplstr( s, ">",  "&gt;"   );
-		sreplstr( s, " ",  "&nbsp;"  );
-		sreplstr( s, "\"", "&quot;"  );
+		sreplstr( s, "&",  "&amp;" );
+		sreplstr( s, "<",  "&lt;" );
+		sreplstr( s, ">",  "&gt;" );
+		sreplstr( s, " ",  "&nbsp;" );
+		sreplstr( s, "\"", "&quot;" );
+		sreplstr( s, "\r", ""  );
+		sreplstr( s, "\n", "<br>\r\n" );
+
 		return s;
 	}
 
@@ -24566,9 +25830,9 @@ public:
 	static tchar bs_esc() { return 'b'; }
 
 
-	static tbool bs_inset( tchar c ) 
+	static tbool bs_inset( tchar c , tchar(*apf1)()=bs_esc )	 
 	{
-		if(c==bs_esc()) return 0; 
+		if(c==(*apf1)()) return 0; 
 		if(c>='a'&&c<='z') return 1;
 		if(c>='0'&&c<='9') return 1;
 		if(c>='A'&&c<='Z') return 1;
@@ -24576,7 +25840,7 @@ public:
 	}
 
 
-	static tsize bs_ensize( const tchar *s, tsize len )
+	static tsize bs_ensize( const tchar *s, tsize len , tchar(*apf1)()=bs_esc )
 	{
 		tsize i;
 		tchar *t1, *t2, *t3;
@@ -24585,19 +25849,20 @@ public:
 		t1=(tchar*)s;
 		t3=t1+len;
 		for( t2=t1; t2<t3; t2++ )
-			i += bs_inset(*t2)?(1*sizeof(tchar)):(3*sizeof(tchar));
-
+		{
+			i += bs_inset(*t2,apf1) ? (1*sizeof(tchar)) : (3*sizeof(tchar)) ;
+		}
 		return i+(sizeof(tchar)); 
 	}
 
 
-	static tsize bs_ensize( const tchar *s )
+	static tsize bs_ensize( const tchar *s , tchar(*apf1)()=bs_esc )
 	{
-		return bs_ensize( s, slen(s) + 1 );
+		return bs_ensize( s, slen(s) + 1 , apf1 );
 	}
 
 
-	static tchar * bs_en( const tchar *s, tsize len, tchar *destbuf )
+	static tchar * bs_en( const tchar *s, tsize len, tchar *destbuf , tchar(*apf1)()=bs_esc )
 	{
 		tchar *ss1, *ss2, *ss3, *sd1;
 		tbool rc;
@@ -24613,7 +25878,7 @@ public:
 
 			do 
 			{
-				if( !bs_inset(*ss2) ) 
+				if( !bs_inset(*ss2,apf1) ) 
 				{
 					rc = 1;
 					break;
@@ -24624,9 +25889,10 @@ public:
 
 			}while(0);
 
-			if(rc) {    
+			if(rc)
+			{    
 				l = (tuint8)(*ss2);
-				(*SClib::p_sprintf())( sd1, "%c%02X", bs_esc(), l );
+				(*SClib::p_sprintf())( sd1, "%c%02X", (*apf1)(), l );
 				sd1 += (3*sizeof(tchar));
 			}
 		}
@@ -24635,29 +25901,30 @@ public:
 	}
 
 
-	static tchar * bs_en( const tchar *s, tchar *destbuf )
+	static tchar * bs_en( const tchar *s, tchar *destbuf , tchar(*apf1)()=bs_esc )
 	{
-		return bs_en( s, slen(s) + 1, destbuf );
+		return bs_en( s, slen(s) + 1, destbuf , apf1 );
 	}
 
-	static std::string  & bs_en( std::string & strData ) 
-	{
-		std::string s1( 3 + bs_ensize( strData.c_str(), (tsize)strData.length() ) , 'a' );
 
-		bs_en( strData.c_str(), &(s1[0]) );
+	static std::string  & bs_en( std::string & strData , tchar(*apf1)()=bs_esc ) 
+	{
+		std::string s1( 3 + bs_ensize( strData.c_str(), (tsize)strData.length() , apf1 ) , 'a' );
+
+		bs_en( strData.c_str(), &(s1[0]) , apf1 );
 
 		return strData = s1.c_str();
 	}
 
-	
+
 	static std::string  & bs_de( std::string & strData , tchar(*apf1)()=bs_esc )
 	{
 		std::string s1( strData );
 
-		s1 += (*apf1)( ); 
+		s1 += (*apf1)(); 
 		s1 += "00123";
 
-		strData += (*apf1)( ); 
+		strData += (*apf1)(); 
 		strData += "00123";
 
 		bs_de( strData.c_str(), &(s1[0]) , apf1 );
@@ -24673,8 +25940,9 @@ public:
 		if(s==NULL) return 0;
 
 		for( i=0,j=(toffset)slen(s),k=0;i<j; )
+		{
 			if(	(i+2<j)				&&
-				s[i]==(*apf1)( )	&&
+				s[i]==(*apf1)()		&&
 				sishex(s[i+1])		&&
 				sishex(s[i+2])  )
 			{
@@ -24686,6 +25954,7 @@ public:
 				i++;
 				k++;
 			}
+		}
 		return k;
 	}
 
@@ -24698,9 +25967,10 @@ public:
 		tchar ss[2];
 		ss[1]=0;
 
-		for(i=0,j=(toffset)slen(s),k=0;i<j; ) {
+		for( i=0, j=(toffset)slen(s), k=0; i<j;  )
+		{
 			if(	(i+2<j)			&&
-				s[i]==(*apf1)( )&&
+				s[i]==(*apf1)() &&
 				sishex(s[i+1])	&&
 				sishex(s[i+2])	 )
 			{
@@ -25806,10 +27076,40 @@ public:
 
 
 	template < class CntnrT, class ELET >
+	static tsize vs_setgroup( const CntnrT & vsource, std::vector<ELET> & rtncontent, std::vector<int> * prtnsubsum )
+	{
+		CntnrT v2, v3; 
+		typedef typename CntnrT::iterator iteratortypeB;
+		iteratortypeB  it1,  itNewEnd2;
+		int i;
+
+		v2 = vsource;
+		std::sort( v2.begin(), v2.end() );
+		v3 = v2;
+
+		itNewEnd2 = std::unique( v2.begin(), v2.end() );
+
+		for( it1=v2.begin(); it1!=itNewEnd2; it1++)
+		{
+			rtncontent.push_back( *it1 );
+			if( prtnsubsum )
+			{
+				i = (int)std::count( v3.begin(), v3.end(), *it1 );
+				prtnsubsum->push_back(i);
+			}
+		}
+		return (tsize)v2.size();
+	}
+
+
+	
+	
+	
+	
+	template < class CntnrT, class ELET >
 	static tsize vs_setgroup( const CntnrT & vsource, std::vector<ELET> & rtncontent )
 	{
-		std::vector<int> v;
-		return vs_setgroup( vsource, rtncontent, v );
+		return vs_setgroup( vsource, rtncontent, NULL );
 	}
 
 
@@ -26053,6 +27353,9 @@ public:
 		if( (void*)psource==(void*)m_pbuf ) return;
 
 		redim(isize);
+
+		
+
 		copybuf( psource, m_pbuf, isize );
 	}
 
@@ -26495,15 +27798,89 @@ public:
 	}
 
 	
-	long UnSeri3( const std::string & s1 ) 
+	long UnSeri3__bak_slow( const std::string & s1 ) 
 	{
 		std::string s2;
 		for( std::string::size_type i = 0; i < s1.size(); i++ )
 		{
-			if( wl::SStrf::sishex( s1[i] ) ) s2 += *( s1.c_str() + i );
+			if( SStrf::sishex( s1[i] ) ) s2 += *( s1.c_str() + i );
 		}
 		return UnSeri( s2 );
 	}
+
+
+	
+	tsize UnSeri3( const std::string & s1 )
+	{
+		std::vector< tuint8 > v1;
+		char sz[3];
+
+		sz[2] = 0;
+
+		for( std::string::size_type i = 0; i < s1.size();   )
+		{
+			tbool data_valid = 0;
+
+			
+			sz[0] = 0;
+			while(1)
+			{
+				if( i >= s1.size() )
+				{
+					break;
+				}
+
+				if( SStrf::sishex( s1[i] ) )
+				{
+					sz[0] = s1[i];
+					data_valid = 1;
+					i++;
+					break;
+				}
+
+				i++;
+			}
+
+			
+			sz[1] = 0;
+			while(1)
+			{
+				if( i >= s1.size() )
+				{
+					break;
+				}
+
+				if( SStrf::sishex( s1[i] ) )
+				{
+					sz[1] = s1[i];
+					data_valid = 1;
+					i++;
+					break;
+				}
+
+				i++;
+			}
+
+			if( data_valid )
+			{
+				int ii;
+				(SClib::p_sscanf())( sz, "%x", &ii );
+				v1.push_back( (tuint8)ii );
+			}
+		}
+
+		if( v1.size() == 0 )
+		{
+			this->redim(0);
+			return 0;
+		}
+
+		this->redim( (tsize)v1.size() );
+		memcpy( this->buf(), &(v1[0]), v1.size() );
+
+		return this->len();
+	}
+
 
 	
 	long UnSeri10D( const std::string &strData, void * pData ) const
@@ -27288,8 +28665,6 @@ class SDte : public SDte_bare
 
 public:
 
-private:
-
 	static tbool d_is_leap_year(int y)
 	{
 		
@@ -27299,6 +28674,8 @@ private:
 				( ( y % 4 == 0 ) && ( y % 100 != 0 ) );
 	}
 
+
+private:
 
 	static int d_day_of_year(int y)
 	{
@@ -28124,6 +29501,11 @@ public:
 		return "/";
 	}
 
+	static std::string GetPathSepOpposite()
+	{
+		return "\\";
+	}
+
 
 	static std::string MkDir2Path( std::string strPathOrDir )
 	{
@@ -28483,6 +29865,7 @@ public:
 		flen=ftell(fp);
 		fseek( fp,0,SEEK_SET );
 
+        
 		if( flen == 0)
 		{
 			fclose(fp);
@@ -30259,7 +31642,7 @@ public:
 		return y;
 	}
 
-	
+
 	void Line( int x1, int y1, int x2, int y2 )
 	{
 		 int dx = x2 - x1;
@@ -30815,19 +32198,27 @@ public:
 	}
 
 	
-	INT_VAL_T get( INT_NAME_T name )
+	INT_VAL_T get( INT_NAME_T name , std::string **pstrMem = NULL ) 
 	{
 		std::stringstream stream1;
 		std::stringstream stream2;
 		INT_VAL_T n;
+
 		stream1 << name;
+
 		if( NaStrarr_base< INT_NAME_T >::m_navaknl.get(stream1.str()).empty() )
 		{
-			stream2 << "0";
+			stream2 << "0";			
 		}
 		else
+		{
 			stream2 << NaStrarr_base< INT_NAME_T >::m_navaknl.get(stream1.str());
+
+			if( pstrMem ) *pstrMem = &(NaStrarr_base< INT_NAME_T >::m_navaknl.get(stream1.str()));
+		}
+
 		stream2 >> n;
+
 		return n;
 	}
 
@@ -30851,6 +32242,12 @@ public:
 		j += val;
 		let( name, j );
 		return j;
+	}
+
+	long addvalue( long name, NaLngarr & val , int ratio = 1 )
+	{
+		long j = val.get( name );
+		return this->addvalue( name, j * ratio );
 	}
 };
 
@@ -30877,6 +32274,24 @@ class NaL2L : public NaLngarr
 {
 public:
 	virtual ~NaL2L() {;}
+
+	
+	void ReserveClear( long iMin, long iMax, long iStep = 1 , int iReserve = 64 )
+	{
+		this->clear();
+
+		for( long i = iMin; i <= iMax ; i += iStep ) 
+		{
+			this->let( i, 0 );
+
+			std::string *pstrMem;
+
+			this->get( i, &pstrMem );
+
+			pstrMem->reserve(iReserve);
+		}
+	}
+
 };
 
 
@@ -31074,7 +32489,8 @@ X011_NAMESPACE_BEGIN
 class IRice
 {
 public:
-	tbool m_biRecv0Flag;
+    tuint32 m_iRecvLenSum;
+	tbool   m_biRecv0Flag;
 
 protected:
 	SCake m_ckDataL2CacheBuf;
@@ -31088,12 +32504,16 @@ protected:
 		int i = on_sys_recv(ckDataBuf); 
 		if(i)
 		{
+            m_iRecvLenSum += i;
+
 			return i;
 		}
 		else
 		{
 			ckDataBuf.redim(0);
+
 			m_biRecv0Flag = 1;
+
 			return 0;
 		}
 	}
@@ -31111,6 +32531,7 @@ public:
 
 	IRice( )
 	{
+        m_iRecvLenSum = 0;
 		m_biRecv0Flag = 0;
 	}
 
@@ -31454,6 +32875,66 @@ public:
 		m_ckDataL2CacheBuf.redim(0);
 		return ckData.len()==0?0:1;
 	}
+
+
+
+	
+	tbool recv_frame( SCake & ckData , char cSeperate )
+	{
+		char strSeperate[3];
+		SCake ckTmp;
+		tchar *pSep;
+
+		strSeperate[0] = cSeperate;
+		strSeperate[1] = 0;
+
+		SCake ckSepDumpTmp(strSeperate);
+
+
+		ckSepDumpTmp.redim(1);
+		*(ckSepDumpTmp.buf()) = cSeperate;
+
+		do
+		{
+			SCake ckTmpL2Cache2;
+			ckTmpL2Cache2 = m_ckDataL2CacheBuf;
+			ckTmpL2Cache2.mk_sz();
+
+			
+			pSep = NULL;
+			for( tsize ii = 0; ii < m_ckDataL2CacheBuf.len(); ii ++ )
+			{
+				tchar *p = m_ckDataL2CacheBuf.buf() + ii;
+				if( *p == cSeperate )
+				{
+					pSep = p;
+					break;
+				}
+			}
+
+			if( pSep )
+			{
+				ckData.redim( (tsize)(pSep - m_ckDataL2CacheBuf.buf() ) );
+				
+
+				m_ckDataL2CacheBuf.dump( ckData );
+				m_ckDataL2CacheBuf.dump( ckSepDumpTmp ); 
+				return 1;
+			}
+
+			if( !sys_recv( ckTmp ) ) break;
+
+			m_ckDataL2CacheBuf.append(ckTmp);
+
+			if( !on_chk_L2CacheLen( m_ckDataL2CacheBuf ) ) break; 
+
+		}while(ckTmp.len()>0);
+
+		ckData = m_ckDataL2CacheBuf;	
+		m_ckDataL2CacheBuf.redim(0);
+		return ckData.len()==0?0:1;
+	}
+
 
 
 public:
@@ -33182,7 +34663,7 @@ public:
 
 
 	
-	static void PackFolder( std::string strWorkPathOrDir, SCake & ckOut )
+	static void PackFolder( std::string strWorkPathOrDir, SCake & ckOut , std::string strFnPattern = "*.*" )
 	{
 		
 		std::string strWorkPath;
@@ -33219,7 +34700,8 @@ public:
 
 
 
-		ListAllFile( strWorkPath, "*.*", vFileFullPathNameLst, 0, 1, 1, 1 );
+		
+		ListAllFile( strWorkPath, strFnPattern, vFileFullPathNameLst, 0, 1, 1, 1 );
 
 		for( it = vFileFullPathNameLst.begin(); it != vFileFullPathNameLst.end(); ++it )
 		{
@@ -33315,7 +34797,8 @@ public:
 
 
 	static tbool UnPackFolder(      std::string strWorkPathOrDir,
-									const SCake & ckIn , tbool biCheckSeal = 1 ,
+									const SCake & ckIn ,
+									tbool biCheckSeal = 1 ,
 									tbool biWriteDiskReal = 1 ,
 									const char * pWhitePfn = NULL	,
 									std::vector<std::string> *pvWhiteLst = NULL ,
@@ -33374,11 +34857,15 @@ public:
 			vDirFullNameLst.push_back( s1 );
 
 			
+			
+			
+			
+
+			
+
 			if( biWriteDiskReal )
 			{
-			
-			
-				mkdir(s1.c_str(), 0777);
+				makedir( s1 );
 			}
 		}
 
@@ -34069,6 +35556,176 @@ public:
 	}
 
 }; 
+
+
+
+
+
+
+
+
+class WProcRun
+{
+public:
+	typedef		pid_t		ProcHandle_t;
+
+public:
+    int  m_ExitCode;
+
+private:
+    pid_t  m_hp;
+    tbool  m_isSync;
+
+private:
+	WProcRun & operator = (const WProcRun & rhs)
+	{
+		return *this;
+	}
+
+	WProcRun(const WProcRun & rhs)
+	{;}
+
+
+protected:
+
+
+public:
+    WProcRun( std::string strProcImg, std::string strCmdLineArgs, tbool isSync = 0 , ProcHandle_t * pProcHndl = NULL )
+	{
+		m_ExitCode = -1;
+		m_hp = 0;
+		if( pProcHndl ) *pProcHndl = 0;
+
+        m_isSync = isSync;
+
+
+        pid_t pid;
+        int status;
+
+        if( strProcImg == "" ) return;
+
+        if( (pid = fork()) < 0 )
+        {
+            status = -1; 
+        }
+        else if(pid == 0)
+        {
+            
+
+            std::string  cmdstring = strProcImg + " " + strCmdLineArgs;
+            execl( "/bin/sh", "sh", "-c", cmdstring.c_str(), (char *)0 );
+            
+
+            _exit(127); 
+        }
+        else 
+        {
+            m_hp = pid;
+			if( pProcHndl ) *pProcHndl = m_hp;
+
+            printf( "m_hp=%d\n", m_hp );
+
+		    if( isSync )
+            {
+                while( waitpid(pid, &status, 0) < 0)
+                {
+                    if(errno != EINTR)
+                    {
+                        status = -1; 
+                        break;
+                    }
+                }
+
+				if( WIFEXITED(status) )
+				{
+					m_ExitCode = WEXITSTATUS(status) ;
+				}
+            }
+        }
+
+	}
+
+
+	virtual ~WProcRun()
+	{
+        if( !m_isSync ) KillProc();
+	}
+
+
+    void KillProc()
+    {
+        if( m_hp ) KillProcStatic( m_hp );
+    }
+
+
+    static void KillProcStatic( pid_t h )
+    {
+		pid_t  m_hp = h;
+
+        if( m_hp )
+        {
+            
+
+			std::vector< pid_t > allpid;
+
+            for( pid_t pid = m_hp + 1; pid < m_hp + 33; pid ++ )
+            {
+                tuint32 i = (tuint32)pid;
+                FILE *fp;
+                char sz[3333] = {0};
+                WNava nv;
+                std::string strFn;
+                std::string str;
+
+                strFn = "/proc/" + SStrf::sultoa(i) + "/status";
+
+                fp = fopen( strFn.c_str(), "rt" );
+	            if( fp == NULL )
+	            {
+		            continue;
+	            }
+
+                fread( sz, 3333, 1, fp );
+			    fclose(fp);
+
+                sz[3331] = 0;
+                str = sz;
+                nv.impconf( str, "\n", ":" );
+
+                pid_t pid2;
+
+                pid2 = (pid_t)SStrf::satoul( nv.get("PPid") );
+
+                printf( "pid=%d,pid2 =%d\n", (int)pid, (int)pid2 );
+
+                if( pid2 == m_hp )
+                {
+					allpid.push_back( pid );
+
+                    printf( "kill pid=%d,pid2 =%d\n", (int)pid, (int)pid2 );
+                    
+                    
+                }
+            }
+
+			for( std::vector< pid_t >::iterator it = allpid.begin(); it != allpid.end(); ++it )
+			{
+                kill( *it, SIGKILL );
+                
+                kill( *it, SIGTERM );
+			}
+
+
+            printf( "kill m_hp=%d\n", (int)m_hp );
+            kill( m_hp, SIGKILL );
+            
+            kill( m_hp, SIGTERM );
+        }
+    }
+
+};
+
+
 
 
 
@@ -34805,6 +36462,221 @@ public:
 
 
 
+
+
+
+
+
+
+
+
+
+class WProcRun2
+{
+private:
+
+	
+	class daemon_boy_t : public WThrd
+	{
+	private:
+
+	public:
+		std::string  *m_pstrProcImg;
+		std::string  *m_pstrCmdLn;
+		int  *m_pRc; 
+		int  *m_pExitCode; 
+		int  *m_pIsRunning;
+		WProcRun::ProcHandle_t  *m_pProcHandle;
+		WProcRun2  *m_pFather;
+
+	public:
+		daemon_boy_t()
+		{
+		}
+
+		virtual ~daemon_boy_t(){}
+
+	public:
+		virtual int tr_on_user_run()
+		{
+			if( m_pFather->OnBefore() )
+			{
+				*m_pRc = 1;
+
+				WProcRun aa( *m_pstrProcImg , *m_pstrCmdLn, 1 , m_pProcHandle );
+
+				*m_pExitCode = (int)(tuint32)aa.m_ExitCode;
+			}
+			else
+			{
+				*m_pRc = 0;
+				*m_pExitCode = -1;
+			}
+
+			*m_pIsRunning = 0;
+			return 0;
+		}
+
+		
+		virtual void tr_on_post_thrd()
+		{
+			*m_pProcHandle = 0;
+
+			 m_pFather->OnAfterExit();
+		}
+
+		
+		void ByeBye()
+		{
+			if( *m_pProcHandle )
+			{
+				this->tr_shouldbrk();
+				WProcRun::KillProcStatic( *m_pProcHandle );
+				this->tr_wait();
+			}
+		}
+
+	};
+
+
+private:
+	std::string  m_strProcImg;
+	std::string  m_strCmdLn;
+    int  m_Rc;
+    int  m_ExitCode;
+    int  m_IsRunning;
+	WProcRun::ProcHandle_t  m_ProcHandle;
+	daemon_boy_t  *m_pBoy;
+
+
+private:
+	
+	WProcRun2 & operator = (const WProcRun2 & rhs)
+	{
+		return *this;
+	}
+
+	
+	WProcRun2(const WProcRun & rhs)
+	{;}
+
+
+public:
+	
+	WProcRun2()
+	{
+		m_ExitCode = -1;
+		m_IsRunning = 0;
+		m_ProcHandle = 0;
+
+		m_pBoy = NULL;
+	}
+
+
+	virtual ~WProcRun2()
+	{
+		this->Kill();
+
+		if( m_pBoy )
+		{
+			delete m_pBoy;
+			m_pBoy = NULL;
+		}
+	}
+
+	
+	void Init( std::string strProcImg, std::string strCmdLn )
+	{
+		m_strProcImg = strProcImg;
+		m_strCmdLn = strCmdLn;
+	}
+
+	
+	void Invoke()
+	{
+		this->Kill();
+
+		if( m_pBoy )
+		{
+			delete m_pBoy;
+			m_pBoy = NULL;
+		}
+
+		m_pBoy = new daemon_boy_t;
+
+		m_pBoy->m_pstrProcImg = &m_strProcImg;
+		m_pBoy->m_pstrCmdLn = &m_strCmdLn;
+		m_pBoy->m_pRc = &m_Rc;
+		m_pBoy->m_pExitCode = &m_ExitCode;
+		m_pBoy->m_pIsRunning = &m_IsRunning;
+		m_pBoy->m_pProcHandle = &m_ProcHandle;
+		m_pBoy->m_pFather = this;
+
+		m_IsRunning = 1;
+		m_ProcHandle = 0;
+
+		m_pBoy->tr_open();
+
+		while(1)
+		{
+			if( m_IsRunning == 0 ) break;
+			if( m_ProcHandle ) break;
+			WThrd::tr_sleepu( 0.003 );
+		}
+	}
+
+
+	void Kill()
+	{
+		if( m_pBoy && m_IsRunning )
+		{
+			m_pBoy->ByeBye();
+		}
+	}
+
+	
+	tbool IsRunning()
+	{
+		return m_IsRunning ? 1 : 0 ;
+	}
+
+
+	tbool GetRc()
+	{
+		return m_Rc ? 1 : 0 ;
+	}
+
+	
+	int GetExitCode()
+	{
+		return m_ExitCode;
+	}
+
+
+	void Wait()
+	{
+		if( m_pBoy )
+		{
+			m_pBoy->tr_wait();
+		}
+	}
+
+
+	virtual tbool OnBefore()
+	{
+		return 1;
+	}
+
+	
+	virtual void OnAfterExit()
+	{
+		
+		
+		return;
+	}
+
+
+};
 
 
 
@@ -35727,7 +37599,10 @@ private:
 
 				s1 = m_vProfile[i].first;
 				s2 = m_vProfile[i].second;
-				wf.bind( m_strWorkPath + s1 + "_" + s2 + ".txt" );
+
+				
+								wf.bind( get_PFn( s1, s2 ) );
+
 				k += (long)wf.len();
 			}
 			k /= 1000;
@@ -35764,7 +37639,13 @@ private:
 		return 0;
 	}
 
-	
+
+	std::string get_PFn( std::string s1Num, std::string s2Dte )
+	{
+		return m_strWorkPath + s1Num + "_" + s2Dte + ".log";
+	}
+
+
 	void add_file()
 	{
 		std::string s1, s2;
@@ -35816,7 +37697,10 @@ private:
 
 		s1 = m_vProfile[0].first;
 		s2 = m_vProfile[0].second;
-		wf.bind( m_strWorkPath + s1 + "_" + s2 + ".txt" );
+
+		
+		wf.bind( get_PFn( s1, s2 ) );
+
 		if( !wf.erase() )
 		{
 			wf.bind( m_strWorkPath + s1 );
@@ -35837,6 +37721,7 @@ public:
 		WFile wf;
 
 		m_strWorkPath = WFile::MkDir2Path( WFile::MkDir2Path( strBeginWorkPath ) + strPrefixName );
+		m_strWorkPath = WFile::MkDir2Path( m_strWorkPath );
 		wf.makedir(m_strWorkPath);
 		load_profile();
 
@@ -35865,7 +37750,9 @@ public:
 		if( m_vProfile.empty() )
 			add_file();
 
-		fl.bind( m_strWorkPath + m_vProfile.rbegin()->first + "_" + m_vProfile.rbegin()->second + ".txt" );
+		
+		fl.bind( get_PFn( m_vProfile.rbegin()->first,  m_vProfile.rbegin()->second ) );
+
 		fl.write_str( s1 + "\r\n", 1 );
 
 		if( get_small_probability() && numberX_reach() )
@@ -37766,7 +39653,8 @@ public:
 
 		std::vector<std::string> vecTmpTR, vecTmpTD;
 		std::vector<std::string>::iterator itTR;
-		SStrvs::vsa_imp( strHeadPart, std::string("\r\n"), 1, vecTmpTR );
+		
+		SStrvs::vsa_imp( strHeadPart, std::string("\n"), 1, vecTmpTR );
 		for( itTR = vecTmpTR.begin(); itTR!=vecTmpTR.end(); ++itTR )
 		{
 			SCake ck;
@@ -38126,11 +40014,13 @@ public:
 	}
 
 public:
+
 	
 	void LinkCellc( IRice * p )
 	{
 		m_pCellc = p;
 	}
+
 	
 	void LinkCellc( IRice & r )
 	{
@@ -38287,6 +40177,7 @@ public:
 
 		if(pvSubject) pvSubject->clear();
 		if(pvFrom) pvFrom->clear();
+
 		for( statnum1 = 1 ; statnum1 <= statnum; statnum1 ++ )
 		{
 			rc = m_pCellc->send_str( "top " + SStrf::sltoa(statnum1) + " 1\r\n" ); 
@@ -40438,18 +42329,41 @@ public:
 		return 1;
 	}
 
-	static tbool Def( tuint16 port = 9900 ) 
+	static tbool Def( tuint16 iPort = 9900 , tuint16 *pPortOut = NULL , bu_backoffi2_mgr_t<> **pThis = NULL ) 
 	{
-		bu_backoffi2_mgr_t< > *p;
-		if( SStrf::newobjptr(p) && p->m_tLsn.Listen( (tuint16)port ) )
+		tuint16 iPortOut;
+		bu_backoffi2_mgr_t<> *p;
+
+		SStrf::newobjptr(p);
+
+		for( iPortOut = iPort; iPortOut <= 65531; iPortOut++ )
 		{
-			p->tr_openx();
-			return 1;
+			if( p->m_tLsn.Listen((u_short)iPortOut) )
+			{
+				p->tr_openx();
+				if( pPortOut ) *pPortOut = iPortOut;
+
+				if( pThis ) *pThis = p;
+
+				return 1;
+			}
 		}
+
+		delete p;
+		if( pThis ) *pThis = NULL;
 		return 0;
 	}
 };
 
+
+
+	
+	
+	
+	
+	
+	
+	
 
 
 class bu_backoffi2_client_base_t
@@ -40955,25 +42869,26 @@ X011_NAMESPACE_END
 X011_NAMESPACE_BEGIN
 
 
+
 #ifdef VC6_COMPATIBLE_X011_
 
 #else
 
 
-template < class THREADBASE_T = WThrd, class THREADBASE_T_toutman = WThrd >
+template < class THREADBASE_T = WThrd, class THREADBASE_T_timeoutman = WThrd >
 class WKeyinput : public WIdleThrd< std::string > , public THREADBASE_T
 {
 public:
 
 private:
-	class TimeoutMan : public THREADBASE_T_toutman
+	class TimeoutMan : public THREADBASE_T_timeoutman
 	{
 	public:
 		WKeyinput * m_pFather;
 
 		TimeoutMan(){ m_pFather = NULL; }
 
-		virtual ~TimeoutMan(){ THREADBASE_T_toutman::tr_destruct(); }
+		virtual ~TimeoutMan(){ THREADBASE_T_timeoutman::tr_destruct(); }
 
 		virtual int tr_on_user_run()
 		{
@@ -40993,18 +42908,19 @@ private:
 	WTcpListener  m_tLsn;
 	WTcpCells     m_ts;
 	WTcpCellc     m_tc;
+
 	WCrsc					  m_KeyBufLck;
 	std::list< std::string >  m_KeyBuf;
 	volatile WCrsc			* m_pKeyBufTempLock;
 
 	volatile double m_timeout_dSec;
 
-	TimeoutMan	*m_pto;
+	TimeoutMan	*m_ptimeoutman;
 
 public:
 	WKeyinput()
 	{
-		m_pto = new TimeoutMan;
+		m_ptimeoutman = new TimeoutMan;
 
 		m_pKeyBufTempLock = NULL;
 		m_timeout_dSec = 0.0;
@@ -41012,9 +42928,9 @@ public:
 
 	virtual ~WKeyinput()
 	{
-		m_pto->tr_shouldbrk();
-		m_pto->m_pFather = NULL;
-		delete m_pto;
+		m_ptimeoutman->tr_shouldbrk();
+		m_ptimeoutman->m_pFather = NULL;
+		delete m_ptimeoutman;
 
 		THREADBASE_T::tr_destruct();
 	}
@@ -41028,7 +42944,7 @@ public:
 
 		m_KeyBuf.clear();
 
-		for( int i = 0; i < 9999; i++ )
+		for( int i = 2090; i <= 63999; i++ )
 		{
 			m_strkeyaddress = "127.0.0.1:" + SStrf::sltoa( iPortOut = (i + iPort) );
 
@@ -41037,10 +42953,10 @@ public:
 				this->tr_open();
 
 				this->PostTask( "<connect>" );
-				WThrd::tr_sleepu(0.61);
+				WThrd::tr_sleepu(1.61);
 
-				m_pto->m_pFather = this;
-				m_pto->tr_open();
+				m_ptimeoutman->m_pFather = this;
+				m_ptimeoutman->tr_open();
 				
 
 				if( pPortOut ) *pPortOut = iPortOut;
@@ -41051,75 +42967,20 @@ public:
 		return 0;
 	}
 
-	
+
 	void SetTimeout( double dSec = 0.0 )
 	{
 		m_timeout_dSec = dSec;
 	}
 
-	
+
 	void Clear()
 	{
 		WCrsc aLock( &m_KeyBufLck );
 		m_KeyBuf.clear();
 	}
 
-	
-	
-	
 
-
-	std::string GetKey( tbool biWithWait = 1 )
-	{
-		std::string s;
-
-		do
-		{
-			if(1)
-			{
-				volatile WCrsc aLock( &m_KeyBufLck );
-
-				if( m_KeyBuf.empty() )
-				{
-					if( biWithWait )
-						this->PostTask( "<lock>", 0, 1 );
-					else
-						return "";
-				}
-				else
-				{
-					s = *(m_KeyBuf.begin());
-					m_KeyBuf.pop_front();
-					break;
-				}
-			}
-
-			WThrd::tr_sleep( 0, 0.25 );
-			continue;
-
-		}while(1);
-
-		return s;
-	}
-
-	virtual void OnRunTask( std::string t )
-	{
-		if( t.empty() )
-		{
-			return;
-		}
-
-		if( t == "<connect>" )
-		{
-			this->m_tc.Conn( m_strkeyaddress );
-			return;
-		}
-
-		
-		this->m_tc.send_str( t + "\n" );
-	}
-
-	
 	virtual int tr_on_user_run()
 	{
 		if( !this->m_ts.Conn( this->m_tLsn ) )
@@ -41218,6 +43079,71 @@ public:
 		return 1;
 	}
 
+
+	virtual void OnRunTask( std::string t )
+	{
+		if( t.empty() )
+		{
+			return;
+		}
+
+		if( t == "<connect>" )
+		{
+			this->m_tc.Conn( m_strkeyaddress );
+			return;
+		}
+
+		
+		this->m_tc.send_str( t + "\n" );
+	}
+
+
+	
+	
+	
+	void PutKey( const std::string &s )
+	{
+		PostTask( s, 0, 1 );
+	}
+
+
+	std::string GetKey( tbool biWithWait = 1 )
+	{
+		std::string s;
+
+		do
+		{
+			if(1)
+			{
+				volatile WCrsc aLock( &m_KeyBufLck );
+
+				if( m_KeyBuf.empty() )
+				{
+					if( biWithWait )
+					{
+						this->PostTask( "<lock>", 0, 1 );
+
+						WThrd::tr_sleep( 0, 0.05 );
+						continue;
+					}
+					else
+					{
+						return "";
+					}
+				}
+				else
+				{
+					s = *(m_KeyBuf.begin());
+					m_KeyBuf.pop_front();
+					break;
+				}
+			}
+
+		}while(1);
+
+		return s;
+	}
+
 };
 
 #endif	
@@ -41227,36 +43153,398 @@ public:
 
 
 
-class WClimbUp_t
+
+template < class THRD_CONN_TIMEOUT_T = WThrd , class KEYQUE_ITEM_T = std::string >
+class WKeyinput2
 {
 public:
+	typedef  KEYQUE_ITEM_T  KEYQUE_ITEM_t;
 
 private:
+	volatile double m_timeout_fSec;
+	std::string		m_strConnAddress;
+	WTcpListener	m_Lsn;
+	WTcpCells		m_ts;
+	WTcpCellc		m_tc;
+	bool			m_isConnOk;
+	WCrsc							m_KeyQueLck;
+	std::list< KEYQUE_ITEM_T >		m_KeyQue;
+	bool			m_isGot; 
+	WCrsc							m_GetKeyFuncLck;
+	WCrsc							m_PutKeyFuncLck;
 
-	volatile int  m_iKeepType; 
 
-
-public:
-
-	
-	WClimbUp_t()
+private:
+	class ConnTimeoutMan_t : public THRD_CONN_TIMEOUT_T
 	{
-		m_iKeepType = 1;
-	}
+	public:
+		WKeyinput2 * m_pFather;
 
-	
-	 ~WClimbUp_t()
-	{
-	}
+		ConnTimeoutMan_t()
+		{
+			m_pFather = NULL;
+		}
 
-public:
+		virtual ~ConnTimeoutMan_t()
+		{
+			THRD_CONN_TIMEOUT_T::tr_destruct();
+		}
 
-	
-	void SetKeepType( int i )
-	{
 		
+		virtual void tr_on_pre_thrd()
+		{
+			while(1)
+			{
+				WThrd::tr_sleepu( 0.003 );
+
+				if( m_pFather->m_tc.Conn( m_pFather->m_strConnAddress ) )
+				{
+					m_pFather->m_isConnOk = true;
+					break;
+				}
+			}
+		}
+
+		virtual int tr_on_user_run()
+		{
+			if( m_pFather == NULL || m_pFather->m_timeout_fSec <= 0.003 )
+			{
+				WThrd::tr_sleepu( 0.93 );
+			}
+			else
+			{
+				WThrd::tr_sleepu( m_pFather->m_timeout_fSec );
+			}
+
+			
+			if( m_pFather && m_pFather->m_isGot )
+			{
+				 m_pFather->m_isGot = false;
+			}
+			else
+			{
+				if( m_pFather )
+				{
+					m_pFather->PutNop();
+				}
+			}
+
+			return 1;
+		}
+
+		
+		virtual void tr_on_post_thrd()
+		{
+			m_pFather = NULL;
+		}
+	};
+
+
+	ConnTimeoutMan_t	m_ConnTimeoutMan;
+
+
+public:
+
+	WKeyinput2()
+	{
+		m_timeout_fSec = 0.93;
+		m_isConnOk = false;
+		m_ConnTimeoutMan.m_pFather = this;
+		m_isGot = false;
 	}
 
+	virtual ~WKeyinput2()
+	{
+		m_ConnTimeoutMan.tr_shouldbrk();
+		while(1)
+		{
+			if( m_ConnTimeoutMan.m_pFather == NULL ) break;
+			WThrd::tr_sleepu( 0.93 );
+		}
+	}
+
+public:
+	
+	tbool KeyInit( tuint16 iBeginPort = 32000 , tuint16 *pPortOut = NULL ) 
+	{
+		WCrsc aLock( &m_KeyQueLck );
+		tuint16 iPortOut;
+
+		m_KeyQue.clear();
+
+		for( iPortOut = iBeginPort; iPortOut <= 65531; iPortOut++ )
+		{
+			m_strConnAddress = "127.0.0.1:" + SStrf::sltoa( iPortOut );
+
+			if( m_Lsn.Listen( m_strConnAddress ) )
+			{
+				m_ConnTimeoutMan.tr_open();
+
+				m_ts.Conn( m_Lsn );
+				m_Lsn.StopListen();
+
+				while(1)
+				{
+					WThrd::tr_sleepu( 0.003 );
+					if( m_isConnOk ) break;
+				}
+
+				if( pPortOut ) *pPortOut = iPortOut;
+
+				return 1;
+			}
+		}
+
+		return 0;
+	}
+
+
+	void SetTimeout( double fSec = 1 )
+	{
+		m_timeout_fSec = fSec;
+	}
+
+
+	void PutKey( const KEYQUE_ITEM_t &k )
+	{
+		WCrsc aLock( &m_PutKeyFuncLck );
+
+		if(1)
+		{
+			WCrsc aLock( &m_KeyQueLck );
+
+			m_KeyQue.push_back( k );
+
+		}
+
+		
+		this->m_ts.send_str( "a" );
+	}
+
+
+	
+	void PutNop()
+	{
+		if( this->m_isConnOk )
+			this->m_ts.send_str( "n" );
+	}
+
+
+	
+	tbool GetKey( KEYQUE_ITEM_t *pItemOut , tbool isWithWait = 1 , tbool isTimeoutRtn = 1 )
+	{
+		if( isWithWait )
+		{
+			WCrsc aLock( &m_GetKeyFuncLck );
+
+			while(1)
+			{
+				SCake ckTmp;
+				const char *p;
+
+				m_tc.recv_len( ckTmp, 1 );
+
+				WCrsc aLock( &m_KeyQueLck );
+
+
+				p = (const char *)ckTmp.buf();
+
+
+				if( ckTmp.len() >= 1 &&
+					(*p != 'a') &&
+					(m_KeyQue.empty()) )
+				{
+					if( isTimeoutRtn )
+					{
+						return 0;
+					}
+				}
+
+
+				if( ckTmp.len() >= 1 &&
+					(*p == 'a') &&
+					(m_KeyQue.empty()) )
+				{
+					if( isTimeoutRtn )
+					{
+						return 0;
+					}
+				}
+
+
+				if( ckTmp.len() >= 1 &&
+					(*p == 'a') &&
+					(!m_KeyQue.empty()) )
+				{
+					KEYQUE_ITEM_t k;
+
+					if( 1 )
+					{
+						
+						k = *(m_KeyQue.begin());
+						m_KeyQue.pop_front();
+					}
+					m_isGot = true;
+
+					if( pItemOut ) *pItemOut = k;
+
+					return 1;
+				}
+			}
+		}
+		else
+		{
+			
+
+			if( m_KeyQue.empty() ) return 0;
+			else
+			{
+				return this->GetKey( pItemOut, 1, 0 );
+			}
+		}
+
+		return 0;
+	}
+
+
+	KEYQUE_ITEM_t GetKey(void)
+	{
+		tbool rc;
+		KEYQUE_ITEM_t ss;
+		KEYQUE_ITEM_t ss2;
+
+		rc = this->GetKey( &ss , 1 , 1 );
+
+		return rc ? ss : ss2;
+	}
+
+
+	
+	void Clear()
+	{
+		WCrsc aLock( &m_KeyQueLck );
+		m_KeyQue.clear();
+	}
+
+};
+
+
+
+
+
+
+
+
+class WClimbUp_t : public WThrd
+{
+public:
+	enum KeepType_t { KEEP_FIRST , KEEP_SECOND };
+
+private:
+	WTcpListener  m_LsnTer;
+	KeepType_t  m_KeepType; 
+	tuint16  m_alertport;
+	void(*m_pfTer)();
+	volatile int m_isReady;
+
+public:
+
+	
+	WClimbUp_t( tuint16 alertport , KeepType_t KeepType = KEEP_FIRST , void(*pfTer)() = NULL )
+	{
+		m_KeepType = KeepType;
+		m_alertport = alertport;
+		m_pfTer = pfTer;
+		m_isReady = 0;
+
+		if( KeepType == KEEP_FIRST )
+		{
+			if( m_LsnTer.Listen( alertport ) )
+			{
+				
+				m_isReady = 1;
+			}
+			else
+			{
+				m_isReady = 1;
+
+				if( pfTer == NULL )
+				{
+					exit( 0 );
+				}
+				else
+				{
+					(*pfTer)();
+				}
+			}
+		}
+
+		if( KeepType == KEEP_SECOND )
+		{
+			this->tr_open();
+		}
+
+	}
+
+	
+	virtual ~WClimbUp_t()
+	{
+		if( m_KeepType == KEEP_FIRST )
+			m_LsnTer.StopListen();
+	}
+
+
+public:
+	virtual void tr_on_pre_thrd()
+	{
+		m_LsnTer.Listen( m_alertport );
+
+		WThrd::tr_sleepu( 1.5 );
+		
+
+		m_LsnTer.StopListen();
+
+		WThrd::tr_sleepu( 0.13 );
+	}
+
+	virtual int tr_on_user_run()
+	{
+		wl::WTcpCellc tCc;
+
+		tCc.killer_up( 0.7 );
+
+		if( tCc.Conn( "127.0.0.1", m_alertport ) )
+		{
+			m_isReady = 1;
+
+			if( m_pfTer == NULL )
+			{
+				exit( 0 );
+			}
+			else
+			{
+				(*m_pfTer)();
+			}
+		}
+
+		m_isReady = 1;
+
+		WThrd::tr_sleepu( 0.13 );
+
+		return 1;
+	}
+
+
+	void WaitReady()
+	{
+		while(1)
+		{
+			if( m_isReady ) break;
+			WThrd::tr_sleepu( 0.13 );
+		}
+
+		return;
+	}
 
 };
 
@@ -41275,8 +43563,8 @@ X011_NAMESPACE_BEGIN
 
 
 
-#ifndef V1_3AAFWEB02_TBL_T_20170622_133852
-#define V1_3AAFWEB02_TBL_T_20170622_133852
+#ifndef V1_3AAFWEB02_TBL_T_20171128_110611
+#define V1_3AAFWEB02_TBL_T_20171128_110611
 
 
 
@@ -41290,6 +43578,7 @@ public:
 	std::string		m_FSA_Func;			
 	std::string		m_strTitle;			
 	int		m_BigFontFlag;			
+	int		m_BigFontSizePt;			
 	tuint32		m_StepCount;			
 	NaS2S		m_Value;			
 	wl::tuint8		m_RES_01;			
@@ -41307,6 +43596,7 @@ public:
 		m_FSA_Func = "";
 		m_strTitle = "_----_";
 		m_BigFontFlag = 0;
+		m_BigFontSizePt = 33;
 		m_StepCount = 0;
 		
 		m_RES_01 = 0;
@@ -41424,6 +43714,13 @@ public:
 		en( buf1, len1, buf2 );
 		strOut += std::string(buf2);
 		strOut += std::string("/");
+		buf1 = (const char *)reinterpret_cast<char *>(&reinterpret_cast<char&>(m_BigFontSizePt));
+		len1 = sizeof(m_BigFontSizePt);
+		if( (int)v.size() < ( len1 * 2 + 4 ) ) v.resize( len1 * 2 + 4 );
+		buf2 = (char*)(&(v[0]));
+		en( buf1, len1, buf2 );
+		strOut += std::string(buf2);
+		strOut += std::string("/");
 		buf1 = (const char *)reinterpret_cast<char *>(&reinterpret_cast<char&>(m_StepCount));
 		len1 = sizeof(m_StepCount);
 		if( (int)v.size() < ( len1 * 2 + 4 ) ) v.resize( len1 * 2 + 4 );
@@ -41504,6 +43801,9 @@ public:
 		  m_BigFontFlag = *(int*)buf2; }else return *this;
 		buf2 = (char*)buf1;
 		 if( *buf2!='}') {buf1 = de( buf2 );
+		  m_BigFontSizePt = *(int*)buf2; }else return *this;
+		buf2 = (char*)buf1;
+		 if( *buf2!='}') {buf1 = de( buf2 );
 		  m_StepCount = decode2<tuint32>(buf2); }else return *this;
 		buf2 = (char*)buf1;
 		 if( *buf2!='}') {buf1 = de( buf2 );
@@ -41553,6 +43853,10 @@ public:
 		ckl.add( wl::SCake( buf1, len1 ) );
 		buf1 = (const char *)reinterpret_cast<char *>(&reinterpret_cast<char&>(m_BigFontFlag));
 		len1 = sizeof(m_BigFontFlag);
+		ckl.add( wl::SCake( (wl::tchar*)&len1, 4 ) );
+		ckl.add( wl::SCake( buf1, len1 ) );
+		buf1 = (const char *)reinterpret_cast<char *>(&reinterpret_cast<char&>(m_BigFontSizePt));
+		len1 = sizeof(m_BigFontSizePt);
 		ckl.add( wl::SCake( (wl::tchar*)&len1, 4 ) );
 		ckl.add( wl::SCake( buf1, len1 ) );
 		buf1 = (const char *)reinterpret_cast<char *>(&reinterpret_cast<char&>(m_StepCount));
@@ -41606,6 +43910,9 @@ public:
 		buf2 = (char*)buf1 + 4;
 		buf1 = buf2 + *(wl::tuint32*)buf1;
 		m_BigFontFlag = *(int*)buf2;
+		buf2 = (char*)buf1 + 4;
+		buf1 = buf2 + *(wl::tuint32*)buf1;
+		m_BigFontSizePt = *(int*)buf2;
 		buf2 = (char*)buf1 + 4;
 		buf1 = buf2 + *(wl::tuint32*)buf1;
 		m_StepCount = decode2<tuint32>(buf2);
@@ -41680,6 +43987,14 @@ public:
 
 
 
+	int & GetCol_BigFontSizePt(void)
+	{
+		return m_BigFontSizePt;
+	}
+
+
+
+
 	tuint32 & GetCol_StepCount(void)
 	{
 		return m_StepCount;
@@ -41741,7 +44056,7 @@ public:
 
 	int GetColAmount()
 	{
-		return 12;
+		return 13;
 	}
 
 
@@ -41771,29 +44086,33 @@ public:
 		}
 		if( iColNum == 5 )
 		{
-			return "StepCount";
+			return "BigFontSizePt";
 		}
 		if( iColNum == 6 )
 		{
-			return "Value";
+			return "StepCount";
 		}
 		if( iColNum == 7 )
 		{
-			return "RES_01";
+			return "Value";
 		}
 		if( iColNum == 8 )
 		{
-			return "RES_02";
+			return "RES_01";
 		}
 		if( iColNum == 9 )
 		{
-			return "RES_03";
+			return "RES_02";
 		}
 		if( iColNum == 10 )
 		{
-			return "RES_04";
+			return "RES_03";
 		}
 		if( iColNum == 11 )
+		{
+			return "RES_04";
+		}
+		if( iColNum == 12 )
 		{
 			return "RES_05";
 		}
@@ -41825,33 +44144,37 @@ public:
 		{
 			return 4;
 		}
-		if( strColName == "StepCount" )
+		if( strColName == "BigFontSizePt" )
 		{
 			return 5;
 		}
-		if( strColName == "Value" )
+		if( strColName == "StepCount" )
 		{
 			return 6;
 		}
-		if( strColName == "RES_01" )
+		if( strColName == "Value" )
 		{
 			return 7;
 		}
-		if( strColName == "RES_02" )
+		if( strColName == "RES_01" )
 		{
 			return 8;
 		}
-		if( strColName == "RES_03" )
+		if( strColName == "RES_02" )
 		{
 			return 9;
 		}
-		if( strColName == "RES_04" )
+		if( strColName == "RES_03" )
 		{
 			return 10;
 		}
-		if( strColName == "RES_05" )
+		if( strColName == "RES_04" )
 		{
 			return 11;
+		}
+		if( strColName == "RES_05" )
+		{
+			return 12;
 		}
 		return -1;
 	}
@@ -41884,29 +44207,33 @@ public:
 		}
 		if( iColNum == 5 )
 		{
-			return wl::SStrf::b2s(m_StepCount);
+			return wl::SStrf::sltoa(m_BigFontSizePt);
 		}
 		if( iColNum == 6 )
 		{
-			return m_Value.serialize();
+			return wl::SStrf::b2s(m_StepCount);
 		}
 		if( iColNum == 7 )
 		{
-			return wl::SStrf::sltoa(m_RES_01);
+			return m_Value.serialize();
 		}
 		if( iColNum == 8 )
 		{
-			return m_RES_02.ReadString();
+			return wl::SStrf::sltoa(m_RES_01);
 		}
 		if( iColNum == 9 )
 		{
-			return wl::SStrf::sltoa(m_RES_03);
+			return m_RES_02.ReadString();
 		}
 		if( iColNum == 10 )
 		{
-			return wl::SStrf::b2s(m_RES_04);
+			return wl::SStrf::sltoa(m_RES_03);
 		}
 		if( iColNum == 11 )
+		{
+			return wl::SStrf::b2s(m_RES_04);
+		}
+		if( iColNum == 12 )
 		{
 			return wl::SStrf::b2s(m_RES_05);
 		}
@@ -41942,33 +44269,37 @@ public:
 		{
 			return GetColStr<STRINGT>(4);
 		}
-		if( strColName == "StepCount" )
+		if( strColName == "BigFontSizePt" )
 		{
 			return GetColStr<STRINGT>(5);
 		}
-		if( strColName == "Value" )
+		if( strColName == "StepCount" )
 		{
 			return GetColStr<STRINGT>(6);
 		}
-		if( strColName == "RES_01" )
+		if( strColName == "Value" )
 		{
 			return GetColStr<STRINGT>(7);
 		}
-		if( strColName == "RES_02" )
+		if( strColName == "RES_01" )
 		{
 			return GetColStr<STRINGT>(8);
 		}
-		if( strColName == "RES_03" )
+		if( strColName == "RES_02" )
 		{
 			return GetColStr<STRINGT>(9);
 		}
-		if( strColName == "RES_04" )
+		if( strColName == "RES_03" )
 		{
 			return GetColStr<STRINGT>(10);
 		}
-		if( strColName == "RES_05" )
+		if( strColName == "RES_04" )
 		{
 			return GetColStr<STRINGT>(11);
+		}
+		if( strColName == "RES_05" )
+		{
+			return GetColStr<STRINGT>(12);
 		}
 		return GetColStr<STRINGT>(0);
 	}
@@ -42004,29 +44335,33 @@ public:
 		}
 		if( iColNum == 5 )
 		{
-			wl::SStrf::s2b(strValPARA,m_StepCount);
+			m_BigFontSizePt=wl::SStrf::satol(strValPARA);
 		}
 		if( iColNum == 6 )
 		{
-			m_Value.unserialize(strValPARA);
+			wl::SStrf::s2b(strValPARA,m_StepCount);
 		}
 		if( iColNum == 7 )
 		{
-			m_RES_01=(wl::tuint8)wl::SStrf::satol(strValPARA);
+			m_Value.unserialize(strValPARA);
 		}
 		if( iColNum == 8 )
 		{
-			m_RES_02.Make(strValPARA);
+			m_RES_01=(wl::tuint8)wl::SStrf::satol(strValPARA);
 		}
 		if( iColNum == 9 )
 		{
-			m_RES_03=wl::SStrf::satol(strValPARA);
+			m_RES_02.Make(strValPARA);
 		}
 		if( iColNum == 10 )
 		{
-			wl::SStrf::s2b(strValPARA,m_RES_04);
+			m_RES_03=wl::SStrf::satol(strValPARA);
 		}
 		if( iColNum == 11 )
+		{
+			wl::SStrf::s2b(strValPARA,m_RES_04);
+		}
+		if( iColNum == 12 )
 		{
 			wl::SStrf::s2b(strValPARA,m_RES_05);
 		}
@@ -42058,33 +44393,37 @@ public:
 		{
 			SetColVal<STRINGT>(4,strValPARA);
 		}
-		if( strColName == "StepCount" )
+		if( strColName == "BigFontSizePt" )
 		{
 			SetColVal<STRINGT>(5,strValPARA);
 		}
-		if( strColName == "Value" )
+		if( strColName == "StepCount" )
 		{
 			SetColVal<STRINGT>(6,strValPARA);
 		}
-		if( strColName == "RES_01" )
+		if( strColName == "Value" )
 		{
 			SetColVal<STRINGT>(7,strValPARA);
 		}
-		if( strColName == "RES_02" )
+		if( strColName == "RES_01" )
 		{
 			SetColVal<STRINGT>(8,strValPARA);
 		}
-		if( strColName == "RES_03" )
+		if( strColName == "RES_02" )
 		{
 			SetColVal<STRINGT>(9,strValPARA);
 		}
-		if( strColName == "RES_04" )
+		if( strColName == "RES_03" )
 		{
 			SetColVal<STRINGT>(10,strValPARA);
 		}
-		if( strColName == "RES_05" )
+		if( strColName == "RES_04" )
 		{
 			SetColVal<STRINGT>(11,strValPARA);
+		}
+		if( strColName == "RES_05" )
+		{
+			SetColVal<STRINGT>(12,strValPARA);
 		}
 	}
 
@@ -42324,7 +44663,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_TimeStamp==strVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -42353,7 +44692,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_FSA_FuncInt==iVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -42382,7 +44721,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_FSA_Func==strVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -42411,7 +44750,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_strTitle==strVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -42440,7 +44779,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_BigFontFlag==iVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -42465,11 +44804,40 @@ public:
 
 
 
+	void SelE_BigFontSizePt(int iVal, std::vector<long> & vRps, std::vector<long> * pRefRps=NULL) 
+	{
+		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
+		if(m_DATAcorpora[ltmp].m_BigFontSizePt==iVal)
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
+	}
+
+
+
+
+	AFWEB02_tbl_t_rowtype & SelE1_BigFontSizePt(int iVal)
+	{
+		std::vector<long> vRps ;
+		SelE_BigFontSizePt( iVal, vRps );
+		return GetRow( vRps, 0 );
+	}
+
+
+
+
+	void SelEc_BigFontSizePt(int iVal, std::vector<long> & vRps, std::vector<long> * pRefRps=NULL) 
+	{
+		vRps.clear();
+		SelE_BigFontSizePt(iVal, vRps, pRefRps);
+	}
+
+
+
+
 	void SelE_StepCount(tuint32 iVal, std::vector<long> & vRps, std::vector<long> * pRefRps=NULL) 
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_StepCount==iVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -42498,7 +44866,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_Value==aVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -42527,7 +44895,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_01==iVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -42556,7 +44924,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_02==strVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -42585,7 +44953,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_03==iVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -42614,7 +44982,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_04==iVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -42643,7 +45011,7 @@ public:
 	{
 		for(long ltmp=0;ltmp<(long)m_DATAcorpora.size();ltmp++)
 		if(m_DATAcorpora[ltmp].m_RES_05==aVal)
-		if( !pRefRps || ( !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) ) vRps.push_back( ltmp );
+		if( !pRefRps || !pRefRps->empty() && std::binary_search( pRefRps->begin(), pRefRps->end(), ltmp ) ) vRps.push_back( ltmp );
 	}
 
 
@@ -42865,7 +45233,11 @@ class AFlowEle_t : public WThrd
 public:
 	tbool			m_tSvrGoodFlag;
 	tbool			m_WebFormBeginDoneFlag;
+	tbool			m_RawMode; 
 
+	std::string  m_strFormTableHead;
+
+public:
 	WTcpCells		m_tSvr;
 
 public:
@@ -42887,6 +45259,9 @@ public:
 	{
 		m_tSvrGoodFlag = 1;
 		m_WebFormBeginDoneFlag = 0;
+		m_RawMode = 0;
+
+		m_strFormTableHead = "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n";
 	}
 
 	virtual ~AFlowEle_t()
@@ -43076,7 +45451,7 @@ public:
 		WebSendString( "built-in variable: " );
 
 		
-		WebSendString( "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n" );
+		WebSendString( m_strFormTableHead );
 
 		for( int j = 0; j < (int)v1.size(); j++ )
 		{
@@ -43116,13 +45491,16 @@ public:
 		if( On_StaticFlow() ) 
 		{
 			m_tSvr.DisConn();
+
 			return 0;
 		}
+
 
 		m_SessionId = m_nvHTTPGET.get("sessionid");
 		m_pFolder->folder_purge();
 
 		m_pafdata = m_pFolder->folder_takeout( m_SessionId ); 	
+
 
 		if( NULL == m_pafdata ) 
 		{
@@ -43149,7 +45527,9 @@ public:
 		m_pFolder->folder_put( m_SessionId, m_pafdata );	
 
 		WebFormEnd();
+
 		m_tSvr.DisConn();
+
 
 		return 0;
 	}
@@ -43163,7 +45543,37 @@ public:
 
 			std::string str1;
 
-			str1 = "HTTP/1.0 200 OK\r\n\r\n";
+
+		std::string strOut;
+
+		strOut = "HTTP/1.0 200 OK\r\n";
+		strOut += "Server: NotApache/" + wl::SDte::GetNow().ReadStringPack() + "\r\n";
+		strOut += "Cache-Control: no-cache\r\n";
+		strOut += "Pragma: no-cache\r\n";
+
+		
+		if( m_RawMode )
+		{
+			strOut += "Content-Type: text/plain; charset=gb2312\r\n";
+		}
+		else
+		{
+			strOut += "Content-Type: text/html; charset=gb2312\r\n";
+		}
+
+		strOut += "Connection: close\r\n";
+		strOut += "\r\n";
+
+			if( m_RawMode )
+			{
+				WebSendString( strOut );
+
+				return;
+			}
+
+
+			str1 = strOut;
+
 			str1 += "<html><head>\r\n";
 			
 			str1 += "<meta http-equiv=\"Content-Type\" content=\"application/xhtml+xml; charset=gb2312\"/>\r\n";
@@ -43174,7 +45584,9 @@ public:
 			
 			if( m_pafdata->m_env0.m_BigFontFlag )
 			{
-				str1 += "<style type=\"text/css\">*{font-size:41pt;}</style>";
+				
+				std::string s1 = SStrf::sltoa(m_pafdata->m_env0.m_BigFontSizePt);
+				str1 += "<style type=\"text/css\">*{font-size:" + s1 + "pt;}</style>";
 			}
 			else
 			{
@@ -43193,7 +45605,8 @@ public:
 			str1 += "<input type=\"hidden\" name=\"sessionid\" size=\"60\" value=\""+ m_SessionId +"\">\r\n";
 			str1 += "<p>\r\n";
 
-			str1 += "<input type=\"hidden\" name=\"sessionidupup\" size=\"60\" value=\""+ WFile::MkRUStr() +"\">\r\n";
+			static tuint8 i = 0;
+			str1 += "<input type=\"hidden\" name=\"s_i_u\" size=\"60\" value=\""+ SStrf::sltoa(i++) +"\">\r\n";
 			str1 += "<p>\r\n";
 
 			WebSendString( str1 );
@@ -43212,12 +45625,19 @@ public:
 	{
 		std::string str1;
 
+		str1 = "";
 		str1 += "</form>\r\n";
 		str1 += "</body>\r\n";
 		str1 += "</html>\r\n";
 
+			if( m_RawMode )
+			{
+				str1 = "\r\n";
+			}
+
 		WebSendString( str1 );
 	}
+
 
 	void WebAddBr( int i = 1 ) 
 	{
@@ -43229,6 +45649,7 @@ public:
 		WebSendString( "\r\n" );
 	}
 
+
 	void WebAddCr( int i = 1 ) 
 	{
 		std::string sOut = "<p></p>\r\n";
@@ -43238,6 +45659,7 @@ public:
 		}
 		WebSendString( "\r\n" );
 	}
+
 
 	void WebAddHr( int i = 1 ) 
 	{
@@ -43249,6 +45671,7 @@ public:
 		WebSendString( "\r\n" );
 	}
 
+
 	void WebAddSpace( int i = 1 )
 	{
 		std::string sOut = "&nbsp;";
@@ -43258,6 +45681,15 @@ public:
 		}
 		WebSendString( "\r\n" );
 	}
+
+
+	void WebAddHiLink( std::string strHref, std::string strText )
+	{
+		
+		std::string sOut = "<a href=\"" + strHref + "\">" + strText + "</a>";
+		WebSendString( sOut );
+	}
+
 
 	void WebAddButt( std::string strName, std::string strValue )
 	{
@@ -43298,7 +45730,7 @@ public:
 		std::string sS2SName;
 
 		
-		WebSendString( "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n" );
+		WebSendString( m_strFormTableHead );
 
 		for( int y = 0; y < height; y++ )
 		{
@@ -43332,7 +45764,7 @@ public:
 
 	void WebAddTable2Begin()
 	{
-		WebSendString( "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n" );
+		WebSendString( m_strFormTableHead );
 	}
 
 	void WebAddTable2End()
@@ -43368,7 +45800,7 @@ public:
 
 	void WebAddTable2( std::vector< std::string > &v1 , std::vector< std::string > &v2 )
 	{
-		WebSendString( "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n" );
+		WebSendString( m_strFormTableHead );
 
 		for( int j = 0; j < (int)v1.size(); j++ )
 		{
@@ -43423,22 +45855,35 @@ public:
 		return 1;
 	}
 
-	static tbool NewFlow( int iPort = 3456, int iPurgeConfSec = 3456 )
+	static tbool NewFlow( tuint16 iPort = 2000, int iPurgeConfSec = 3456 , tuint16 *pPortOut = NULL , AFlowMgr_t< _T > **pThis = NULL  ) 
 	{
-		AFlowMgr_t *p;
-		p = new AFlowMgr_t;
+		tuint16 iPortOut;
+		AFlowMgr_t< _T > *p;
+
+		p = new AFlowMgr_t< _T >;
 
 		p->m_aFolder.m_iPurgeConfSec = iPurgeConfSec;
 
-		if( p->m_Lsn.Listen((u_short)iPort) )
+		for( iPortOut = iPort; iPortOut <= 65531; iPortOut++ )
 		{
-			p->tr_openx();
-			return 1;
+			if( p->m_Lsn.Listen((u_short)iPortOut) )
+			{
+				p->tr_openx();
+				if( pPortOut ) *pPortOut = iPortOut;
+
+				if( pThis ) *pThis = p;
+
+				return 1;
+			}
 		}
 
+		delete p;
+		if( pThis ) *pThis = NULL;
 		return 0;
 	}
 };
+
+
 
 
 
@@ -43473,6 +45918,78 @@ public:
 
 };
 
+
+
+
+	
+
+class AWeb2_t : public AFlowEle_t
+{
+private:
+	
+	
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+	
+	
+
+
+	
+
+
+	
+	
+	virtual tbool On_StaticFlow()
+	{
+		std::string strChannel;
+		std::string strAfterWen="";
+		std::string s1, s2;
+		std::string::size_type i;
+
+		
+		strChannel = this->m_strUPfn;
+		i = strChannel.find_last_of( '?' );
+		if( i != std::string::npos )
+		{
+			strChannel[i] = 0;
+			strAfterWen = strChannel.c_str() + i + 1;
+		}
+
+
+		s1 = strChannel.c_str();
+		i = s1.find_last_of( '/' );
+
+		if( i != std::string::npos )
+		{
+			s2 = s1.c_str() + i + 1; 
+		}
+		else
+		{
+			s2 = s1;
+		}
+
+
+		this->OnGet( s2 , this->m_nvHTTPGET , strAfterWen );
+
+		return 1;
+	}
+
+public:
+	AWeb2_t(){}
+	virtual ~AWeb2_t(){}
+
+public:
+	virtual void OnGet( const std::string &strFn , WNava &para , const std::string &strWholePara ) {} 	
+};
 
 
 
