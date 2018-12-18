@@ -15,7 +15,7 @@
 // library, and the C++ .
 
 /*  
-2018c12c18c周二-11c18c50.14  
+2018c12c18c周二-17c32c09.76  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -1265,6 +1265,8 @@ public:
 
 
 	static tchar bs_esc() { return 'b'; }
+
+	static tchar bs_esc2() { return '%'; }
 
 
 	static tbool bs_inset( tchar c , tchar(*apf1)()=bs_esc )	 
@@ -7428,6 +7430,7 @@ public:
 	}
 
 
+	
 	tbool unserialize( const std::string & strData )
 	{
 		std::map< std::string, std::string > mapTmp;
@@ -12730,7 +12733,42 @@ public:
 		this->trimall();
 	}
 
+
+	void UnseriUrlstyle( const std::string & ssource )
+	{
+		this->impconf( ssource, "&", "=", "" );
+
+		for( MAP_MAPKNL_IT it = m_mapKnl.begin(); it != m_mapKnl.end(); ++it )
+		{
+			std::string &s2( it->second );
+
+			SStrf::bs_de( s2 , SStrf::bs_esc2 );
+		}
+	}
+
+
 	
+	void SeriUrlstyle( std::string & strOut ) const
+	{
+		strOut = "";
+
+		for( MAP_MAPKNL_CONSTIT it = m_mapKnl.begin(); it != m_mapKnl.end(); ++it )
+		{
+			strOut += it->first;
+
+			strOut += "=";
+
+			std::string s2 = it->second;
+
+			SStrf::bs_en( s2 , SStrf::bs_esc2 );
+
+			strOut += s2;
+
+			strOut += "&";
+		}
+	}
+
+
 	static WNava ReadFileNa( const std::string & Fn )
 	{
 		SFile fInFile;
@@ -25181,6 +25219,8 @@ public:
 
 	static tchar bs_esc() { return 'b'; }
 
+	static tchar bs_esc2() { return '%'; }
+
 
 	static tbool bs_inset( tchar c , tchar(*apf1)()=bs_esc )	 
 	{
@@ -31340,6 +31380,7 @@ public:
 	}
 
 
+	
 	tbool unserialize( const std::string & strData )
 	{
 		std::map< std::string, std::string > mapTmp;
@@ -34456,7 +34497,42 @@ public:
 		this->trimall();
 	}
 
+
+	void UnseriUrlstyle( const std::string & ssource )
+	{
+		this->impconf( ssource, "&", "=", "" );
+
+		for( MAP_MAPKNL_IT it = m_mapKnl.begin(); it != m_mapKnl.end(); ++it )
+		{
+			std::string &s2( it->second );
+
+			SStrf::bs_de( s2 , SStrf::bs_esc2 );
+		}
+	}
+
+
 	
+	void SeriUrlstyle( std::string & strOut ) const
+	{
+		strOut = "";
+
+		for( MAP_MAPKNL_CONSTIT it = m_mapKnl.begin(); it != m_mapKnl.end(); ++it )
+		{
+			strOut += it->first;
+
+			strOut += "=";
+
+			std::string s2 = it->second;
+
+			SStrf::bs_en( s2 , SStrf::bs_esc2 );
+
+			strOut += s2;
+
+			strOut += "&";
+		}
+	}
+
+
 	static WNava ReadFileNa( const std::string & Fn )
 	{
 		SFile fInFile;
