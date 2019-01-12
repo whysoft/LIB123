@@ -15,7 +15,7 @@
 // library, and the C++ .
 
 /*  
-2018c12c18cÖÜ¶þ-17c32c09.76  
+2019c01c12cÖÜÁù-20c54c00.71  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -1275,6 +1275,7 @@ public:
 		if(c>='a'&&c<='z') return 1;
 		if(c>='0'&&c<='9') return 1;
 		if(c>='A'&&c<='Z') return 1;
+		if(c=='_') return 1;
 		return 0;
 	}
 
@@ -9160,6 +9161,7 @@ public:
 
 	virtual void _save_readable( std::string strFn ) = 0;
 	virtual std::string _get_readable_row( long iRow )  = 0;
+	virtual std::string _read_row_url_format( long iRow )  = 0;
 
 
 	virtual std::string & ut_SeriTblStr( std::string & strOut ) = 0;
@@ -9356,6 +9358,28 @@ public:
 		return s2;
 	}
 
+
+	std::string _read_row_url_format( long iRow )
+	{
+		int y = iRow;
+		std::string s2;
+
+		for( int x = 0; x < this->ut_GetColAmount(); x++ )
+		{
+			std::string sVal;
+			std::string sValUrl;
+
+			sValUrl = sVal = this->ut_GetItemStr(y,x);
+			SStrf::bs_en( sValUrl , SStrf::bs_esc2 );
+
+			s2 += this->ut_GetColName(x) + "=" + sValUrl;
+			if( x != this->ut_GetColAmount() - 1 ) s2 += "&";
+		}
+		return s2;
+	}
+
+
+	
 	virtual std::string & ut_SeriTblStr( std::string & strOut )
 	{
 		return T::Serialize( strOut );
@@ -10377,12 +10401,24 @@ typedef		struct
 	}
 
 
-	static void key_plain( const tchar * strInputSeq )
+	static void key_plain( const tchar * strInputSeq , int iDelayMs )
 	{
 		for( ; strInputSeq && *strInputSeq; strInputSeq++ )
 		{
 			key_plain(*strInputSeq);
+
+			if( iDelayMs != 0 )
+			{
+				Sleep(iDelayMs);
+			}
 		}
+	}
+
+	
+	static void key_plain( std::string strInput )
+	{
+		const tchar * strInputSeq = strInput.c_str();
+		key_plain( strInputSeq, 9 );
 	}
 
 
@@ -12734,6 +12770,39 @@ public:
 	}
 
 
+	
+	void SeriUrlstyle( std::string & strOut ) const
+	{
+		strOut = "";
+		for( MAP_MAPKNL_CONSTIT it = m_mapKnl.begin(); it != m_mapKnl.end(); ++it )
+		{
+			strOut += it->first;
+			strOut += "=";
+			std::string s2 = it->second;
+			SStrf::bs_en( s2 , SStrf::bs_esc2 );
+			
+			s2.erase( s2.end() -1 );s2.erase( s2.end() -1 );s2.erase( s2.end() -1 );
+			strOut += s2;
+			strOut += "&";
+		}
+		if( strOut != "" ) strOut.erase( strOut.end() -1 );
+	}
+
+	
+	void SeriUrlstyle_NoEn( std::string & strOut ) const
+	{
+		strOut = "";
+		for( MAP_MAPKNL_CONSTIT it = m_mapKnl.begin(); it != m_mapKnl.end(); ++it )
+		{
+			strOut += it->first;
+			strOut += "=";
+			strOut += it->second;
+			strOut += "&";
+		}
+		if( strOut != "" ) strOut.erase( strOut.end() -1 );
+	}
+
+	
 	void UnseriUrlstyle( const std::string & ssource )
 	{
 		this->impconf( ssource, "&", "=", "" );
@@ -12741,34 +12810,22 @@ public:
 		for( MAP_MAPKNL_IT it = m_mapKnl.begin(); it != m_mapKnl.end(); ++it )
 		{
 			std::string &s2( it->second );
-
 			SStrf::bs_de( s2 , SStrf::bs_esc2 );
 		}
 	}
 
-
 	
-	void SeriUrlstyle( std::string & strOut ) const
+	void UnseriUrlstyle_NoDe( const std::string & ssource )
 	{
-		strOut = "";
-
-		for( MAP_MAPKNL_CONSTIT it = m_mapKnl.begin(); it != m_mapKnl.end(); ++it )
-		{
-			strOut += it->first;
-
-			strOut += "=";
-
-			std::string s2 = it->second;
-
-			SStrf::bs_en( s2 , SStrf::bs_esc2 );
-
-			strOut += s2;
-
-			strOut += "&";
-		}
+		this->impconf( ssource, "&", "=", "" );
+		
+		
+		
+		
 	}
 
 
+	
 	static WNava ReadFileNa( const std::string & Fn )
 	{
 		SFile fInFile;
@@ -25228,6 +25285,7 @@ public:
 		if(c>='a'&&c<='z') return 1;
 		if(c>='0'&&c<='9') return 1;
 		if(c>='A'&&c<='Z') return 1;
+		if(c=='_') return 1;
 		return 0;
 	}
 
@@ -32793,6 +32851,7 @@ public:
 
 	virtual void _save_readable( std::string strFn ) = 0;
 	virtual std::string _get_readable_row( long iRow )  = 0;
+	virtual std::string _read_row_url_format( long iRow )  = 0;
 
 
 	virtual std::string & ut_SeriTblStr( std::string & strOut ) = 0;
@@ -32989,6 +33048,28 @@ public:
 		return s2;
 	}
 
+
+	std::string _read_row_url_format( long iRow )
+	{
+		int y = iRow;
+		std::string s2;
+
+		for( int x = 0; x < this->ut_GetColAmount(); x++ )
+		{
+			std::string sVal;
+			std::string sValUrl;
+
+			sValUrl = sVal = this->ut_GetItemStr(y,x);
+			SStrf::bs_en( sValUrl , SStrf::bs_esc2 );
+
+			s2 += this->ut_GetColName(x) + "=" + sValUrl;
+			if( x != this->ut_GetColAmount() - 1 ) s2 += "&";
+		}
+		return s2;
+	}
+
+
+	
 	virtual std::string & ut_SeriTblStr( std::string & strOut )
 	{
 		return T::Serialize( strOut );
@@ -34498,6 +34579,39 @@ public:
 	}
 
 
+	
+	void SeriUrlstyle( std::string & strOut ) const
+	{
+		strOut = "";
+		for( MAP_MAPKNL_CONSTIT it = m_mapKnl.begin(); it != m_mapKnl.end(); ++it )
+		{
+			strOut += it->first;
+			strOut += "=";
+			std::string s2 = it->second;
+			SStrf::bs_en( s2 , SStrf::bs_esc2 );
+			
+			s2.erase( s2.end() -1 );s2.erase( s2.end() -1 );s2.erase( s2.end() -1 );
+			strOut += s2;
+			strOut += "&";
+		}
+		if( strOut != "" ) strOut.erase( strOut.end() -1 );
+	}
+
+	
+	void SeriUrlstyle_NoEn( std::string & strOut ) const
+	{
+		strOut = "";
+		for( MAP_MAPKNL_CONSTIT it = m_mapKnl.begin(); it != m_mapKnl.end(); ++it )
+		{
+			strOut += it->first;
+			strOut += "=";
+			strOut += it->second;
+			strOut += "&";
+		}
+		if( strOut != "" ) strOut.erase( strOut.end() -1 );
+	}
+
+	
 	void UnseriUrlstyle( const std::string & ssource )
 	{
 		this->impconf( ssource, "&", "=", "" );
@@ -34505,34 +34619,22 @@ public:
 		for( MAP_MAPKNL_IT it = m_mapKnl.begin(); it != m_mapKnl.end(); ++it )
 		{
 			std::string &s2( it->second );
-
 			SStrf::bs_de( s2 , SStrf::bs_esc2 );
 		}
 	}
 
-
 	
-	void SeriUrlstyle( std::string & strOut ) const
+	void UnseriUrlstyle_NoDe( const std::string & ssource )
 	{
-		strOut = "";
-
-		for( MAP_MAPKNL_CONSTIT it = m_mapKnl.begin(); it != m_mapKnl.end(); ++it )
-		{
-			strOut += it->first;
-
-			strOut += "=";
-
-			std::string s2 = it->second;
-
-			SStrf::bs_en( s2 , SStrf::bs_esc2 );
-
-			strOut += s2;
-
-			strOut += "&";
-		}
+		this->impconf( ssource, "&", "=", "" );
+		
+		
+		
+		
 	}
 
 
+	
 	static WNava ReadFileNa( const std::string & Fn )
 	{
 		SFile fInFile;
