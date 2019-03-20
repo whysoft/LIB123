@@ -15,7 +15,7 @@
 // library, and the C++ .
 
 /*  
-2019c01c12c÷‹¡˘-20c54c00.71  
+2019c03c20c÷‹»˝-15c29c20.86  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -171,7 +171,7 @@ public:
 		return reinterpret_cast<T *>(&reinterpret_cast<char&>(obj));
 	}
 
-	
+
 	template< class T >
 	static T * newobjptr( T * & p )
 	{
@@ -187,7 +187,7 @@ public:
 		return p;
 	}
 
-	
+
 	template< class T >
 	static T * newobjptr()  
 	{
@@ -195,13 +195,13 @@ public:
 		return newobjptr(p);
 	}
 
-	
+
 	static void * smalloc( tsize i )
 	{
 		return malloc( i );
 	}
 
-	
+
 	static void sfree(void *s)
 	{
 		free(s);
@@ -5735,8 +5735,10 @@ public:
 		tsize iWidthNew;
 		tsize iHeight;
 		std::vector < tuint8 > v1;
-		std::vector < std::vector < tuint8 >::size_type > vIdx1; 
-		std::vector < std::vector < tuint8 >::size_type > vIdx2;
+		
+		
+		std::vector < tuint32 > vIdx1; 
+		std::vector < tuint32 > vIdx2;
 
 		for( iWidthNew = iWidth; ; iWidthNew++ )
 		{
@@ -5749,7 +5751,7 @@ public:
 
 		for( ; ; )
 		{
-			vIdx1.push_back( v1.size() );
+			vIdx1.push_back( (tuint32)v1.size() );
 
 			for( i2 = 0; i2 < iWidth; i2++ )
 			{
@@ -5920,8 +5922,10 @@ public:
 		tsize i1, i2;
 		tsize iHeight;
 		std::vector < tuint8 > v1;
-		std::vector < std::vector < tuint8 >::size_type > vIdx1; 
-		std::vector < std::vector < tuint8 >::size_type > vIdx2;
+		
+		
+		std::vector < tuint32 > vIdx1;
+		std::vector < tuint32 > vIdx2;
 
 		i1 = 0;
 		iHeight = 0;
@@ -5929,7 +5933,7 @@ public:
 
 		for( ; ; )
 		{
-			vIdx1.push_back( v1.size() );
+			vIdx1.push_back( (tuint32)v1.size() );
 
 			for( i2 = 0; i2 < iWidth; i2++ )
 			{
@@ -24181,7 +24185,7 @@ public:
 		return reinterpret_cast<T *>(&reinterpret_cast<char&>(obj));
 	}
 
-	
+
 	template< class T >
 	static T * newobjptr( T * & p )
 	{
@@ -24197,7 +24201,7 @@ public:
 		return p;
 	}
 
-	
+
 	template< class T >
 	static T * newobjptr()  
 	{
@@ -24205,13 +24209,13 @@ public:
 		return newobjptr(p);
 	}
 
-	
+
 	static void * smalloc( tsize i )
 	{
 		return malloc( i );
 	}
 
-	
+
 	static void sfree(void *s)
 	{
 		free(s);
@@ -29742,8 +29746,10 @@ public:
 		tsize iWidthNew;
 		tsize iHeight;
 		std::vector < tuint8 > v1;
-		std::vector < std::vector < tuint8 >::size_type > vIdx1; 
-		std::vector < std::vector < tuint8 >::size_type > vIdx2;
+		
+		
+		std::vector < tuint32 > vIdx1; 
+		std::vector < tuint32 > vIdx2;
 
 		for( iWidthNew = iWidth; ; iWidthNew++ )
 		{
@@ -29756,7 +29762,7 @@ public:
 
 		for( ; ; )
 		{
-			vIdx1.push_back( v1.size() );
+			vIdx1.push_back( (tuint32)v1.size() );
 
 			for( i2 = 0; i2 < iWidth; i2++ )
 			{
@@ -29927,8 +29933,10 @@ public:
 		tsize i1, i2;
 		tsize iHeight;
 		std::vector < tuint8 > v1;
-		std::vector < std::vector < tuint8 >::size_type > vIdx1; 
-		std::vector < std::vector < tuint8 >::size_type > vIdx2;
+		
+		
+		std::vector < tuint32 > vIdx1;
+		std::vector < tuint32 > vIdx2;
 
 		i1 = 0;
 		iHeight = 0;
@@ -29936,7 +29944,7 @@ public:
 
 		for( ; ; )
 		{
-			vIdx1.push_back( v1.size() );
+			vIdx1.push_back( (tuint32)v1.size() );
 
 			for( i2 = 0; i2 < iWidth; i2++ )
 			{
