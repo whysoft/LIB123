@@ -7,6 +7,7 @@
 * Permission to modify the code and to distribute modified code is granted,
 * provided the above notices are retained, and a notice that the code was
 * modified is included with the above copyright notice.
+* https://github.com/whysoft/LIB123
 */
 // WARNING: This is an internal header file, included by other C++
 // standard library headers. You should attempt to use this header
@@ -15,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2019c03c20c周三-15c29c20.86  
+2019c04c08c周一-c9c32c32.02  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -17509,6 +17510,7 @@ public:
 
 	std::string m_strRemoteIPAddress;
 
+	u_short		m_myport;
 
 private:
 
@@ -17555,6 +17557,7 @@ public:
 		if(!iRc) return 0;
 
 		
+		m_myport = aListener.m_port;
 		return 1;
 	}
 
@@ -23851,6 +23854,7 @@ public:
 		return 1;
 	}
 
+
 	static tbool NewFlow( tuint16 iPort = 2000, int iPurgeConfSec = 3456 , tuint16 *pPortOut = NULL , AFlowMgr_t< _T > **pThis = NULL  ) 
 	{
 		tuint16 iPortOut;
@@ -23877,6 +23881,36 @@ public:
 		if( pThis ) *pThis = NULL;
 		return 0;
 	}
+
+
+	static tbool NewFlow2(	tuint16 iPort ,
+							tuint16 iPortEnd = 65530 ,
+							tuint16 *pPortOut = NULL ,
+							AFlowMgr_t< _T > **pThis = NULL  ) 
+	{
+		tuint16 iPortOut;
+		AFlowMgr_t< _T > *p;
+
+		p = new AFlowMgr_t< _T >;
+
+		p->m_aFolder.m_iPurgeConfSec = 86400;
+
+		for( iPortOut = iPort; iPortOut <= iPortEnd; iPortOut++ )
+		{
+			if( p->m_Lsn.Listen((u_short)iPortOut) )
+			{
+				if( pPortOut ) *pPortOut = iPortOut;
+				if( pThis ) *pThis = p;
+				p->tr_openx();
+				return 1;
+			}
+		}
+
+		delete p;
+		if( pThis ) *pThis = NULL;
+		return 0;
+	}
+
 };
 
 
@@ -39017,6 +39051,7 @@ public:
 
 	std::string m_strRemoteIPAddress;
 
+	u_short		m_myport;
 
 private:
 
@@ -39063,6 +39098,7 @@ public:
 		if(!iRc) return 0;
 
 		
+		m_myport = aListener.m_port;
 		return 1;
 	}
 
@@ -45393,6 +45429,7 @@ public:
 		return 1;
 	}
 
+
 	static tbool NewFlow( tuint16 iPort = 2000, int iPurgeConfSec = 3456 , tuint16 *pPortOut = NULL , AFlowMgr_t< _T > **pThis = NULL  ) 
 	{
 		tuint16 iPortOut;
@@ -45419,6 +45456,36 @@ public:
 		if( pThis ) *pThis = NULL;
 		return 0;
 	}
+
+
+	static tbool NewFlow2(	tuint16 iPort ,
+							tuint16 iPortEnd = 65530 ,
+							tuint16 *pPortOut = NULL ,
+							AFlowMgr_t< _T > **pThis = NULL  ) 
+	{
+		tuint16 iPortOut;
+		AFlowMgr_t< _T > *p;
+
+		p = new AFlowMgr_t< _T >;
+
+		p->m_aFolder.m_iPurgeConfSec = 86400;
+
+		for( iPortOut = iPort; iPortOut <= iPortEnd; iPortOut++ )
+		{
+			if( p->m_Lsn.Listen((u_short)iPortOut) )
+			{
+				if( pPortOut ) *pPortOut = iPortOut;
+				if( pThis ) *pThis = p;
+				p->tr_openx();
+				return 1;
+			}
+		}
+
+		delete p;
+		if( pThis ) *pThis = NULL;
+		return 0;
+	}
+
 };
 
 
