@@ -16,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2019c04c10c周三-10c59c44.39  
+2019c04c17c周三-14c42c57.99  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -23479,7 +23479,7 @@ public:
 		m_dtnow.MakeNow();
 
 		
-		m_tSvr.recv_ln( ckTmp, "\r\n\r\n" );
+		m_tSvr.recv_ln2( ckTmp, "\r\n\r\n" );
 		ckTmp.mk_str(m_strHttpHead);
 		WTcpHttp::GetLine1ParaFromHead( m_strHttpHead, m_strCmdLine1, m_strCmdVerb, m_strProtocolName, m_strAddr, m_strUPfn ); 
 
@@ -24025,6 +24025,244 @@ public:
 
 
 AFWEB02_NAMESPACE_END
+
+
+
+
+
+
+
+
+
+
+class actwebele1_t : public AFWEB02::AWeb2_t
+{
+public:
+	actwebele1_t()
+	{
+	}
+
+	virtual ~actwebele1_t()
+	{
+	}
+
+public:
+	void RtnWebContent( std::string strType, std::string strContent, SCake *pck = NULL )
+	{
+		if( strType == "RAW" )
+		{
+			if( !strContent.empty() )
+			{
+				m_tSvr.send_str( strContent );
+			}
+
+			if( pck && pck->len() )
+				m_tSvr.send_bin( *pck );
+		}
+		else
+		{
+			std::string strOut;
+
+			strOut = "HTTP/1.0 200 OK\r\n";
+			strOut += "Server: NotApache/" + SDte::GetNow().ReadStringPack() + WFile::MkRUStr()+ "\r\n";
+			strOut += "Cache-Control: no-cache\r\n";
+			strOut += "Pragma: no-cache\r\n";
+
+			
+			
+			if( strType == "" )
+			{
+				strOut += "Content-Type: text/plain; charset=gb2312\r\n";
+			}
+			else
+			{
+				strOut += "Content-Type: " + strType + "; charset=gb2312\r\n";
+			}
+
+			if( pck && pck->len() )
+			{
+				strOut += "Content-Length: " + SStrf::sltoa( (int)pck->len() ) + "\r\n";
+			}
+
+			strOut += "Connection: close\r\n";
+			strOut += "\r\n";
+			m_tSvr.send_str( strOut );
+
+			if( pck && pck->len() )
+			{
+				m_tSvr.send_bin( *pck );
+			}
+			else
+			{
+				m_tSvr.send_str( strContent );
+			}
+		}
+	}
+
+	
+	virtual void OnGet( const std::string &strFn , WNava &para , const std::string &strWholePara )
+	{
+		
+		std::string strOut;
+
+		strOut = strFn;
+		strOut += "{JSON(JavaScript Object Notation, JS 对象标记) " + SDte::GetNow().ReadString();
+		strOut += "\r\n\r\n";
+
+		this->RtnWebContent( "", strOut );
+
+		return;
+	}
+};
+
+
+
+
+class funcandy_t
+{
+public:
+	
+	class actwebele_t : public actwebele1_t
+	{
+	public:
+		funcandy_t	 *m_pFather;
+
+	public:
+		actwebele_t()
+		{
+		}
+
+		virtual ~actwebele_t()
+		{
+		}
+
+	public:
+
+		virtual void OnGet( const std::string &strFn , WNava &para , const std::string &strWholePara )
+		{
+			if( m_pFather->lingy( strFn , para , strWholePara , this ) ) return;
+			actwebele1_t::OnGet( strFn , para , strWholePara );
+		}
+	};
+
+
+public:
+	
+	class item_t
+	{
+	public:
+		funcandy_t	 *m_pFather;
+
+	public:
+		item_t()
+		{
+		}
+
+		virtual ~item_t()
+		{
+			WCrsc aLoc_myLck (&(m_pFather->m_lckItems));
+			for( std::vector< item_t * >::iterator it = m_pFather->m_vItems.begin(); it != m_pFather->m_vItems.end(); ++it )
+			{
+				if( *it != this ) continue;
+				m_pFather->m_vItems.erase( it );
+				return;
+			}
+		}
+
+	public:
+		void LinkFc( funcandy_t *pFather )
+		{
+			m_pFather = pFather;
+			WCrsc aLoc_myLck (&(m_pFather->m_lckItems));
+			m_pFather->m_vItems.push_back( this );
+		}
+
+		virtual tbool lingy( const std::string &strFn , WNava &para , const std::string &strWholePara , actwebele_t *pweb )
+		{
+			return 0;
+		}
+
+	};
+
+
+	class actwebmgr_t : public AFWEB02::AFlowMgr_t< actwebele_t >
+	{
+	public:
+		funcandy_t	 *m_pFather;
+
+	public:
+		actwebmgr_t()
+		{
+		}
+
+		virtual ~actwebmgr_t()
+		{
+		}
+
+	public:
+		virtual tbool OnMgrPrepare( actwebele_t & t )
+		{
+			t.m_pFather = this->m_pFather;
+			if( !t.m_tSvr.Conn( m_Lsn ) ) return 0;
+			t.m_pFolder = &m_aFolder;
+			return 1;
+		}
+	};
+
+
+private:
+	WCrsc	m_lckItems;
+	std::vector< item_t * > m_vItems;
+
+public:
+	funcandy_t()
+	{
+	}
+
+	virtual ~funcandy_t()
+	{
+	}
+
+public:
+	tbool lingy( const std::string &strFn , WNava &para , const std::string &strWholePara , actwebele_t *pweb )
+	{
+		WCrsc aLoc_myLck (&(m_lckItems));
+		tbool rc;
+		for( std::vector< item_t * >::iterator it = m_vItems.begin(); it != m_vItems.end(); ++it )
+		{
+			rc = (*it)->lingy( strFn , para , strWholePara , pweb );
+			if( rc ) return 1;
+		}
+		return 0;
+	}
+
+public:
+	tbool InitFlow( tuint16 iPort )
+	{
+		actwebmgr_t *p = new actwebmgr_t;
+		p->m_aFolder.m_iPurgeConfSec = 86400;
+		p->m_pFather = this;
+		if( p->m_Lsn.Listen((u_short)iPort) )
+		{
+			p->tr_openx();
+			return 1;
+		}
+		delete p;
+		return 0;
+	}
+
+};
+
+
+
+
+
+
+
+
+
+
+
 
 
 #endif
@@ -45054,7 +45292,7 @@ public:
 		m_dtnow.MakeNow();
 
 		
-		m_tSvr.recv_ln( ckTmp, "\r\n\r\n" );
+		m_tSvr.recv_ln2( ckTmp, "\r\n\r\n" );
 		ckTmp.mk_str(m_strHttpHead);
 		WTcpHttp::GetLine1ParaFromHead( m_strHttpHead, m_strCmdLine1, m_strCmdVerb, m_strProtocolName, m_strAddr, m_strUPfn ); 
 
@@ -45600,6 +45838,244 @@ public:
 
 
 AFWEB02_NAMESPACE_END
+
+
+
+
+
+
+
+
+
+
+class actwebele1_t : public AFWEB02::AWeb2_t
+{
+public:
+	actwebele1_t()
+	{
+	}
+
+	virtual ~actwebele1_t()
+	{
+	}
+
+public:
+	void RtnWebContent( std::string strType, std::string strContent, SCake *pck = NULL )
+	{
+		if( strType == "RAW" )
+		{
+			if( !strContent.empty() )
+			{
+				m_tSvr.send_str( strContent );
+			}
+
+			if( pck && pck->len() )
+				m_tSvr.send_bin( *pck );
+		}
+		else
+		{
+			std::string strOut;
+
+			strOut = "HTTP/1.0 200 OK\r\n";
+			strOut += "Server: NotApache/" + SDte::GetNow().ReadStringPack() + WFile::MkRUStr()+ "\r\n";
+			strOut += "Cache-Control: no-cache\r\n";
+			strOut += "Pragma: no-cache\r\n";
+
+			
+			
+			if( strType == "" )
+			{
+				strOut += "Content-Type: text/plain; charset=gb2312\r\n";
+			}
+			else
+			{
+				strOut += "Content-Type: " + strType + "; charset=gb2312\r\n";
+			}
+
+			if( pck && pck->len() )
+			{
+				strOut += "Content-Length: " + SStrf::sltoa( (int)pck->len() ) + "\r\n";
+			}
+
+			strOut += "Connection: close\r\n";
+			strOut += "\r\n";
+			m_tSvr.send_str( strOut );
+
+			if( pck && pck->len() )
+			{
+				m_tSvr.send_bin( *pck );
+			}
+			else
+			{
+				m_tSvr.send_str( strContent );
+			}
+		}
+	}
+
+	
+	virtual void OnGet( const std::string &strFn , WNava &para , const std::string &strWholePara )
+	{
+		
+		std::string strOut;
+
+		strOut = strFn;
+		strOut += "{JSON(JavaScript Object Notation, JS 对象标记) " + SDte::GetNow().ReadString();
+		strOut += "\r\n\r\n";
+
+		this->RtnWebContent( "", strOut );
+
+		return;
+	}
+};
+
+
+
+
+class funcandy_t
+{
+public:
+	
+	class actwebele_t : public actwebele1_t
+	{
+	public:
+		funcandy_t	 *m_pFather;
+
+	public:
+		actwebele_t()
+		{
+		}
+
+		virtual ~actwebele_t()
+		{
+		}
+
+	public:
+
+		virtual void OnGet( const std::string &strFn , WNava &para , const std::string &strWholePara )
+		{
+			if( m_pFather->lingy( strFn , para , strWholePara , this ) ) return;
+			actwebele1_t::OnGet( strFn , para , strWholePara );
+		}
+	};
+
+
+public:
+	
+	class item_t
+	{
+	public:
+		funcandy_t	 *m_pFather;
+
+	public:
+		item_t()
+		{
+		}
+
+		virtual ~item_t()
+		{
+			WCrsc aLoc_myLck (&(m_pFather->m_lckItems));
+			for( std::vector< item_t * >::iterator it = m_pFather->m_vItems.begin(); it != m_pFather->m_vItems.end(); ++it )
+			{
+				if( *it != this ) continue;
+				m_pFather->m_vItems.erase( it );
+				return;
+			}
+		}
+
+	public:
+		void LinkFc( funcandy_t *pFather )
+		{
+			m_pFather = pFather;
+			WCrsc aLoc_myLck (&(m_pFather->m_lckItems));
+			m_pFather->m_vItems.push_back( this );
+		}
+
+		virtual tbool lingy( const std::string &strFn , WNava &para , const std::string &strWholePara , actwebele_t *pweb )
+		{
+			return 0;
+		}
+
+	};
+
+
+	class actwebmgr_t : public AFWEB02::AFlowMgr_t< actwebele_t >
+	{
+	public:
+		funcandy_t	 *m_pFather;
+
+	public:
+		actwebmgr_t()
+		{
+		}
+
+		virtual ~actwebmgr_t()
+		{
+		}
+
+	public:
+		virtual tbool OnMgrPrepare( actwebele_t & t )
+		{
+			t.m_pFather = this->m_pFather;
+			if( !t.m_tSvr.Conn( m_Lsn ) ) return 0;
+			t.m_pFolder = &m_aFolder;
+			return 1;
+		}
+	};
+
+
+private:
+	WCrsc	m_lckItems;
+	std::vector< item_t * > m_vItems;
+
+public:
+	funcandy_t()
+	{
+	}
+
+	virtual ~funcandy_t()
+	{
+	}
+
+public:
+	tbool lingy( const std::string &strFn , WNava &para , const std::string &strWholePara , actwebele_t *pweb )
+	{
+		WCrsc aLoc_myLck (&(m_lckItems));
+		tbool rc;
+		for( std::vector< item_t * >::iterator it = m_vItems.begin(); it != m_vItems.end(); ++it )
+		{
+			rc = (*it)->lingy( strFn , para , strWholePara , pweb );
+			if( rc ) return 1;
+		}
+		return 0;
+	}
+
+public:
+	tbool InitFlow( tuint16 iPort )
+	{
+		actwebmgr_t *p = new actwebmgr_t;
+		p->m_aFolder.m_iPurgeConfSec = 86400;
+		p->m_pFather = this;
+		if( p->m_Lsn.Listen((u_short)iPort) )
+		{
+			p->tr_openx();
+			return 1;
+		}
+		delete p;
+		return 0;
+	}
+
+};
+
+
+
+
+
+
+
+
+
+
+
 
 
 #endif
