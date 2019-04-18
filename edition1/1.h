@@ -16,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2019c04c17c周三-16c42c35.55  
+2019c04c18c周四-10c00c24.89  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -31563,6 +31563,67 @@ public:
 		return 0;
 	}
 
+
+	static tbool GetUrlResp(	std::string strAddr ,
+								std::string strFn ,
+								WNava nvIn ,
+								std::string *pstrRtn1 = NULL ,
+								std::string *pstrRtn2 = NULL ,
+								int rtnNum = 2
+								)
+	{
+		WTcpCellc cc;
+		std::string s1;
+		SCake ck;
+		tbool rc;
+		std::string strPara;
+
+		std::string Addr = strAddr;
+
+		for( int j = 0; j < 3; j++ )
+		{
+			rc = cc.Conn( Addr );
+			if( rc ) break;
+		}
+		if( !rc )
+		{
+			return 0;
+		}
+
+		nvIn.SeriUrlstyle_NoEn( strPara );
+
+		s1 = "GET /" + strFn + "?" + strPara + " HTTP/1.0\r\n";
+		s1 += "\r\n";
+
+		cc.send_str( s1 );
+
+		if( pstrRtn1 ) *pstrRtn1 = "";
+		if( pstrRtn2 ) *pstrRtn2 = "";
+
+		if( rtnNum == 1 )
+		{
+			cc.recv_ln( ck, "\r\n\r\n" );
+			if( ck.len() == 0 ) return 0;
+			if( pstrRtn1 ) *pstrRtn1 = ck.mk_str();
+			return 1;
+		}
+
+		if( rtnNum == 2 )
+		{
+			cc.recv_ln( ck, "\r\n\r\n" );
+			if( ck.len() == 0 ) return 0;
+			if( pstrRtn1 ) *pstrRtn1 = ck.mk_str();
+
+			cc.recv_ln( ck, "\r\n\r\n" );
+			if( ck.len() == 0 ) return 0;
+			if( pstrRtn2 ) *pstrRtn2 = ck.mk_str();
+			return 1;
+		}
+
+		return 0;
+	}
+
+
 };
 
 
@@ -60687,6 +60748,67 @@ public:
 		delete p;
 		return 0;
 	}
+
+
+	static tbool GetUrlResp(	std::string strAddr ,
+								std::string strFn ,
+								WNava nvIn ,
+								std::string *pstrRtn1 = NULL ,
+								std::string *pstrRtn2 = NULL ,
+								int rtnNum = 2
+								)
+	{
+		WTcpCellc cc;
+		std::string s1;
+		SCake ck;
+		tbool rc;
+		std::string strPara;
+
+		std::string Addr = strAddr;
+
+		for( int j = 0; j < 3; j++ )
+		{
+			rc = cc.Conn( Addr );
+			if( rc ) break;
+		}
+		if( !rc )
+		{
+			return 0;
+		}
+
+		nvIn.SeriUrlstyle_NoEn( strPara );
+
+		s1 = "GET /" + strFn + "?" + strPara + " HTTP/1.0\r\n";
+		s1 += "\r\n";
+
+		cc.send_str( s1 );
+
+		if( pstrRtn1 ) *pstrRtn1 = "";
+		if( pstrRtn2 ) *pstrRtn2 = "";
+
+		if( rtnNum == 1 )
+		{
+			cc.recv_ln( ck, "\r\n\r\n" );
+			if( ck.len() == 0 ) return 0;
+			if( pstrRtn1 ) *pstrRtn1 = ck.mk_str();
+			return 1;
+		}
+
+		if( rtnNum == 2 )
+		{
+			cc.recv_ln( ck, "\r\n\r\n" );
+			if( ck.len() == 0 ) return 0;
+			if( pstrRtn1 ) *pstrRtn1 = ck.mk_str();
+
+			cc.recv_ln( ck, "\r\n\r\n" );
+			if( ck.len() == 0 ) return 0;
+			if( pstrRtn2 ) *pstrRtn2 = ck.mk_str();
+			return 1;
+		}
+
+		return 0;
+	}
+
 
 };
 
