@@ -16,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2019c04c18c周四-10c00c24.89  
+2019c04c23c周二-11c02c28.77  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -12761,10 +12761,11 @@ public:
 		{
 			std::string::size_type i;
 
+			SStrf::strim( *it );
+
 			i = it->find(ssepTD);
 			if( i == std::string::npos ) continue;
 
-			SStrf::strim( *it );
 			if( strMemoLineHead != "" && it->find(strMemoLineHead) == 0 ) continue;
 
 			(*it)[i] = 0;
@@ -31569,7 +31570,7 @@ public:
 								WNava nvIn ,
 								std::string *pstrRtn1 = NULL ,
 								std::string *pstrRtn2 = NULL ,
-								int rtnNum = 2
+								int dataNum = 2		
 								)
 	{
 		WTcpCellc cc;
@@ -31600,7 +31601,7 @@ public:
 		if( pstrRtn1 ) *pstrRtn1 = "";
 		if( pstrRtn2 ) *pstrRtn2 = "";
 
-		if( rtnNum == 1 )
+		if( dataNum == 1 )
 		{
 			cc.recv_ln( ck, "\r\n\r\n" );
 			if( ck.len() == 0 ) return 0;
@@ -31608,7 +31609,7 @@ public:
 			return 1;
 		}
 
-		if( rtnNum == 2 )
+		if( dataNum == 2 )
 		{
 			cc.recv_ln( ck, "\r\n\r\n" );
 			if( ck.len() == 0 ) return 0;
@@ -31623,6 +31624,35 @@ public:
 		return 0;
 	}
 
+	
+	static tbool GetUrlResp(	std::string strAddr ,
+								std::string strFn ,
+								WNava nvIn ,
+								WNava &nvOut ,
+								int dataNum = 2
+								)
+	{
+		std::string s1, s2;
+		tbool rc;
+
+		rc = GetUrlResp( strAddr, strFn, nvIn, &s1, &s2, dataNum );
+
+		if( !rc ) return rc;
+
+		if( dataNum == 1 )
+		{
+			nvOut.UnseriUrlstyle_NoDe( s1 );
+			return 1;
+		}
+
+		if( dataNum == 2 )
+		{
+			nvOut.UnseriUrlstyle_NoDe( s2 );
+			return 1;
+		}
+
+		return 0;
+	}
 
 };
 
@@ -42218,10 +42248,11 @@ public:
 		{
 			std::string::size_type i;
 
+			SStrf::strim( *it );
+
 			i = it->find(ssepTD);
 			if( i == std::string::npos ) continue;
 
-			SStrf::strim( *it );
 			if( strMemoLineHead != "" && it->find(strMemoLineHead) == 0 ) continue;
 
 			(*it)[i] = 0;
@@ -60755,7 +60786,7 @@ public:
 								WNava nvIn ,
 								std::string *pstrRtn1 = NULL ,
 								std::string *pstrRtn2 = NULL ,
-								int rtnNum = 2
+								int dataNum = 2		
 								)
 	{
 		WTcpCellc cc;
@@ -60786,7 +60817,7 @@ public:
 		if( pstrRtn1 ) *pstrRtn1 = "";
 		if( pstrRtn2 ) *pstrRtn2 = "";
 
-		if( rtnNum == 1 )
+		if( dataNum == 1 )
 		{
 			cc.recv_ln( ck, "\r\n\r\n" );
 			if( ck.len() == 0 ) return 0;
@@ -60794,7 +60825,7 @@ public:
 			return 1;
 		}
 
-		if( rtnNum == 2 )
+		if( dataNum == 2 )
 		{
 			cc.recv_ln( ck, "\r\n\r\n" );
 			if( ck.len() == 0 ) return 0;
@@ -60809,6 +60840,35 @@ public:
 		return 0;
 	}
 
+	
+	static tbool GetUrlResp(	std::string strAddr ,
+								std::string strFn ,
+								WNava nvIn ,
+								WNava &nvOut ,
+								int dataNum = 2
+								)
+	{
+		std::string s1, s2;
+		tbool rc;
+
+		rc = GetUrlResp( strAddr, strFn, nvIn, &s1, &s2, dataNum );
+
+		if( !rc ) return rc;
+
+		if( dataNum == 1 )
+		{
+			nvOut.UnseriUrlstyle_NoDe( s1 );
+			return 1;
+		}
+
+		if( dataNum == 2 )
+		{
+			nvOut.UnseriUrlstyle_NoDe( s2 );
+			return 1;
+		}
+
+		return 0;
+	}
 
 };
 

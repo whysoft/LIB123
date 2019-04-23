@@ -7,6 +7,7 @@
 * Permission to modify the code and to distribute modified code is granted,
 * provided the above notices are retained, and a notice that the code was
 * modified is included with the above copyright notice.
+* https://github.com/whysoft/LIB123
 */
 // WARNING: This is an internal header file, included by other C++
 // standard library headers. You should attempt to use this header
@@ -15,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2018c12c18c周二-11c19c41.44  
+2019c04c23c周二-11c03c47.47  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -171,7 +172,7 @@ public:
 		return reinterpret_cast<T *>(&reinterpret_cast<char&>(obj));
 	}
 
-	
+
 	template< class T >
 	static T * newobjptr( T * & p )
 	{
@@ -187,7 +188,7 @@ public:
 		return p;
 	}
 
-	
+
 	template< class T >
 	static T * newobjptr()  
 	{
@@ -195,13 +196,13 @@ public:
 		return newobjptr(p);
 	}
 
-	
+
 	static void * smalloc( tsize i )
 	{
 		return malloc( i );
 	}
 
-	
+
 	static void sfree(void *s)
 	{
 		free(s);
@@ -1266,6 +1267,8 @@ public:
 
 	static tchar bs_esc() { return 'b'; }
 
+	static tchar bs_esc2() { return '%'; }
+
 
 	static tbool bs_inset( tchar c , tchar(*apf1)()=bs_esc )	 
 	{
@@ -1273,6 +1276,7 @@ public:
 		if(c>='a'&&c<='z') return 1;
 		if(c>='0'&&c<='9') return 1;
 		if(c>='A'&&c<='Z') return 1;
+		if(c=='_') return 1;
 		return 0;
 	}
 
@@ -5732,8 +5736,10 @@ public:
 		tsize iWidthNew;
 		tsize iHeight;
 		std::vector < tuint8 > v1;
-		std::vector < std::vector < tuint8 >::size_type > vIdx1; 
-		std::vector < std::vector < tuint8 >::size_type > vIdx2;
+		
+		
+		std::vector < tuint32 > vIdx1; 
+		std::vector < tuint32 > vIdx2;
 
 		for( iWidthNew = iWidth; ; iWidthNew++ )
 		{
@@ -5746,7 +5752,7 @@ public:
 
 		for( ; ; )
 		{
-			vIdx1.push_back( v1.size() );
+			vIdx1.push_back( (tuint32)v1.size() );
 
 			for( i2 = 0; i2 < iWidth; i2++ )
 			{
@@ -5917,8 +5923,10 @@ public:
 		tsize i1, i2;
 		tsize iHeight;
 		std::vector < tuint8 > v1;
-		std::vector < std::vector < tuint8 >::size_type > vIdx1; 
-		std::vector < std::vector < tuint8 >::size_type > vIdx2;
+		
+		
+		std::vector < tuint32 > vIdx1;
+		std::vector < tuint32 > vIdx2;
 
 		i1 = 0;
 		iHeight = 0;
@@ -5926,7 +5934,7 @@ public:
 
 		for( ; ; )
 		{
-			vIdx1.push_back( v1.size() );
+			vIdx1.push_back( (tuint32)v1.size() );
 
 			for( i2 = 0; i2 < iWidth; i2++ )
 			{
@@ -7428,6 +7436,7 @@ public:
 	}
 
 
+	
 	tbool unserialize( const std::string & strData )
 	{
 		std::map< std::string, std::string > mapTmp;
@@ -9157,6 +9166,7 @@ public:
 
 	virtual void _save_readable( std::string strFn ) = 0;
 	virtual std::string _get_readable_row( long iRow )  = 0;
+	virtual std::string _read_row_url_format( long iRow )  = 0;
 
 
 	virtual std::string & ut_SeriTblStr( std::string & strOut ) = 0;
@@ -9353,6 +9363,28 @@ public:
 		return s2;
 	}
 
+
+	std::string _read_row_url_format( long iRow )
+	{
+		int y = iRow;
+		std::string s2;
+
+		for( int x = 0; x < this->ut_GetColAmount(); x++ )
+		{
+			std::string sVal;
+			std::string sValUrl;
+
+			sValUrl = sVal = this->ut_GetItemStr(y,x);
+			SStrf::bs_en( sValUrl , SStrf::bs_esc2 );
+
+			s2 += this->ut_GetColName(x) + "=" + sValUrl;
+			if( x != this->ut_GetColAmount() - 1 ) s2 += "&";
+		}
+		return s2;
+	}
+
+
+	
 	virtual std::string & ut_SeriTblStr( std::string & strOut )
 	{
 		return T::Serialize( strOut );
@@ -10374,12 +10406,24 @@ typedef		struct
 	}
 
 
-	static void key_plain( const tchar * strInputSeq )
+	static void key_plain( const tchar * strInputSeq , int iDelayMs )
 	{
 		for( ; strInputSeq && *strInputSeq; strInputSeq++ )
 		{
 			key_plain(*strInputSeq);
+
+			if( iDelayMs != 0 )
+			{
+				Sleep(iDelayMs);
+			}
 		}
+	}
+
+	
+	static void key_plain( std::string strInput )
+	{
+		const tchar * strInputSeq = strInput.c_str();
+		key_plain( strInputSeq, 9 );
 	}
 
 
@@ -12717,10 +12761,11 @@ public:
 		{
 			std::string::size_type i;
 
+			SStrf::strim( *it );
+
 			i = it->find(ssepTD);
 			if( i == std::string::npos ) continue;
 
-			SStrf::strim( *it );
 			if( strMemoLineHead != "" && it->find(strMemoLineHead) == 0 ) continue;
 
 			(*it)[i] = 0;
@@ -12729,6 +12774,62 @@ public:
 
 		this->trimall();
 	}
+
+
+	
+	void SeriUrlstyle( std::string & strOut ) const
+	{
+		strOut = "";
+		for( MAP_MAPKNL_CONSTIT it = m_mapKnl.begin(); it != m_mapKnl.end(); ++it )
+		{
+			strOut += it->first;
+			strOut += "=";
+			std::string s2 = it->second;
+			SStrf::bs_en( s2 , SStrf::bs_esc2 );
+			
+			s2.erase( s2.end() -1 );s2.erase( s2.end() -1 );s2.erase( s2.end() -1 );
+			strOut += s2;
+			strOut += "&";
+		}
+		if( strOut != "" ) strOut.erase( strOut.end() -1 );
+	}
+
+	
+	void SeriUrlstyle_NoEn( std::string & strOut ) const
+	{
+		strOut = "";
+		for( MAP_MAPKNL_CONSTIT it = m_mapKnl.begin(); it != m_mapKnl.end(); ++it )
+		{
+			strOut += it->first;
+			strOut += "=";
+			strOut += it->second;
+			strOut += "&";
+		}
+		if( strOut != "" ) strOut.erase( strOut.end() -1 );
+	}
+
+	
+	void UnseriUrlstyle( const std::string & ssource )
+	{
+		this->impconf( ssource, "&", "=", "" );
+
+		for( MAP_MAPKNL_IT it = m_mapKnl.begin(); it != m_mapKnl.end(); ++it )
+		{
+			std::string &s2( it->second );
+			SStrf::bs_de( s2 , SStrf::bs_esc2 );
+		}
+	}
+
+	
+	void UnseriUrlstyle_NoDe( const std::string & ssource )
+	{
+		this->impconf( ssource, "&", "=", "" );
+		
+		
+		
+		
+	}
+
 
 	
 	static WNava ReadFileNa( const std::string & Fn )
@@ -17410,6 +17511,7 @@ public:
 
 	std::string m_strRemoteIPAddress;
 
+	u_short		m_myport;
 
 private:
 
@@ -17456,6 +17558,7 @@ public:
 		if(!iRc) return 0;
 
 		
+		m_myport = aListener.m_port;
 		return 1;
 	}
 
@@ -31337,7 +31440,7 @@ public:
 		m_dtnow.MakeNow();
 
 		
-		m_tSvr.recv_ln( ckTmp, "\r\n\r\n" );
+		m_tSvr.recv_ln2( ckTmp, "\r\n\r\n" );
 		ckTmp.mk_str(m_strHttpHead);
 		WTcpHttp::GetLine1ParaFromHead( m_strHttpHead, m_strCmdLine1, m_strCmdVerb, m_strProtocolName, m_strAddr, m_strUPfn ); 
 
@@ -31712,6 +31815,7 @@ public:
 		return 1;
 	}
 
+
 	static tbool NewFlow( tuint16 iPort = 2000, int iPurgeConfSec = 3456 , tuint16 *pPortOut = NULL , AFlowMgr_t< _T > **pThis = NULL  ) 
 	{
 		tuint16 iPortOut;
@@ -31738,6 +31842,36 @@ public:
 		if( pThis ) *pThis = NULL;
 		return 0;
 	}
+
+
+	static tbool NewFlow2(	tuint16 iPort ,
+							tuint16 iPortEnd = 65530 ,
+							tuint16 *pPortOut = NULL ,
+							AFlowMgr_t< _T > **pThis = NULL  ) 
+	{
+		tuint16 iPortOut;
+		AFlowMgr_t< _T > *p;
+
+		p = new AFlowMgr_t< _T >;
+
+		p->m_aFolder.m_iPurgeConfSec = 86400;
+
+		for( iPortOut = iPort; iPortOut <= iPortEnd; iPortOut++ )
+		{
+			if( p->m_Lsn.Listen((u_short)iPortOut) )
+			{
+				if( pPortOut ) *pPortOut = iPortOut;
+				if( pThis ) *pThis = p;
+				p->tr_openx();
+				return 1;
+			}
+		}
+
+		delete p;
+		if( pThis ) *pThis = NULL;
+		return 0;
+	}
+
 };
 
 
@@ -31852,6 +31986,334 @@ public:
 
 
 AFWEB02_NAMESPACE_END
+
+
+
+
+
+
+
+
+
+
+class actwebele1_t : public AFWEB02::AWeb2_t
+{
+public:
+	actwebele1_t()
+	{
+	}
+
+	virtual ~actwebele1_t()
+	{
+	}
+
+public:
+	void RtnWebContent( std::string strType, std::string strContent, SCake *pck = NULL )
+	{
+		if( strType == "RAW" )
+		{
+			if( !strContent.empty() )
+			{
+				m_tSvr.send_str( strContent );
+			}
+
+			if( pck && pck->len() )
+				m_tSvr.send_bin( *pck );
+		}
+		else
+		{
+			std::string strOut;
+
+			strOut = "HTTP/1.0 200 OK\r\n";
+			strOut += "Server: NotApache/" + SDte::GetNow().ReadStringPack() + WFile::MkRUStr()+ "\r\n";
+			strOut += "Cache-Control: no-cache\r\n";
+			strOut += "Pragma: no-cache\r\n";
+
+			
+			
+			if( strType == "" )
+			{
+				strOut += "Content-Type: text/plain; charset=gb2312\r\n";
+			}
+			else
+			{
+				strOut += "Content-Type: " + strType + "; charset=gb2312\r\n";
+			}
+
+			if( pck && pck->len() )
+			{
+				strOut += "Content-Length: " + SStrf::sltoa( (int)pck->len() ) + "\r\n";
+			}
+
+			strOut += "Connection: close\r\n";
+			strOut += "\r\n";
+			m_tSvr.send_str( strOut );
+
+			if( pck && pck->len() )
+			{
+				m_tSvr.send_bin( *pck );
+			}
+			else
+			{
+				m_tSvr.send_str( strContent );
+			}
+		}
+	}
+
+	
+	virtual void OnGet( const std::string &strFn , WNava &para , const std::string &strWholePara )
+	{
+		
+		std::string strOut;
+
+		strOut = strFn;
+		strOut += "{JSON(JavaScript Object Notation, JS 对象标记) " + SDte::GetNow().ReadString();
+		strOut += "\r\n\r\n";
+
+		this->RtnWebContent( "", strOut );
+
+		return;
+	}
+};
+
+
+
+
+class funcandy_t
+{
+public:
+	
+	class actwebele_t : public actwebele1_t
+	{
+	public:
+		funcandy_t	 *m_pFather;
+
+	public:
+		actwebele_t()
+		{
+		}
+
+		virtual ~actwebele_t()
+		{
+		}
+
+	public:
+
+		virtual void OnGet( const std::string &strFn , WNava &para , const std::string &strWholePara )
+		{
+			if( m_pFather->lingy( strFn , para , strWholePara , this ) ) return;
+			actwebele1_t::OnGet( strFn , para , strWholePara );
+		}
+	};
+
+
+public:
+	
+	class item_t
+	{
+	public:
+		funcandy_t	 *m_pFather;
+
+	public:
+		item_t()
+		{
+		}
+
+		virtual ~item_t()
+		{
+			WCrsc aLoc_myLck (&(m_pFather->m_lckItems));
+			for( std::vector< item_t * >::iterator it = m_pFather->m_vItems.begin(); it != m_pFather->m_vItems.end(); ++it )
+			{
+				if( *it != this ) continue;
+				m_pFather->m_vItems.erase( it );
+				return;
+			}
+		}
+
+	public:
+		void LinkFc( funcandy_t *pFather )
+		{
+			m_pFather = pFather;
+			WCrsc aLoc_myLck (&(m_pFather->m_lckItems));
+			m_pFather->m_vItems.push_back( this );
+		}
+
+		virtual tbool lingy( const std::string &strFn , WNava &para , const std::string &strWholePara , actwebele_t *pweb )
+		{
+			return 0;
+		}
+
+	};
+
+
+	class actwebmgr_t : public AFWEB02::AFlowMgr_t< actwebele_t >
+	{
+	public:
+		funcandy_t	 *m_pFather;
+
+	public:
+		actwebmgr_t()
+		{
+		}
+
+		virtual ~actwebmgr_t()
+		{
+		}
+
+	public:
+		virtual tbool OnMgrPrepare( actwebele_t & t )
+		{
+			t.m_pFather = this->m_pFather;
+			if( !t.m_tSvr.Conn( m_Lsn ) ) return 0;
+			t.m_pFolder = &m_aFolder;
+			return 1;
+		}
+	};
+
+
+private:
+	WCrsc	m_lckItems;
+	std::vector< item_t * > m_vItems;
+
+public:
+	funcandy_t()
+	{
+	}
+
+	virtual ~funcandy_t()
+	{
+	}
+
+public:
+	tbool lingy( const std::string &strFn , WNava &para , const std::string &strWholePara , actwebele_t *pweb )
+	{
+		WCrsc aLoc_myLck (&(m_lckItems));
+		tbool rc;
+		for( std::vector< item_t * >::iterator it = m_vItems.begin(); it != m_vItems.end(); ++it )
+		{
+			rc = (*it)->lingy( strFn , para , strWholePara , pweb );
+			if( rc ) return 1;
+		}
+		return 0;
+	}
+
+public:
+	tbool InitFlow( tuint16 iPort )
+	{
+		actwebmgr_t *p = new actwebmgr_t;
+		p->m_aFolder.m_iPurgeConfSec = 86400;
+		p->m_pFather = this;
+		if( p->m_Lsn.Listen((u_short)iPort) )
+		{
+			p->tr_openx();
+			return 1;
+		}
+		delete p;
+		return 0;
+	}
+
+
+	static tbool GetUrlResp(	std::string strAddr ,
+								std::string strFn ,
+								WNava nvIn ,
+								std::string *pstrRtn1 = NULL ,
+								std::string *pstrRtn2 = NULL ,
+								int dataNum = 2		
+								)
+	{
+		WTcpCellc cc;
+		std::string s1;
+		SCake ck;
+		tbool rc;
+		std::string strPara;
+
+		std::string Addr = strAddr;
+
+		for( int j = 0; j < 3; j++ )
+		{
+			rc = cc.Conn( Addr );
+			if( rc ) break;
+		}
+		if( !rc )
+		{
+			return 0;
+		}
+
+		nvIn.SeriUrlstyle_NoEn( strPara );
+
+		s1 = "GET /" + strFn + "?" + strPara + " HTTP/1.0\r\n";
+		s1 += "\r\n";
+
+		cc.send_str( s1 );
+
+		if( pstrRtn1 ) *pstrRtn1 = "";
+		if( pstrRtn2 ) *pstrRtn2 = "";
+
+		if( dataNum == 1 )
+		{
+			cc.recv_ln( ck, "\r\n\r\n" );
+			if( ck.len() == 0 ) return 0;
+			if( pstrRtn1 ) *pstrRtn1 = ck.mk_str();
+			return 1;
+		}
+
+		if( dataNum == 2 )
+		{
+			cc.recv_ln( ck, "\r\n\r\n" );
+			if( ck.len() == 0 ) return 0;
+			if( pstrRtn1 ) *pstrRtn1 = ck.mk_str();
+
+			cc.recv_ln( ck, "\r\n\r\n" );
+			if( ck.len() == 0 ) return 0;
+			if( pstrRtn2 ) *pstrRtn2 = ck.mk_str();
+			return 1;
+		}
+
+		return 0;
+	}
+
+	
+	static tbool GetUrlResp(	std::string strAddr ,
+								std::string strFn ,
+								WNava nvIn ,
+								WNava &nvOut ,
+								int dataNum = 2
+								)
+	{
+		std::string s1, s2;
+		tbool rc;
+
+		rc = GetUrlResp( strAddr, strFn, nvIn, &s1, &s2, dataNum );
+
+		if( !rc ) return rc;
+
+		if( dataNum == 1 )
+		{
+			nvOut.UnseriUrlstyle_NoDe( s1 );
+			return 1;
+		}
+
+		if( dataNum == 2 )
+		{
+			nvOut.UnseriUrlstyle_NoDe( s2 );
+			return 1;
+		}
+
+		return 0;
+	}
+
+};
+
+
+
+
+
+
+
+
+
+
+
 
 
 #endif
@@ -32046,7 +32508,7 @@ public:
 		return reinterpret_cast<T *>(&reinterpret_cast<char&>(obj));
 	}
 
-	
+
 	template< class T >
 	static T * newobjptr( T * & p )
 	{
@@ -32062,7 +32524,7 @@ public:
 		return p;
 	}
 
-	
+
 	template< class T >
 	static T * newobjptr()  
 	{
@@ -32070,13 +32532,13 @@ public:
 		return newobjptr(p);
 	}
 
-	
+
 	static void * smalloc( tsize i )
 	{
 		return malloc( i );
 	}
 
-	
+
 	static void sfree(void *s)
 	{
 		free(s);
@@ -33141,6 +33603,8 @@ public:
 
 	static tchar bs_esc() { return 'b'; }
 
+	static tchar bs_esc2() { return '%'; }
+
 
 	static tbool bs_inset( tchar c , tchar(*apf1)()=bs_esc )	 
 	{
@@ -33148,6 +33612,7 @@ public:
 		if(c>='a'&&c<='z') return 1;
 		if(c>='0'&&c<='9') return 1;
 		if(c>='A'&&c<='Z') return 1;
+		if(c=='_') return 1;
 		return 0;
 	}
 
@@ -37604,8 +38069,10 @@ public:
 		tsize iWidthNew;
 		tsize iHeight;
 		std::vector < tuint8 > v1;
-		std::vector < std::vector < tuint8 >::size_type > vIdx1; 
-		std::vector < std::vector < tuint8 >::size_type > vIdx2;
+		
+		
+		std::vector < tuint32 > vIdx1; 
+		std::vector < tuint32 > vIdx2;
 
 		for( iWidthNew = iWidth; ; iWidthNew++ )
 		{
@@ -37618,7 +38085,7 @@ public:
 
 		for( ; ; )
 		{
-			vIdx1.push_back( v1.size() );
+			vIdx1.push_back( (tuint32)v1.size() );
 
 			for( i2 = 0; i2 < iWidth; i2++ )
 			{
@@ -37789,8 +38256,10 @@ public:
 		tsize i1, i2;
 		tsize iHeight;
 		std::vector < tuint8 > v1;
-		std::vector < std::vector < tuint8 >::size_type > vIdx1; 
-		std::vector < std::vector < tuint8 >::size_type > vIdx2;
+		
+		
+		std::vector < tuint32 > vIdx1;
+		std::vector < tuint32 > vIdx2;
 
 		i1 = 0;
 		iHeight = 0;
@@ -37798,7 +38267,7 @@ public:
 
 		for( ; ; )
 		{
-			vIdx1.push_back( v1.size() );
+			vIdx1.push_back( (tuint32)v1.size() );
 
 			for( i2 = 0; i2 < iWidth; i2++ )
 			{
@@ -39300,6 +39769,7 @@ public:
 	}
 
 
+	
 	tbool unserialize( const std::string & strData )
 	{
 		std::map< std::string, std::string > mapTmp;
@@ -40712,6 +41182,7 @@ public:
 
 	virtual void _save_readable( std::string strFn ) = 0;
 	virtual std::string _get_readable_row( long iRow )  = 0;
+	virtual std::string _read_row_url_format( long iRow )  = 0;
 
 
 	virtual std::string & ut_SeriTblStr( std::string & strOut ) = 0;
@@ -40908,6 +41379,28 @@ public:
 		return s2;
 	}
 
+
+	std::string _read_row_url_format( long iRow )
+	{
+		int y = iRow;
+		std::string s2;
+
+		for( int x = 0; x < this->ut_GetColAmount(); x++ )
+		{
+			std::string sVal;
+			std::string sValUrl;
+
+			sValUrl = sVal = this->ut_GetItemStr(y,x);
+			SStrf::bs_en( sValUrl , SStrf::bs_esc2 );
+
+			s2 += this->ut_GetColName(x) + "=" + sValUrl;
+			if( x != this->ut_GetColAmount() - 1 ) s2 += "&";
+		}
+		return s2;
+	}
+
+
+	
 	virtual std::string & ut_SeriTblStr( std::string & strOut )
 	{
 		return T::Serialize( strOut );
@@ -42403,10 +42896,11 @@ public:
 		{
 			std::string::size_type i;
 
+			SStrf::strim( *it );
+
 			i = it->find(ssepTD);
 			if( i == std::string::npos ) continue;
 
-			SStrf::strim( *it );
 			if( strMemoLineHead != "" && it->find(strMemoLineHead) == 0 ) continue;
 
 			(*it)[i] = 0;
@@ -42415,6 +42909,62 @@ public:
 
 		this->trimall();
 	}
+
+
+	
+	void SeriUrlstyle( std::string & strOut ) const
+	{
+		strOut = "";
+		for( MAP_MAPKNL_CONSTIT it = m_mapKnl.begin(); it != m_mapKnl.end(); ++it )
+		{
+			strOut += it->first;
+			strOut += "=";
+			std::string s2 = it->second;
+			SStrf::bs_en( s2 , SStrf::bs_esc2 );
+			
+			s2.erase( s2.end() -1 );s2.erase( s2.end() -1 );s2.erase( s2.end() -1 );
+			strOut += s2;
+			strOut += "&";
+		}
+		if( strOut != "" ) strOut.erase( strOut.end() -1 );
+	}
+
+	
+	void SeriUrlstyle_NoEn( std::string & strOut ) const
+	{
+		strOut = "";
+		for( MAP_MAPKNL_CONSTIT it = m_mapKnl.begin(); it != m_mapKnl.end(); ++it )
+		{
+			strOut += it->first;
+			strOut += "=";
+			strOut += it->second;
+			strOut += "&";
+		}
+		if( strOut != "" ) strOut.erase( strOut.end() -1 );
+	}
+
+	
+	void UnseriUrlstyle( const std::string & ssource )
+	{
+		this->impconf( ssource, "&", "=", "" );
+
+		for( MAP_MAPKNL_IT it = m_mapKnl.begin(); it != m_mapKnl.end(); ++it )
+		{
+			std::string &s2( it->second );
+			SStrf::bs_de( s2 , SStrf::bs_esc2 );
+		}
+	}
+
+	
+	void UnseriUrlstyle_NoDe( const std::string & ssource )
+	{
+		this->impconf( ssource, "&", "=", "" );
+		
+		
+		
+		
+	}
+
 
 	
 	static WNava ReadFileNa( const std::string & Fn )
@@ -46791,6 +47341,7 @@ public:
 
 	std::string m_strRemoteIPAddress;
 
+	u_short		m_myport;
 
 private:
 
@@ -46837,6 +47388,7 @@ public:
 		if(!iRc) return 0;
 
 		
+		m_myport = aListener.m_port;
 		return 1;
 	}
 
@@ -60104,7 +60656,7 @@ public:
 		m_dtnow.MakeNow();
 
 		
-		m_tSvr.recv_ln( ckTmp, "\r\n\r\n" );
+		m_tSvr.recv_ln2( ckTmp, "\r\n\r\n" );
 		ckTmp.mk_str(m_strHttpHead);
 		WTcpHttp::GetLine1ParaFromHead( m_strHttpHead, m_strCmdLine1, m_strCmdVerb, m_strProtocolName, m_strAddr, m_strUPfn ); 
 
@@ -60479,6 +61031,7 @@ public:
 		return 1;
 	}
 
+
 	static tbool NewFlow( tuint16 iPort = 2000, int iPurgeConfSec = 3456 , tuint16 *pPortOut = NULL , AFlowMgr_t< _T > **pThis = NULL  ) 
 	{
 		tuint16 iPortOut;
@@ -60505,6 +61058,36 @@ public:
 		if( pThis ) *pThis = NULL;
 		return 0;
 	}
+
+
+	static tbool NewFlow2(	tuint16 iPort ,
+							tuint16 iPortEnd = 65530 ,
+							tuint16 *pPortOut = NULL ,
+							AFlowMgr_t< _T > **pThis = NULL  ) 
+	{
+		tuint16 iPortOut;
+		AFlowMgr_t< _T > *p;
+
+		p = new AFlowMgr_t< _T >;
+
+		p->m_aFolder.m_iPurgeConfSec = 86400;
+
+		for( iPortOut = iPort; iPortOut <= iPortEnd; iPortOut++ )
+		{
+			if( p->m_Lsn.Listen((u_short)iPortOut) )
+			{
+				if( pPortOut ) *pPortOut = iPortOut;
+				if( pThis ) *pThis = p;
+				p->tr_openx();
+				return 1;
+			}
+		}
+
+		delete p;
+		if( pThis ) *pThis = NULL;
+		return 0;
+	}
+
 };
 
 
@@ -60619,6 +61202,334 @@ public:
 
 
 AFWEB02_NAMESPACE_END
+
+
+
+
+
+
+
+
+
+
+class actwebele1_t : public AFWEB02::AWeb2_t
+{
+public:
+	actwebele1_t()
+	{
+	}
+
+	virtual ~actwebele1_t()
+	{
+	}
+
+public:
+	void RtnWebContent( std::string strType, std::string strContent, SCake *pck = NULL )
+	{
+		if( strType == "RAW" )
+		{
+			if( !strContent.empty() )
+			{
+				m_tSvr.send_str( strContent );
+			}
+
+			if( pck && pck->len() )
+				m_tSvr.send_bin( *pck );
+		}
+		else
+		{
+			std::string strOut;
+
+			strOut = "HTTP/1.0 200 OK\r\n";
+			strOut += "Server: NotApache/" + SDte::GetNow().ReadStringPack() + WFile::MkRUStr()+ "\r\n";
+			strOut += "Cache-Control: no-cache\r\n";
+			strOut += "Pragma: no-cache\r\n";
+
+			
+			
+			if( strType == "" )
+			{
+				strOut += "Content-Type: text/plain; charset=gb2312\r\n";
+			}
+			else
+			{
+				strOut += "Content-Type: " + strType + "; charset=gb2312\r\n";
+			}
+
+			if( pck && pck->len() )
+			{
+				strOut += "Content-Length: " + SStrf::sltoa( (int)pck->len() ) + "\r\n";
+			}
+
+			strOut += "Connection: close\r\n";
+			strOut += "\r\n";
+			m_tSvr.send_str( strOut );
+
+			if( pck && pck->len() )
+			{
+				m_tSvr.send_bin( *pck );
+			}
+			else
+			{
+				m_tSvr.send_str( strContent );
+			}
+		}
+	}
+
+	
+	virtual void OnGet( const std::string &strFn , WNava &para , const std::string &strWholePara )
+	{
+		
+		std::string strOut;
+
+		strOut = strFn;
+		strOut += "{JSON(JavaScript Object Notation, JS 对象标记) " + SDte::GetNow().ReadString();
+		strOut += "\r\n\r\n";
+
+		this->RtnWebContent( "", strOut );
+
+		return;
+	}
+};
+
+
+
+
+class funcandy_t
+{
+public:
+	
+	class actwebele_t : public actwebele1_t
+	{
+	public:
+		funcandy_t	 *m_pFather;
+
+	public:
+		actwebele_t()
+		{
+		}
+
+		virtual ~actwebele_t()
+		{
+		}
+
+	public:
+
+		virtual void OnGet( const std::string &strFn , WNava &para , const std::string &strWholePara )
+		{
+			if( m_pFather->lingy( strFn , para , strWholePara , this ) ) return;
+			actwebele1_t::OnGet( strFn , para , strWholePara );
+		}
+	};
+
+
+public:
+	
+	class item_t
+	{
+	public:
+		funcandy_t	 *m_pFather;
+
+	public:
+		item_t()
+		{
+		}
+
+		virtual ~item_t()
+		{
+			WCrsc aLoc_myLck (&(m_pFather->m_lckItems));
+			for( std::vector< item_t * >::iterator it = m_pFather->m_vItems.begin(); it != m_pFather->m_vItems.end(); ++it )
+			{
+				if( *it != this ) continue;
+				m_pFather->m_vItems.erase( it );
+				return;
+			}
+		}
+
+	public:
+		void LinkFc( funcandy_t *pFather )
+		{
+			m_pFather = pFather;
+			WCrsc aLoc_myLck (&(m_pFather->m_lckItems));
+			m_pFather->m_vItems.push_back( this );
+		}
+
+		virtual tbool lingy( const std::string &strFn , WNava &para , const std::string &strWholePara , actwebele_t *pweb )
+		{
+			return 0;
+		}
+
+	};
+
+
+	class actwebmgr_t : public AFWEB02::AFlowMgr_t< actwebele_t >
+	{
+	public:
+		funcandy_t	 *m_pFather;
+
+	public:
+		actwebmgr_t()
+		{
+		}
+
+		virtual ~actwebmgr_t()
+		{
+		}
+
+	public:
+		virtual tbool OnMgrPrepare( actwebele_t & t )
+		{
+			t.m_pFather = this->m_pFather;
+			if( !t.m_tSvr.Conn( m_Lsn ) ) return 0;
+			t.m_pFolder = &m_aFolder;
+			return 1;
+		}
+	};
+
+
+private:
+	WCrsc	m_lckItems;
+	std::vector< item_t * > m_vItems;
+
+public:
+	funcandy_t()
+	{
+	}
+
+	virtual ~funcandy_t()
+	{
+	}
+
+public:
+	tbool lingy( const std::string &strFn , WNava &para , const std::string &strWholePara , actwebele_t *pweb )
+	{
+		WCrsc aLoc_myLck (&(m_lckItems));
+		tbool rc;
+		for( std::vector< item_t * >::iterator it = m_vItems.begin(); it != m_vItems.end(); ++it )
+		{
+			rc = (*it)->lingy( strFn , para , strWholePara , pweb );
+			if( rc ) return 1;
+		}
+		return 0;
+	}
+
+public:
+	tbool InitFlow( tuint16 iPort )
+	{
+		actwebmgr_t *p = new actwebmgr_t;
+		p->m_aFolder.m_iPurgeConfSec = 86400;
+		p->m_pFather = this;
+		if( p->m_Lsn.Listen((u_short)iPort) )
+		{
+			p->tr_openx();
+			return 1;
+		}
+		delete p;
+		return 0;
+	}
+
+
+	static tbool GetUrlResp(	std::string strAddr ,
+								std::string strFn ,
+								WNava nvIn ,
+								std::string *pstrRtn1 = NULL ,
+								std::string *pstrRtn2 = NULL ,
+								int dataNum = 2		
+								)
+	{
+		WTcpCellc cc;
+		std::string s1;
+		SCake ck;
+		tbool rc;
+		std::string strPara;
+
+		std::string Addr = strAddr;
+
+		for( int j = 0; j < 3; j++ )
+		{
+			rc = cc.Conn( Addr );
+			if( rc ) break;
+		}
+		if( !rc )
+		{
+			return 0;
+		}
+
+		nvIn.SeriUrlstyle_NoEn( strPara );
+
+		s1 = "GET /" + strFn + "?" + strPara + " HTTP/1.0\r\n";
+		s1 += "\r\n";
+
+		cc.send_str( s1 );
+
+		if( pstrRtn1 ) *pstrRtn1 = "";
+		if( pstrRtn2 ) *pstrRtn2 = "";
+
+		if( dataNum == 1 )
+		{
+			cc.recv_ln( ck, "\r\n\r\n" );
+			if( ck.len() == 0 ) return 0;
+			if( pstrRtn1 ) *pstrRtn1 = ck.mk_str();
+			return 1;
+		}
+
+		if( dataNum == 2 )
+		{
+			cc.recv_ln( ck, "\r\n\r\n" );
+			if( ck.len() == 0 ) return 0;
+			if( pstrRtn1 ) *pstrRtn1 = ck.mk_str();
+
+			cc.recv_ln( ck, "\r\n\r\n" );
+			if( ck.len() == 0 ) return 0;
+			if( pstrRtn2 ) *pstrRtn2 = ck.mk_str();
+			return 1;
+		}
+
+		return 0;
+	}
+
+	
+	static tbool GetUrlResp(	std::string strAddr ,
+								std::string strFn ,
+								WNava nvIn ,
+								WNava &nvOut ,
+								int dataNum = 2
+								)
+	{
+		std::string s1, s2;
+		tbool rc;
+
+		rc = GetUrlResp( strAddr, strFn, nvIn, &s1, &s2, dataNum );
+
+		if( !rc ) return rc;
+
+		if( dataNum == 1 )
+		{
+			nvOut.UnseriUrlstyle_NoDe( s1 );
+			return 1;
+		}
+
+		if( dataNum == 2 )
+		{
+			nvOut.UnseriUrlstyle_NoDe( s2 );
+			return 1;
+		}
+
+		return 0;
+	}
+
+};
+
+
+
+
+
+
+
+
+
+
+
 
 
 #endif
