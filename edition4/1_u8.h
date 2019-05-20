@@ -16,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2019c04c23c周二-11c04c22.34  
+2019c05c20c周一-15c08c20.11  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -24225,17 +24225,31 @@ public:
 	}
 
 public:
+
 	tbool lingy( const std::string &strFn , WNava &para , const std::string &strWholePara , actwebele_t *pweb )
 	{
 		WCrsc aLoc_myLck (&(m_lckItems));
+
 		tbool rc;
-		for( std::vector< item_t * >::iterator it = m_vItems.begin(); it != m_vItems.end(); ++it )
+
+		
+		
+
+		
+
+		for( long j = (long)m_vItems.size() - 1 ; j >= 0; j -- )
 		{
-			rc = (*it)->lingy( strFn , para , strWholePara , pweb );
-			if( rc ) return 1;
+			rc = m_vItems[j]->lingy( strFn , para , strWholePara , pweb );
+			if( rc )
+			{
+				return 1;
+			}
 		}
+
+
 		return 0;
 	}
+
 
 public:
 	tbool InitFlow( tuint16 iPort )
@@ -24343,9 +24357,6 @@ public:
 	}
 
 };
-
-
-
 
 
 
@@ -46129,17 +46140,31 @@ public:
 	}
 
 public:
+
 	tbool lingy( const std::string &strFn , WNava &para , const std::string &strWholePara , actwebele_t *pweb )
 	{
 		WCrsc aLoc_myLck (&(m_lckItems));
+
 		tbool rc;
-		for( std::vector< item_t * >::iterator it = m_vItems.begin(); it != m_vItems.end(); ++it )
+
+		
+		
+
+		
+
+		for( long j = (long)m_vItems.size() - 1 ; j >= 0; j -- )
 		{
-			rc = (*it)->lingy( strFn , para , strWholePara , pweb );
-			if( rc ) return 1;
+			rc = m_vItems[j]->lingy( strFn , para , strWholePara , pweb );
+			if( rc )
+			{
+				return 1;
+			}
 		}
+
+
 		return 0;
 	}
+
 
 public:
 	tbool InitFlow( tuint16 iPort )
@@ -46247,9 +46272,6 @@ public:
 	}
 
 };
-
-
-
 
 
 
