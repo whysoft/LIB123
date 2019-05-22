@@ -16,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2019c05c20c周一-15c08c20.11  
+2019c05c22c周三-15c29c58.34  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -24141,8 +24141,9 @@ public:
 
 		virtual void OnGet( const std::string &strFn , WNava &para , const std::string &strWholePara )
 		{
-			if( m_pFather->lingy( strFn , para , strWholePara , this ) ) return;
-			actwebele1_t::OnGet( strFn , para , strWholePara );
+			if( m_pFather->lingy( strFn , para , strWholePara , this ) ) return;  
+
+			actwebele1_t::OnGet( strFn , para , strWholePara ); 
 		}
 	};
 
@@ -24157,6 +24158,14 @@ public:
 	public:
 		item_t()
 		{
+		}
+
+		item_t( funcandy_t *pFather )
+		{
+			
+			m_pFather = pFather;
+			WCrsc aLoc_myLck (&(m_pFather->m_lckItems));
+			m_pFather->m_vItems.push_back( this );
 		}
 
 		virtual ~item_t()
@@ -24226,7 +24235,7 @@ public:
 
 public:
 
-	tbool lingy( const std::string &strFn , WNava &para , const std::string &strWholePara , actwebele_t *pweb )
+	virtual tbool lingy( const std::string &strFn , WNava &para , const std::string &strWholePara , actwebele_t *pweb )
 	{
 		WCrsc aLoc_myLck (&(m_lckItems));
 
@@ -24234,12 +24243,12 @@ public:
 
 		
 		
-
 		
 
+		
 		for( long j = (long)m_vItems.size() - 1 ; j >= 0; j -- )
 		{
-			rc = m_vItems[j]->lingy( strFn , para , strWholePara , pweb );
+			rc = (m_vItems[j])->lingy( strFn , para , strWholePara , pweb );
 			if( rc )
 			{
 				return 1;
@@ -46056,8 +46065,9 @@ public:
 
 		virtual void OnGet( const std::string &strFn , WNava &para , const std::string &strWholePara )
 		{
-			if( m_pFather->lingy( strFn , para , strWholePara , this ) ) return;
-			actwebele1_t::OnGet( strFn , para , strWholePara );
+			if( m_pFather->lingy( strFn , para , strWholePara , this ) ) return;  
+
+			actwebele1_t::OnGet( strFn , para , strWholePara ); 
 		}
 	};
 
@@ -46072,6 +46082,14 @@ public:
 	public:
 		item_t()
 		{
+		}
+
+		item_t( funcandy_t *pFather )
+		{
+			
+			m_pFather = pFather;
+			WCrsc aLoc_myLck (&(m_pFather->m_lckItems));
+			m_pFather->m_vItems.push_back( this );
 		}
 
 		virtual ~item_t()
@@ -46141,7 +46159,7 @@ public:
 
 public:
 
-	tbool lingy( const std::string &strFn , WNava &para , const std::string &strWholePara , actwebele_t *pweb )
+	virtual tbool lingy( const std::string &strFn , WNava &para , const std::string &strWholePara , actwebele_t *pweb )
 	{
 		WCrsc aLoc_myLck (&(m_lckItems));
 
@@ -46149,12 +46167,12 @@ public:
 
 		
 		
-
 		
 
+		
 		for( long j = (long)m_vItems.size() - 1 ; j >= 0; j -- )
 		{
-			rc = m_vItems[j]->lingy( strFn , para , strWholePara , pweb );
+			rc = (m_vItems[j])->lingy( strFn , para , strWholePara , pweb );
 			if( rc )
 			{
 				return 1;
