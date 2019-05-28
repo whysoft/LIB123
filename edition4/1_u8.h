@@ -16,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2019c05c22c周三-15c29c58.34  
+2019c05c28c周二-13c12c50.28  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -1066,23 +1066,10 @@ public:
 	
 	
 
-	
-	static std::string Chg2XmlCode( std::string s )
-	{
-		sreplstr( s, "&",  "&amp;" );
-		sreplstr( s, "<",  "&lt;" );
-		sreplstr( s, ">",  "&gt;" );
-		sreplstr( s, " ",  "&nbsp;" );
-		sreplstr( s, "\"", "&quot;" );
-		sreplstr( s, "\r", ""  );
-		sreplstr( s, "\n", "<br>\r\n" );
-
-		return s;
-	}
 
 
 	
-
+	
 	static std::string & str_trim_base( tchar *(*f)( tchar *, const tchar * ), std::string & str, const tchar *str_space="\r\n \t" )
 	{
 		tchar * pstr;
@@ -1443,6 +1430,38 @@ public:
 	}
 
 
+	
+	static std::string Chg2XmlCode( std::string s )
+	{
+		sreplstr( s, "&",  "&amp;" );
+		sreplstr( s, "<",  "&lt;" );
+		sreplstr( s, ">",  "&gt;" );
+		sreplstr( s, " ",  "&nbsp;" );
+		sreplstr( s, "\"", "&quot;" );
+		sreplstr( s, "\r", ""  );
+		sreplstr( s, "\n", "<br>\r\n" );
+
+		return s;
+	}
+
+	
+	static void bs_en_uri( std::string & strData )
+	{
+		SStrf::bs_en( strData , bs_esc2 );
+		
+		strData.erase( strData.end() - 1 );
+		strData.erase( strData.end() - 1 );
+		strData.erase( strData.end() - 1 );
+	}
+
+
+	static void bs_de_uri( std::string & strData )
+	{
+		SStrf::bs_de( strData , bs_esc2 ); 
+	}
+
+
+	
 	static std::string b2s( void *p, long len )
 	{
 		std::string str1;
@@ -8836,6 +8855,69 @@ public:
 
 
 
+
+
+class ICursorDs2
+{
+private:
+
+public:
+	ICursorDs2( )
+	{
+	}
+
+	virtual ~ICursorDs2( )
+	{
+	}
+
+public:
+	virtual tbool OpenDb( std::string strDb )
+	{
+		return 0;
+	}
+
+	virtual tbool Exec( std::string strSql )
+	{
+		return 0;
+	}
+
+	virtual tbool OpenTbl( std::string strSql )
+	{
+		return 0;
+	}
+
+	virtual tbool Fetch()
+	{
+		return 0;
+	}
+
+	virtual tbool GetCol( int i , std::string &refStrVal )
+	{
+		return 0;
+	}
+
+	virtual void CloseTbl()
+	{
+		return;
+	}
+
+	virtual void CloseDb()
+	{
+		return;
+	}
+
+	
+	
+	
+	
+	
+};
+
+
+
+
+
+
 X011_NAMESPACE_END
 
 #endif
@@ -12782,16 +12864,16 @@ public:
 		strOut = "";
 		for( MAP_MAPKNL_CONSTIT it = m_mapKnl.begin(); it != m_mapKnl.end(); ++it )
 		{
-			strOut += it->first;
+			strOut += it->first; 
 			strOut += "=";
 			std::string s2 = it->second;
 			SStrf::bs_en( s2 , SStrf::bs_esc2 );
 			
-			s2.erase( s2.end() -1 );s2.erase( s2.end() -1 );s2.erase( s2.end() -1 );
+			s2.erase( s2.end() - 1 ); s2.erase( s2.end() - 1 ); s2.erase( s2.end() - 1 );
 			strOut += s2;
 			strOut += "&";
 		}
-		if( strOut != "" ) strOut.erase( strOut.end() -1 );
+		if( strOut != "" ) strOut.erase( strOut.end() - 1 );
 	}
 
 	
@@ -24160,26 +24242,39 @@ public:
 		{
 		}
 
-		item_t( funcandy_t *pFather )
-		{
-			
-			m_pFather = pFather;
-			WCrsc aLoc_myLck (&(m_pFather->m_lckItems));
-			m_pFather->m_vItems.push_back( this );
-		}
+		
+		
+		
+		
+		
+		
 
 		virtual ~item_t()
 		{
 			WCrsc aLoc_myLck (&(m_pFather->m_lckItems));
+			for( std::vector< item_t * >::iterator it = m_pFather->m_vItemsHigh.begin(); it != m_pFather->m_vItemsHigh.end(); ++it )
+			{
+				if( *it != this ) continue;
+				m_pFather->m_vItemsHigh.erase( it );
+				
+				break;
+			}
 			for( std::vector< item_t * >::iterator it = m_pFather->m_vItems.begin(); it != m_pFather->m_vItems.end(); ++it )
 			{
 				if( *it != this ) continue;
 				m_pFather->m_vItems.erase( it );
-				return;
+				
+				break;
 			}
 		}
 
 	public:
+		void LinkFcHigh( funcandy_t *pFather )
+		{
+			m_pFather = pFather;
+			WCrsc aLoc_myLck (&(m_pFather->m_lckItems));
+			m_pFather->m_vItemsHigh.push_back( this );
+		}
 		void LinkFc( funcandy_t *pFather )
 		{
 			m_pFather = pFather;
@@ -24222,6 +24317,7 @@ public:
 
 private:
 	WCrsc	m_lckItems;
+	std::vector< item_t * > m_vItemsHigh; 
 	std::vector< item_t * > m_vItems;
 
 public:
@@ -24244,6 +24340,16 @@ public:
 		
 		
 		
+
+		
+		for( long j = (long)m_vItemsHigh.size() - 1 ; j >= 0; j -- )
+		{
+			rc = (m_vItemsHigh[j])->lingy( strFn , para , strWholePara , pweb );
+			if( rc )
+			{
+				return 1;
+			}
+		}
 
 		
 		for( long j = (long)m_vItems.size() - 1 ; j >= 0; j -- )
@@ -25462,23 +25568,10 @@ public:
 	
 	
 
-	
-	static std::string Chg2XmlCode( std::string s )
-	{
-		sreplstr( s, "&",  "&amp;" );
-		sreplstr( s, "<",  "&lt;" );
-		sreplstr( s, ">",  "&gt;" );
-		sreplstr( s, " ",  "&nbsp;" );
-		sreplstr( s, "\"", "&quot;" );
-		sreplstr( s, "\r", ""  );
-		sreplstr( s, "\n", "<br>\r\n" );
-
-		return s;
-	}
 
 
 	
-
+	
 	static std::string & str_trim_base( tchar *(*f)( tchar *, const tchar * ), std::string & str, const tchar *str_space="\r\n \t" )
 	{
 		tchar * pstr;
@@ -25839,6 +25932,38 @@ public:
 	}
 
 
+	
+	static std::string Chg2XmlCode( std::string s )
+	{
+		sreplstr( s, "&",  "&amp;" );
+		sreplstr( s, "<",  "&lt;" );
+		sreplstr( s, ">",  "&gt;" );
+		sreplstr( s, " ",  "&nbsp;" );
+		sreplstr( s, "\"", "&quot;" );
+		sreplstr( s, "\r", ""  );
+		sreplstr( s, "\n", "<br>\r\n" );
+
+		return s;
+	}
+
+	
+	static void bs_en_uri( std::string & strData )
+	{
+		SStrf::bs_en( strData , bs_esc2 );
+		
+		strData.erase( strData.end() - 1 );
+		strData.erase( strData.end() - 1 );
+		strData.erase( strData.end() - 1 );
+	}
+
+
+	static void bs_de_uri( std::string & strData )
+	{
+		SStrf::bs_de( strData , bs_esc2 ); 
+	}
+
+
+	
 	static std::string b2s( void *p, long len )
 	{
 		std::string str1;
@@ -33047,6 +33172,69 @@ public:
 
 
 
+
+
+class ICursorDs2
+{
+private:
+
+public:
+	ICursorDs2( )
+	{
+	}
+
+	virtual ~ICursorDs2( )
+	{
+	}
+
+public:
+	virtual tbool OpenDb( std::string strDb )
+	{
+		return 0;
+	}
+
+	virtual tbool Exec( std::string strSql )
+	{
+		return 0;
+	}
+
+	virtual tbool OpenTbl( std::string strSql )
+	{
+		return 0;
+	}
+
+	virtual tbool Fetch()
+	{
+		return 0;
+	}
+
+	virtual tbool GetCol( int i , std::string &refStrVal )
+	{
+		return 0;
+	}
+
+	virtual void CloseTbl()
+	{
+		return;
+	}
+
+	virtual void CloseDb()
+	{
+		return;
+	}
+
+	
+	
+	
+	
+	
+};
+
+
+
+
+
+
 X011_NAMESPACE_END
 
 #endif
@@ -34977,16 +35165,16 @@ public:
 		strOut = "";
 		for( MAP_MAPKNL_CONSTIT it = m_mapKnl.begin(); it != m_mapKnl.end(); ++it )
 		{
-			strOut += it->first;
+			strOut += it->first; 
 			strOut += "=";
 			std::string s2 = it->second;
 			SStrf::bs_en( s2 , SStrf::bs_esc2 );
 			
-			s2.erase( s2.end() -1 );s2.erase( s2.end() -1 );s2.erase( s2.end() -1 );
+			s2.erase( s2.end() - 1 ); s2.erase( s2.end() - 1 ); s2.erase( s2.end() - 1 );
 			strOut += s2;
 			strOut += "&";
 		}
-		if( strOut != "" ) strOut.erase( strOut.end() -1 );
+		if( strOut != "" ) strOut.erase( strOut.end() - 1 );
 	}
 
 	
@@ -46084,26 +46272,39 @@ public:
 		{
 		}
 
-		item_t( funcandy_t *pFather )
-		{
-			
-			m_pFather = pFather;
-			WCrsc aLoc_myLck (&(m_pFather->m_lckItems));
-			m_pFather->m_vItems.push_back( this );
-		}
+		
+		
+		
+		
+		
+		
 
 		virtual ~item_t()
 		{
 			WCrsc aLoc_myLck (&(m_pFather->m_lckItems));
+			for( std::vector< item_t * >::iterator it = m_pFather->m_vItemsHigh.begin(); it != m_pFather->m_vItemsHigh.end(); ++it )
+			{
+				if( *it != this ) continue;
+				m_pFather->m_vItemsHigh.erase( it );
+				
+				break;
+			}
 			for( std::vector< item_t * >::iterator it = m_pFather->m_vItems.begin(); it != m_pFather->m_vItems.end(); ++it )
 			{
 				if( *it != this ) continue;
 				m_pFather->m_vItems.erase( it );
-				return;
+				
+				break;
 			}
 		}
 
 	public:
+		void LinkFcHigh( funcandy_t *pFather )
+		{
+			m_pFather = pFather;
+			WCrsc aLoc_myLck (&(m_pFather->m_lckItems));
+			m_pFather->m_vItemsHigh.push_back( this );
+		}
 		void LinkFc( funcandy_t *pFather )
 		{
 			m_pFather = pFather;
@@ -46146,6 +46347,7 @@ public:
 
 private:
 	WCrsc	m_lckItems;
+	std::vector< item_t * > m_vItemsHigh; 
 	std::vector< item_t * > m_vItems;
 
 public:
@@ -46168,6 +46370,16 @@ public:
 		
 		
 		
+
+		
+		for( long j = (long)m_vItemsHigh.size() - 1 ; j >= 0; j -- )
+		{
+			rc = (m_vItemsHigh[j])->lingy( strFn , para , strWholePara , pweb );
+			if( rc )
+			{
+				return 1;
+			}
+		}
 
 		
 		for( long j = (long)m_vItems.size() - 1 ; j >= 0; j -- )
