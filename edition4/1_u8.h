@@ -16,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2019c05c28c周二-13c12c50.28  
+2019c06c18c周二-11c08c37.83  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -467,6 +467,20 @@ public:
 			return;
 		}
 		writebit( pbin, sufx , val );
+	}
+
+
+	unsigned char rev_bit( unsigned char c )
+	{
+		static unsigned char sta[16] =
+		{
+			0x00,0x08,0x04,0x0C,0x02,0x0A,0x06,0x0E,0x01,0x09,0x05,0x0D,0x03,0x0B,0x07,0x0F
+		};
+
+		unsigned char d = 0; 
+		d |= (sta[c&0xF]) << 4;
+		d |= sta[c>>4];
+		return d;
 	}
 
 
@@ -10208,11 +10222,118 @@ X011_NAMESPACE_END
 
 
 
+#ifndef X011__H_w_WClp_h
+#define X011__H_w_WClp_h
+
+
+X011_NAMESPACE_BEGIN
+
+
+#ifdef WMSG_ENABLED_X011_
+
+
+class WClp
+{
+
+public:
+
+	WClp()
+	{
+	}
+
+	 ~WClp()
+	{
+	}
+
+	static tbool txt_put( std::string txtdata )
+	{
+		tchar *buffer;
+		if(OpenClipboard(0)) {
+			HGLOBAL clipbuffer;
+			EmptyClipboard();
+			clipbuffer = GlobalAlloc(GMEM_MOVEABLE, SStrf::slen(txtdata.c_str())+1);
+			buffer = (tchar *)GlobalLock(clipbuffer);
+			SStrf::scpy( buffer, txtdata.c_str() );
+			GlobalUnlock( clipbuffer );
+			SetClipboardData( CF_TEXT, clipbuffer );
+			CloseClipboard();
+			GlobalFree(clipbuffer);
+			return 1;
+		}else{
+			return 0;
+		}
+	}
+
+	static tbool txt_put( tchar * txtdata )
+	{
+		return txt_put( std::string(txtdata?txtdata:"") );
+	}
+
+
+	static std::string txt_get()
+	{
+		char *buffer;
+		std::string strtmp("");
+
+		if ( OpenClipboard(0) )
+		{
+			HANDLE hData = GetClipboardData(CF_TEXT);
+			buffer = (char *)GlobalLock(hData);
+
+			if(buffer)
+				strtmp = buffer;
+
+			GlobalUnlock(hData);
+			CloseClipboard();
+		}
+		return strtmp;
+	}
+
+	
+	static CString txt_getTS()
+	{
+		CStringW strtmp(L"");
+
+		if ( OpenClipboard(0) )
+		{
+			HANDLE hData = GetClipboardData(CF_UNICODETEXT);
+			wchar_t * buffer = (wchar_t *)GlobalLock(hData);
+
+			if(buffer)
+				strtmp = buffer;
+
+			GlobalUnlock(hData);
+			CloseClipboard();
+		}
+		return CString(strtmp);
+	}
+
+}; 
+
+
+#else
+
+
+#endif	
+
+
+
+X011_NAMESPACE_END
+
+#endif
+
+
+
+
+
 #ifndef X011__H_w_wmsg_h
 #define X011__H_w_wmsg_h
 
 
 X011_NAMESPACE_BEGIN
+
+
+#ifdef WMSG_ENABLED_X011_
 
 
 class WMsg
@@ -11831,6 +11952,12 @@ public:
 
 
 
+#else
+
+
+#endif	
+
+
 
 X011_NAMESPACE_END
 
@@ -12245,6 +12372,8 @@ public:
 	}
 
 
+#ifdef WMSG_ENABLED_X011_
+
 	tbool bind_tmpfile( const tchar * pszExt = NULL , int iThreadId = 0 ) 
 	{
 		std::string  strEnvTmpPath;
@@ -12252,6 +12381,12 @@ public:
 		if( strEnvTmpPath == "" ) return 0;
 		return bind_nofile( strEnvTmpPath, pszExt, iThreadId );
 	}
+
+#else
+
+
+#endif	
+
 
 
 	
@@ -13015,7 +13150,11 @@ X011_NAMESPACE_END
 X011_NAMESPACE_BEGIN
 
 
-class WReg32 {
+#ifdef WMSG_ENABLED_X011_
+
+
+class WReg32
+{
 
 private:
 
@@ -13352,6 +13491,13 @@ public:
 
 
 }; 
+
+
+#else
+
+
+#endif	
+
 
 
 
@@ -17732,6 +17878,7 @@ public:
 	}
 
 
+#ifdef WMSG_ENABLED_X011_
 
 	static std::string GetRegIEProxyAddr()
 	{
@@ -17770,6 +17917,15 @@ public:
 
 		return strProxyAddr;
 	}
+
+#else
+
+	static std::string GetRegIEProxyAddr()
+	{
+		return "";
+	}
+
+#endif	
 
 
 	const std::string & SetProxyAddr( std::string strPxyAddr )
@@ -24969,6 +25125,20 @@ public:
 			return;
 		}
 		writebit( pbin, sufx , val );
+	}
+
+
+	unsigned char rev_bit( unsigned char c )
+	{
+		static unsigned char sta[16] =
+		{
+			0x00,0x08,0x04,0x0C,0x02,0x0A,0x06,0x0E,0x01,0x09,0x05,0x0D,0x03,0x0B,0x07,0x0F
+		};
+
+		unsigned char d = 0; 
+		d |= (sta[c&0xF]) << 4;
+		d |= sta[c>>4];
+		return d;
 	}
 
 
