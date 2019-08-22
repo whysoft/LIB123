@@ -16,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2019c06c18c周二-11c08c37.83  
+2019c08c22c周四-17c27c06.90  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -23493,13 +23493,20 @@ public:
 	SDte		m_dtnow;
 
 public:
+	std::string  m_strCommuCR;
+	std::string  m_strHtmlCR;
+
+public:
 	AFlowEle_t()
 	{
+		m_strCommuCR = "\r\n";
+		m_strHtmlCR = "\r\n";
+
 		m_tSvrGoodFlag = 1;
 		m_WebFormBeginDoneFlag = 0;
 		m_RawMode = 0;
 
-		m_strFormTableHead = "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n";
+		m_strFormTableHead = "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">" + m_strHtmlCR;
 	}
 
 	virtual ~AFlowEle_t()
@@ -23529,17 +23536,17 @@ public:
 
 		std::string strOut;
 
-		strOut = "HTTP/1.0 200 OK\r\n";
-		strOut += "Server: NotApache/" + wl::SDte::GetNow().ReadStringPack() + "\r\n";
-		strOut += "Cache-Control: no-cache\r\n";
-		strOut += "Pragma: no-cache\r\n";
+		strOut = "HTTP/1.0 200 OK" + m_strCommuCR;
+		strOut += "Server: NotApache/" + wl::SDte::GetNow().ReadStringPack() + m_strCommuCR;
+		strOut += "Cache-Control: no-cache" + m_strCommuCR;
+		strOut += "Pragma: no-cache" + m_strCommuCR;
 
 		
-		strOut += content_type + "\r\n";
+		strOut += content_type + m_strCommuCR;
 
-		strOut += "Content-Length: " + SStrf::sltoa( (int)ck.len() ) + "\r\n";
-		strOut += "Connection: close\r\n";
-		strOut += "\r\n";
+		strOut += "Content-Length: " + SStrf::sltoa( (int)ck.len() ) + m_strCommuCR;
+		strOut += "Connection: close" + m_strCommuCR;
+		strOut += m_strCommuCR;
 
 		if( m_tSvrGoodFlag )
 			m_tSvrGoodFlag = m_tSvr.send_str( strOut );
@@ -23693,18 +23700,18 @@ public:
 
 		for( int j = 0; j < (int)v1.size(); j++ )
 		{
-			WebSendString( "<tr>\r\n" );
+			WebSendString( "<tr>" + m_strHtmlCR );
 			WebSendString( "<td>" );
 			WebSendString( Chg2XmlCode(v1[j]) );
 			WebSendString( "</td>" );
-			WebSendString( "\r\n" );
+			WebSendString( m_strHtmlCR );
 			WebSendString( "<td>" );
 			WebSendString( Chg2XmlCode(v2[j]) );
 			WebSendString( "</td>" );
-			WebSendString( "\r\n" );
-			WebSendString( "</tr>\r\n" );
+			WebSendString( m_strHtmlCR );
+			WebSendString( "</tr>" + m_strHtmlCR );
 		}
-		WebSendString( "</table>\r\n" );
+		WebSendString( "</table>" + m_strHtmlCR );
 
 		WebAddTextBox( "name1", "value1" );
 		WebAddButt( "name2", "value2" );
@@ -23718,7 +23725,7 @@ public:
 		m_dtnow.MakeNow();
 
 		
-		m_tSvr.recv_ln2( ckTmp, "\r\n\r\n" );
+		m_tSvr.recv_ln2( ckTmp, (m_strCommuCR + m_strCommuCR).c_str() );
 		ckTmp.mk_str(m_strHttpHead);
 		WTcpHttp::GetLine1ParaFromHead( m_strHttpHead, m_strCmdLine1, m_strCmdVerb, m_strProtocolName, m_strAddr, m_strUPfn ); 
 
@@ -23784,23 +23791,23 @@ public:
 
 		std::string strOut;
 
-		strOut = "HTTP/1.0 200 OK\r\n";
-		strOut += "Server: NotApache/" + wl::SDte::GetNow().ReadStringPack() + "\r\n";
-		strOut += "Cache-Control: no-cache\r\n";
-		strOut += "Pragma: no-cache\r\n";
+		strOut = "HTTP/1.0 200 OK" + m_strCommuCR;
+		strOut += "Server: NotApache/" + wl::SDte::GetNow().ReadStringPack() + m_strCommuCR;
+		strOut += "Cache-Control: no-cache" + m_strCommuCR;
+		strOut += "Pragma: no-cache" + m_strCommuCR;
 
 		
 		if( m_RawMode )
 		{
-			strOut += "Content-Type: text/plain; charset=gb2312\r\n";
+			strOut += "Content-Type: text/plain; charset=gb2312" + m_strCommuCR;
 		}
 		else
 		{
-			strOut += "Content-Type: text/html; charset=gb2312\r\n";
+			strOut += "Content-Type: text/html; charset=gb2312" + m_strCommuCR;
 		}
 
-		strOut += "Connection: close\r\n";
-		strOut += "\r\n";
+		strOut += "Connection: close" + m_strCommuCR;
+		strOut += m_strCommuCR;
 
 			if( m_RawMode )
 			{
@@ -24194,28 +24201,12 @@ public:
 
 class AWeb2_t : public AFlowEle_t
 {
+public:
+	WTcpHttp m_HeadPara;
+	SCake ckPostBody;
+
 private:
-	
-	
-	
 
-	
-
-	
-
-	
-
-	
-
-	
-	
-	
-
-
-	
-
-
-	
 	
 	virtual tbool On_StaticFlow()
 	{
@@ -24247,7 +24238,30 @@ private:
 		}
 
 
-		this->OnGet( s2 , this->m_nvHTTPGET , strAfterWen );
+		WTcpHttp &h(m_HeadPara);
+
+		h.ImportSvrRtnHeadPara( this->m_strHttpHead );
+
+		std::string s3;
+		s3 = h.GetSvrRtnHeadParaVal( "Host" );
+		s3 = h.GetSvrRtnHeadParaVal( "User-Agent" );
+		s3 = h.GetSvrRtnHeadParaVal( "Content-Length" );
+
+		SStrf::strim(m_strCmdVerb);
+		SStrf::sucase(m_strCmdVerb);
+
+		if( m_strCmdVerb == "POST" )
+		{
+			long i = SStrf::satol( h.GetSvrRtnHeadParaVal( "Content-Length" ) );
+
+			if( i > 0 )
+			{
+				m_tSvr.recv_len( ckPostBody, i );
+				
+			}
+		}
+
+		this->OnGet( s2 , this->m_nvHTTPGET , strAfterWen ); 
 
 		return 1;
 	}
@@ -24257,7 +24271,9 @@ public:
 	virtual ~AWeb2_t(){}
 
 public:
-	virtual void OnGet( const std::string &strFn , WNava &para , const std::string &strWholePara ) {} 	
+	
+	virtual void OnGet( const std::string &strFn , WNava &para , const std::string &strWholePara )
+	{	}
 };
 
 
@@ -24290,41 +24306,49 @@ public:
 	{
 		if( strType == "RAW" )
 		{
-			if( !strContent.empty() )
-			{
-				m_tSvr.send_str( strContent );
-			}
-
 			if( pck && pck->len() )
+			{
 				m_tSvr.send_bin( *pck );
+			}
+			else
+			{
+				if( !strContent.empty() )
+				{
+					m_tSvr.send_str( strContent );
+				}
+			}
 		}
 		else
 		{
 			std::string strOut;
 
-			strOut = "HTTP/1.0 200 OK\r\n";
-			strOut += "Server: NotApache/" + SDte::GetNow().ReadStringPack() + WFile::MkRUStr()+ "\r\n";
-			strOut += "Cache-Control: no-cache\r\n";
-			strOut += "Pragma: no-cache\r\n";
+			strOut = "HTTP/1.0 200 OK" + m_strCommuCR;
+			strOut += "Server: NotApache/" + SDte::GetNow().ReadStringPack() + WFile::MkRUStr() + m_strCommuCR;
+			strOut += "Cache-Control: no-cache" + m_strCommuCR;
+			strOut += "Pragma: no-cache" + m_strCommuCR;
 
 			
 			
 			if( strType == "" )
 			{
-				strOut += "Content-Type: text/plain; charset=gb2312\r\n";
+				strOut += "Content-Type: text/plain; charset=gb2312" + m_strCommuCR;
 			}
 			else
 			{
-				strOut += "Content-Type: " + strType + "; charset=gb2312\r\n";
+				strOut += "Content-Type: " + strType + "; charset=gb2312" + m_strCommuCR;
 			}
 
 			if( pck && pck->len() )
 			{
-				strOut += "Content-Length: " + SStrf::sltoa( (int)pck->len() ) + "\r\n";
+				strOut += "Content-Length: " + SStrf::sltoa( (int)pck->len() ) + m_strCommuCR;
+			}
+			else
+			{
+				strOut += "Content-Length: " + SStrf::sltoa( (int)strContent.length() ) + m_strCommuCR;
 			}
 
-			strOut += "Connection: close\r\n";
-			strOut += "\r\n";
+			strOut += "Connection: close" + m_strCommuCR;
+			strOut += m_strCommuCR;
 			m_tSvr.send_str( strOut );
 
 			if( pck && pck->len() )
@@ -24346,7 +24370,8 @@ public:
 
 		strOut = strFn;
 		strOut += "{JSON(JavaScript Object Notation, JS 对象标记) " + SDte::GetNow().ReadString();
-		strOut += "\r\n\r\n";
+		strOut += m_strCommuCR;
+		strOut += m_strCommuCR;
 
 		this->RtnWebContent( "", strOut );
 
@@ -24442,7 +24467,6 @@ public:
 		{
 			return 0;
 		}
-
 	};
 
 
@@ -24626,6 +24650,128 @@ public:
 
 		return 0;
 	}
+
+
+	
+	static tbool WGet(
+						std::string strAddr ,    
+						std::string strUniFn , 
+						std::string strMethod = "GET",  
+						std::string strTxtType = "" ,
+						std::string strContent = "" ,
+						SCake		*pckBody = NULL ,
+						std::string *pstrRtn1 = NULL ,
+						SCake		*pckRtn2 = NULL ,
+						std::string strCommuCR = "\r\n"
+					)
+	{
+		WTcpCellc cc;
+		std::string s1;
+		tbool rc;
+
+		
+		for( int j = 0; j < 3; j++ )
+		{
+			rc = cc.Conn( strAddr );
+			if( rc ) break;
+		}
+		if( !rc )
+		{
+			return 0;
+		}
+
+		
+		if( strTxtType == "RAW" )
+		{
+			if( pckBody && pckBody->len() )
+			{
+				cc.send_bin( *pckBody );
+			}
+			else
+			{
+				if( !strContent.empty() )
+					cc.send_str( strContent );
+			}
+		}
+		
+		else if( strMethod == "GET" )
+		{
+			std::string strOut;
+
+			strOut = strMethod + " " + strUniFn + " HTTP/1.0" + strCommuCR;
+			strOut += "Cache-Control: no-cache" + strCommuCR;
+			strOut += "Pragma: no-cache" + strCommuCR;
+			strOut += strCommuCR;
+			cc.send_str( strOut );
+		}
+		
+		else
+		{
+			std::string strOut;
+
+			strOut = strMethod + " " + strUniFn + " HTTP/1.0" + strCommuCR;
+			strOut += "Server: NotApache/" + SDte::GetNow().ReadStringPack() + WFile::MkRUStr() + strCommuCR;
+			strOut += "Cache-Control: no-cache" + strCommuCR;
+			strOut += "Pragma: no-cache" + strCommuCR;
+
+			if( strTxtType == "" )
+			{
+				strOut += "Content-Type: text/plain; charset=gb2312" + strCommuCR;
+			}
+			else
+			{
+				
+				
+				strOut += "Content-Type: " + strTxtType + "; charset=gb2312" + strCommuCR;
+			}
+
+			if( pckBody && pckBody->len() )
+			{
+				strOut += "Content-Length: " + SStrf::sltoa( (int)pckBody->len() ) + strCommuCR;
+			}
+			else
+			{
+				strOut += "Content-Length: " + SStrf::sltoa( (int)strContent.length() ) + strCommuCR;
+			}
+
+			strOut += "Connection: close" + strCommuCR;
+			strOut += strCommuCR;
+			cc.send_str( strOut );
+
+			if( pckBody && pckBody->len() )
+			{
+				cc.send_bin( *pckBody );
+			}
+			else
+			{
+				if( !strContent.empty() )
+					cc.send_str( strContent );
+			}
+		}
+
+		
+		WTcpHttp h;
+		SCake ck;
+		std::string strHttpHead;
+
+		if( pstrRtn1 ) *pstrRtn1 = "";
+		if( pckRtn2 ) pckRtn2->redim(0);
+
+		cc.recv_ln2( ck, (strCommuCR+strCommuCR).c_str() );
+		if( ck.len() != 0 && pstrRtn1 ) ck.mk_str(*pstrRtn1);
+		ck.mk_str(strHttpHead);
+
+		h.ImportSvrRtnHeadPara( strHttpHead );
+		long i = SStrf::satol( h.GetSvrRtnHeadParaVal( "Content-Length" ) );
+
+		if( i > 0 && pckRtn2 )
+		{
+			cc.recv_len( *pckRtn2, i );
+		}
+
+		return 1;
+	}
+
 
 };
 
@@ -45537,13 +45683,20 @@ public:
 	SDte		m_dtnow;
 
 public:
+	std::string  m_strCommuCR;
+	std::string  m_strHtmlCR;
+
+public:
 	AFlowEle_t()
 	{
+		m_strCommuCR = "\r\n";
+		m_strHtmlCR = "\r\n";
+
 		m_tSvrGoodFlag = 1;
 		m_WebFormBeginDoneFlag = 0;
 		m_RawMode = 0;
 
-		m_strFormTableHead = "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n";
+		m_strFormTableHead = "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">" + m_strHtmlCR;
 	}
 
 	virtual ~AFlowEle_t()
@@ -45573,17 +45726,17 @@ public:
 
 		std::string strOut;
 
-		strOut = "HTTP/1.0 200 OK\r\n";
-		strOut += "Server: NotApache/" + wl::SDte::GetNow().ReadStringPack() + "\r\n";
-		strOut += "Cache-Control: no-cache\r\n";
-		strOut += "Pragma: no-cache\r\n";
+		strOut = "HTTP/1.0 200 OK" + m_strCommuCR;
+		strOut += "Server: NotApache/" + wl::SDte::GetNow().ReadStringPack() + m_strCommuCR;
+		strOut += "Cache-Control: no-cache" + m_strCommuCR;
+		strOut += "Pragma: no-cache" + m_strCommuCR;
 
 		
-		strOut += content_type + "\r\n";
+		strOut += content_type + m_strCommuCR;
 
-		strOut += "Content-Length: " + SStrf::sltoa( (int)ck.len() ) + "\r\n";
-		strOut += "Connection: close\r\n";
-		strOut += "\r\n";
+		strOut += "Content-Length: " + SStrf::sltoa( (int)ck.len() ) + m_strCommuCR;
+		strOut += "Connection: close" + m_strCommuCR;
+		strOut += m_strCommuCR;
 
 		if( m_tSvrGoodFlag )
 			m_tSvrGoodFlag = m_tSvr.send_str( strOut );
@@ -45737,18 +45890,18 @@ public:
 
 		for( int j = 0; j < (int)v1.size(); j++ )
 		{
-			WebSendString( "<tr>\r\n" );
+			WebSendString( "<tr>" + m_strHtmlCR );
 			WebSendString( "<td>" );
 			WebSendString( Chg2XmlCode(v1[j]) );
 			WebSendString( "</td>" );
-			WebSendString( "\r\n" );
+			WebSendString( m_strHtmlCR );
 			WebSendString( "<td>" );
 			WebSendString( Chg2XmlCode(v2[j]) );
 			WebSendString( "</td>" );
-			WebSendString( "\r\n" );
-			WebSendString( "</tr>\r\n" );
+			WebSendString( m_strHtmlCR );
+			WebSendString( "</tr>" + m_strHtmlCR );
 		}
-		WebSendString( "</table>\r\n" );
+		WebSendString( "</table>" + m_strHtmlCR );
 
 		WebAddTextBox( "name1", "value1" );
 		WebAddButt( "name2", "value2" );
@@ -45762,7 +45915,7 @@ public:
 		m_dtnow.MakeNow();
 
 		
-		m_tSvr.recv_ln2( ckTmp, "\r\n\r\n" );
+		m_tSvr.recv_ln2( ckTmp, (m_strCommuCR + m_strCommuCR).c_str() );
 		ckTmp.mk_str(m_strHttpHead);
 		WTcpHttp::GetLine1ParaFromHead( m_strHttpHead, m_strCmdLine1, m_strCmdVerb, m_strProtocolName, m_strAddr, m_strUPfn ); 
 
@@ -45828,23 +45981,23 @@ public:
 
 		std::string strOut;
 
-		strOut = "HTTP/1.0 200 OK\r\n";
-		strOut += "Server: NotApache/" + wl::SDte::GetNow().ReadStringPack() + "\r\n";
-		strOut += "Cache-Control: no-cache\r\n";
-		strOut += "Pragma: no-cache\r\n";
+		strOut = "HTTP/1.0 200 OK" + m_strCommuCR;
+		strOut += "Server: NotApache/" + wl::SDte::GetNow().ReadStringPack() + m_strCommuCR;
+		strOut += "Cache-Control: no-cache" + m_strCommuCR;
+		strOut += "Pragma: no-cache" + m_strCommuCR;
 
 		
 		if( m_RawMode )
 		{
-			strOut += "Content-Type: text/plain; charset=gb2312\r\n";
+			strOut += "Content-Type: text/plain; charset=gb2312" + m_strCommuCR;
 		}
 		else
 		{
-			strOut += "Content-Type: text/html; charset=gb2312\r\n";
+			strOut += "Content-Type: text/html; charset=gb2312" + m_strCommuCR;
 		}
 
-		strOut += "Connection: close\r\n";
-		strOut += "\r\n";
+		strOut += "Connection: close" + m_strCommuCR;
+		strOut += m_strCommuCR;
 
 			if( m_RawMode )
 			{
@@ -46238,28 +46391,12 @@ public:
 
 class AWeb2_t : public AFlowEle_t
 {
+public:
+	WTcpHttp m_HeadPara;
+	SCake ckPostBody;
+
 private:
-	
-	
-	
 
-	
-
-	
-
-	
-
-	
-
-	
-	
-	
-
-
-	
-
-
-	
 	
 	virtual tbool On_StaticFlow()
 	{
@@ -46291,7 +46428,30 @@ private:
 		}
 
 
-		this->OnGet( s2 , this->m_nvHTTPGET , strAfterWen );
+		WTcpHttp &h(m_HeadPara);
+
+		h.ImportSvrRtnHeadPara( this->m_strHttpHead );
+
+		std::string s3;
+		s3 = h.GetSvrRtnHeadParaVal( "Host" );
+		s3 = h.GetSvrRtnHeadParaVal( "User-Agent" );
+		s3 = h.GetSvrRtnHeadParaVal( "Content-Length" );
+
+		SStrf::strim(m_strCmdVerb);
+		SStrf::sucase(m_strCmdVerb);
+
+		if( m_strCmdVerb == "POST" )
+		{
+			long i = SStrf::satol( h.GetSvrRtnHeadParaVal( "Content-Length" ) );
+
+			if( i > 0 )
+			{
+				m_tSvr.recv_len( ckPostBody, i );
+				
+			}
+		}
+
+		this->OnGet( s2 , this->m_nvHTTPGET , strAfterWen ); 
 
 		return 1;
 	}
@@ -46301,7 +46461,9 @@ public:
 	virtual ~AWeb2_t(){}
 
 public:
-	virtual void OnGet( const std::string &strFn , WNava &para , const std::string &strWholePara ) {} 	
+	
+	virtual void OnGet( const std::string &strFn , WNava &para , const std::string &strWholePara )
+	{	}
 };
 
 
@@ -46334,41 +46496,49 @@ public:
 	{
 		if( strType == "RAW" )
 		{
-			if( !strContent.empty() )
-			{
-				m_tSvr.send_str( strContent );
-			}
-
 			if( pck && pck->len() )
+			{
 				m_tSvr.send_bin( *pck );
+			}
+			else
+			{
+				if( !strContent.empty() )
+				{
+					m_tSvr.send_str( strContent );
+				}
+			}
 		}
 		else
 		{
 			std::string strOut;
 
-			strOut = "HTTP/1.0 200 OK\r\n";
-			strOut += "Server: NotApache/" + SDte::GetNow().ReadStringPack() + WFile::MkRUStr()+ "\r\n";
-			strOut += "Cache-Control: no-cache\r\n";
-			strOut += "Pragma: no-cache\r\n";
+			strOut = "HTTP/1.0 200 OK" + m_strCommuCR;
+			strOut += "Server: NotApache/" + SDte::GetNow().ReadStringPack() + WFile::MkRUStr() + m_strCommuCR;
+			strOut += "Cache-Control: no-cache" + m_strCommuCR;
+			strOut += "Pragma: no-cache" + m_strCommuCR;
 
 			
 			
 			if( strType == "" )
 			{
-				strOut += "Content-Type: text/plain; charset=gb2312\r\n";
+				strOut += "Content-Type: text/plain; charset=gb2312" + m_strCommuCR;
 			}
 			else
 			{
-				strOut += "Content-Type: " + strType + "; charset=gb2312\r\n";
+				strOut += "Content-Type: " + strType + "; charset=gb2312" + m_strCommuCR;
 			}
 
 			if( pck && pck->len() )
 			{
-				strOut += "Content-Length: " + SStrf::sltoa( (int)pck->len() ) + "\r\n";
+				strOut += "Content-Length: " + SStrf::sltoa( (int)pck->len() ) + m_strCommuCR;
+			}
+			else
+			{
+				strOut += "Content-Length: " + SStrf::sltoa( (int)strContent.length() ) + m_strCommuCR;
 			}
 
-			strOut += "Connection: close\r\n";
-			strOut += "\r\n";
+			strOut += "Connection: close" + m_strCommuCR;
+			strOut += m_strCommuCR;
 			m_tSvr.send_str( strOut );
 
 			if( pck && pck->len() )
@@ -46390,7 +46560,8 @@ public:
 
 		strOut = strFn;
 		strOut += "{JSON(JavaScript Object Notation, JS 对象标记) " + SDte::GetNow().ReadString();
-		strOut += "\r\n\r\n";
+		strOut += m_strCommuCR;
+		strOut += m_strCommuCR;
 
 		this->RtnWebContent( "", strOut );
 
@@ -46486,7 +46657,6 @@ public:
 		{
 			return 0;
 		}
-
 	};
 
 
@@ -46670,6 +46840,128 @@ public:
 
 		return 0;
 	}
+
+
+	
+	static tbool WGet(
+						std::string strAddr ,    
+						std::string strUniFn , 
+						std::string strMethod = "GET",  
+						std::string strTxtType = "" ,
+						std::string strContent = "" ,
+						SCake		*pckBody = NULL ,
+						std::string *pstrRtn1 = NULL ,
+						SCake		*pckRtn2 = NULL ,
+						std::string strCommuCR = "\r\n"
+					)
+	{
+		WTcpCellc cc;
+		std::string s1;
+		tbool rc;
+
+		
+		for( int j = 0; j < 3; j++ )
+		{
+			rc = cc.Conn( strAddr );
+			if( rc ) break;
+		}
+		if( !rc )
+		{
+			return 0;
+		}
+
+		
+		if( strTxtType == "RAW" )
+		{
+			if( pckBody && pckBody->len() )
+			{
+				cc.send_bin( *pckBody );
+			}
+			else
+			{
+				if( !strContent.empty() )
+					cc.send_str( strContent );
+			}
+		}
+		
+		else if( strMethod == "GET" )
+		{
+			std::string strOut;
+
+			strOut = strMethod + " " + strUniFn + " HTTP/1.0" + strCommuCR;
+			strOut += "Cache-Control: no-cache" + strCommuCR;
+			strOut += "Pragma: no-cache" + strCommuCR;
+			strOut += strCommuCR;
+			cc.send_str( strOut );
+		}
+		
+		else
+		{
+			std::string strOut;
+
+			strOut = strMethod + " " + strUniFn + " HTTP/1.0" + strCommuCR;
+			strOut += "Server: NotApache/" + SDte::GetNow().ReadStringPack() + WFile::MkRUStr() + strCommuCR;
+			strOut += "Cache-Control: no-cache" + strCommuCR;
+			strOut += "Pragma: no-cache" + strCommuCR;
+
+			if( strTxtType == "" )
+			{
+				strOut += "Content-Type: text/plain; charset=gb2312" + strCommuCR;
+			}
+			else
+			{
+				
+				
+				strOut += "Content-Type: " + strTxtType + "; charset=gb2312" + strCommuCR;
+			}
+
+			if( pckBody && pckBody->len() )
+			{
+				strOut += "Content-Length: " + SStrf::sltoa( (int)pckBody->len() ) + strCommuCR;
+			}
+			else
+			{
+				strOut += "Content-Length: " + SStrf::sltoa( (int)strContent.length() ) + strCommuCR;
+			}
+
+			strOut += "Connection: close" + strCommuCR;
+			strOut += strCommuCR;
+			cc.send_str( strOut );
+
+			if( pckBody && pckBody->len() )
+			{
+				cc.send_bin( *pckBody );
+			}
+			else
+			{
+				if( !strContent.empty() )
+					cc.send_str( strContent );
+			}
+		}
+
+		
+		WTcpHttp h;
+		SCake ck;
+		std::string strHttpHead;
+
+		if( pstrRtn1 ) *pstrRtn1 = "";
+		if( pckRtn2 ) pckRtn2->redim(0);
+
+		cc.recv_ln2( ck, (strCommuCR+strCommuCR).c_str() );
+		if( ck.len() != 0 && pstrRtn1 ) ck.mk_str(*pstrRtn1);
+		ck.mk_str(strHttpHead);
+
+		h.ImportSvrRtnHeadPara( strHttpHead );
+		long i = SStrf::satol( h.GetSvrRtnHeadParaVal( "Content-Length" ) );
+
+		if( i > 0 && pckRtn2 )
+		{
+			cc.recv_len( *pckRtn2, i );
+		}
+
+		return 1;
+	}
+
 
 };
 
