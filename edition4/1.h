@@ -16,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2019c08c22c周四-17c27c06.90  
+2019c10c03c周四-14c58c40.74  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -14883,7 +14883,7 @@ private:
 
 private:
 	std::string  m_strProcImg;
-	std::string  m_strCmdLn;
+	std::string  m_strCmdLnPara;
     int  m_Rc;
     int  m_ExitCode;
     int  m_IsRunning;
@@ -14927,10 +14927,10 @@ public:
 	}
 
 	
-	void Init( std::string strProcImg, std::string strCmdLn )
+	void Init( std::string strProcImg, std::string strCmdLnPara )
 	{
 		m_strProcImg = strProcImg;
-		m_strCmdLn = strCmdLn;
+		m_strCmdLnPara = strCmdLnPara;
 	}
 
 	
@@ -14947,7 +14947,7 @@ public:
 		m_pBoy = new daemon_boy_t;
 
 		m_pBoy->m_pstrProcImg = &m_strProcImg;
-		m_pBoy->m_pstrCmdLn = &m_strCmdLn;
+		m_pBoy->m_pstrCmdLn = &m_strCmdLnPara;
 		m_pBoy->m_pRc = &m_Rc;
 		m_pBoy->m_pExitCode = &m_ExitCode;
 		m_pBoy->m_pIsRunning = &m_IsRunning;
@@ -23493,14 +23493,26 @@ public:
 	SDte		m_dtnow;
 
 public:
-	std::string  m_strCommuCR;
-	std::string  m_strHtmlCR;
+	std::string  m_strCommuCR;  
+	std::string  m_strHtmlCR;   
 
 public:
 	AFlowEle_t()
 	{
-		m_strCommuCR = "\r\n";
-		m_strHtmlCR = "\r\n";
+
+#ifdef AWEB_STRCOMMU_CR_X011_
+	m_strCommuCR = AWEB_STRCOMMU_CR_X011_;
+#else
+	 m_strCommuCR = "\r\n";
+#endif
+
+#ifdef AWEB_STRHTMLPAGE_CR_X011_
+	m_strHtmlCR = AWEB_STRHTMLPAGE_CR_X011_;
+#else
+	 m_strHtmlCR = "\r\n";
+#endif
+		
+		
 
 		m_tSvrGoodFlag = 1;
 		m_WebFormBeginDoneFlag = 0;
@@ -36967,7 +36979,7 @@ private:
 
 private:
 	std::string  m_strProcImg;
-	std::string  m_strCmdLn;
+	std::string  m_strCmdLnPara;
     int  m_Rc;
     int  m_ExitCode;
     int  m_IsRunning;
@@ -37011,10 +37023,10 @@ public:
 	}
 
 	
-	void Init( std::string strProcImg, std::string strCmdLn )
+	void Init( std::string strProcImg, std::string strCmdLnPara )
 	{
 		m_strProcImg = strProcImg;
-		m_strCmdLn = strCmdLn;
+		m_strCmdLnPara = strCmdLnPara;
 	}
 
 	
@@ -37031,7 +37043,7 @@ public:
 		m_pBoy = new daemon_boy_t;
 
 		m_pBoy->m_pstrProcImg = &m_strProcImg;
-		m_pBoy->m_pstrCmdLn = &m_strCmdLn;
+		m_pBoy->m_pstrCmdLn = &m_strCmdLnPara;
 		m_pBoy->m_pRc = &m_Rc;
 		m_pBoy->m_pExitCode = &m_ExitCode;
 		m_pBoy->m_pIsRunning = &m_IsRunning;
@@ -41385,7 +41397,8 @@ public:
 		DisConn();
 
 		WNava nv;
-		char ss[55];
+		char *ss;
+		SCake ck;
 		std::string strComName;
 
 		nv.impconf( strname, ";", "=" );
@@ -41395,11 +41408,24 @@ public:
 		if( strComName.empty() )
 			return 0;
 
-		if( SStrf::sisdec(strComName[0]) )
-			(*SClib::p_sprintf())( ss, "/dev/ttyS%d", (int)SStrf::satol( nv.get("com") ) - 1 );  
-		else
-			(*SClib::p_sprintf())( ss, "/dev/%s", strComName.c_str() );        
+		ck.redim( (int)strComName.length() + 66 );
+		ss = (char*)ck.buf();
 
+		if( strComName.find("/") != std::string::npos )
+		{
+			(*SClib::p_sprintf())( ss, "%s", strComName.c_str() );  
+		}
+		else
+		{
+			if( SStrf::sisdec(strComName[0]) )
+			{
+				(*SClib::p_sprintf())( ss, "/dev/ttyS%d", (int)SStrf::satol( nv.get("com") ) - 1 );  
+			}
+			else
+			{
+				(*SClib::p_sprintf())( ss, "/dev/%s", strComName.c_str() );        
+			}
+		}
 		m_hComport = open( ss, O_RDWR | O_NOCTTY | O_NDELAY );
 
 		if ( m_hComport < 0 )
@@ -45683,14 +45709,26 @@ public:
 	SDte		m_dtnow;
 
 public:
-	std::string  m_strCommuCR;
-	std::string  m_strHtmlCR;
+	std::string  m_strCommuCR;  
+	std::string  m_strHtmlCR;   
 
 public:
 	AFlowEle_t()
 	{
-		m_strCommuCR = "\r\n";
-		m_strHtmlCR = "\r\n";
+
+#ifdef AWEB_STRCOMMU_CR_X011_
+	m_strCommuCR = AWEB_STRCOMMU_CR_X011_;
+#else
+	 m_strCommuCR = "\r\n";
+#endif
+
+#ifdef AWEB_STRHTMLPAGE_CR_X011_
+	m_strHtmlCR = AWEB_STRHTMLPAGE_CR_X011_;
+#else
+	 m_strHtmlCR = "\r\n";
+#endif
+		
+		
 
 		m_tSvrGoodFlag = 1;
 		m_WebFormBeginDoneFlag = 0;
