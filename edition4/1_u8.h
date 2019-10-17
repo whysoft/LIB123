@@ -16,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2019c10c03c周四-14c58c40.74  
+2019c10c17c周四-15c38c40.43  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -9839,7 +9839,7 @@ public:
 	}
 
 	
-	tbool SaveF() 
+	tbool SaveF( tbool isForce = 0 )
 	{
 		SDB_t< T > * p=NULL;
 
@@ -9847,8 +9847,15 @@ public:
 		{
 			WCrsc aaLock( &(this->m_ut_tbl_lck) );
 
-			
-			DetectDirty();
+			if( isForce )
+			{
+				m_Dirty1 = m_Dirty2 = 1;
+			}
+			else
+			{
+				
+				DetectDirty();
+			}
 
 			if( m_Dirty1 || m_Dirty2 )
 			{
@@ -9866,10 +9873,10 @@ public:
 		}
 
 		if( p )
-		p->Save( 0, 0 );
+			p->Save( 0, 0 );
 
 		if( p )
-		delete p;
+			delete p;
 
 		return 1;
 	}
@@ -34335,7 +34342,7 @@ public:
 	}
 
 	
-	tbool SaveF() 
+	tbool SaveF( tbool isForce = 0 )
 	{
 		SDB_t< T > * p=NULL;
 
@@ -34343,8 +34350,15 @@ public:
 		{
 			WCrsc aaLock( &(this->m_ut_tbl_lck) );
 
-			
-			DetectDirty();
+			if( isForce )
+			{
+				m_Dirty1 = m_Dirty2 = 1;
+			}
+			else
+			{
+				
+				DetectDirty();
+			}
 
 			if( m_Dirty1 || m_Dirty2 )
 			{
@@ -34362,10 +34376,10 @@ public:
 		}
 
 		if( p )
-		p->Save( 0, 0 );
+			p->Save( 0, 0 );
 
 		if( p )
-		delete p;
+			delete p;
 
 		return 1;
 	}
