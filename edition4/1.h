@@ -16,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2019c10c17c周四-15c38c40.43  
+2019c11c28c周四-15c42c34.17  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -18020,9 +18020,28 @@ public:
 		return m_mapSvrRtnHeadPara;
 	}
 
+
+	static std::string GetSvrRtnHeadParaVal_i( MAP_HTTPHEADPARA & m, std::string k )
+	{
+		MAP_HTTPHEADPARA_IT it;
+		it = m.find( k );
+		if( it != m.end() ) return it->second;
+
+		MAP_HTTPHEADPARA m2;
+		for( it = m.begin(); it != m.end(); ++it )
+		{
+			std::string s1 = it->first;
+			SStrf::sucase(s1);
+			m2.insert( MAP_HTTPHEADPARA_VT( s1, it->second ) );
+		}
+		return m2[SStrf::sucase(k)];
+	}
+
+
 	std::string GetSvrRtnHeadParaVal( const std::string & strParaName )
 	{
-		return m_mapSvrRtnHeadPara[strParaName];
+		
+		return GetSvrRtnHeadParaVal_i( m_mapSvrRtnHeadPara, strParaName );
 	}
 
 
@@ -40156,9 +40175,28 @@ public:
 		return m_mapSvrRtnHeadPara;
 	}
 
+
+	static std::string GetSvrRtnHeadParaVal_i( MAP_HTTPHEADPARA & m, std::string k )
+	{
+		MAP_HTTPHEADPARA_IT it;
+		it = m.find( k );
+		if( it != m.end() ) return it->second;
+
+		MAP_HTTPHEADPARA m2;
+		for( it = m.begin(); it != m.end(); ++it )
+		{
+			std::string s1 = it->first;
+			SStrf::sucase(s1);
+			m2.insert( MAP_HTTPHEADPARA_VT( s1, it->second ) );
+		}
+		return m2[SStrf::sucase(k)];
+	}
+
+
 	std::string GetSvrRtnHeadParaVal( const std::string & strParaName )
 	{
-		return m_mapSvrRtnHeadPara[strParaName];
+		
+		return GetSvrRtnHeadParaVal_i( m_mapSvrRtnHeadPara, strParaName );
 	}
 
 
