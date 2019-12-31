@@ -16,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2019c11c28c周四-15c42c34.17  
+2019c12c31c周二-20c34c16.63  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -6187,6 +6187,29 @@ public:
 	}
 
 
+	static tbool ConvBmp4To3( std::string strFnIn, std::string strFnOut )
+	{
+		SFile fl;
+		SCake ck;
+		SCake ck2;
+		int width, height, depth;
+
+		fl.bind( strFnIn );
+		fl.read( ck );
+		Conv2Ck( ck, ck2, width, height, depth );
+
+		if( depth == 4 )
+		{
+			SBmp::Ck4Ck3( ck2, width, ck );
+			wl::SBmp::Conv2Bmp( ck, width, 3 );
+			fl.bind( strFnOut );
+			fl.write(ck);
+			return 1;
+		}
+		return 0;
+	}
+
+
 	static tbool Turn_180( const SCake & ckIn, SCake & ckOut )
 	{
 		const tchar *p1;
@@ -6407,7 +6430,7 @@ public:
 		return x;
 	}
 
-	
+
 	int out1hz_scale( const char *phz, int x=0, int y=0, double dRateX = 1.0 , double dRateY = 1.0 )
 	{
 		int x_ori = x;
@@ -6419,6 +6442,8 @@ public:
 		long aa = 0;
 		double dStep_x = 1.0 / dRateX ;
 		double dStep_y = 1.0 / dRateY ;
+
+		c = (unsigned char *)m_HZ_ZK16_NOZK;
 
 		if( p[0] == 0xa1 && p[1] == 0xa3 )
 		{
@@ -6456,7 +6481,7 @@ public:
 		return x;
 	}
 
-	
+
 	int out1asc( const char *pasc, int x=0, int y=0 )
 	{
 		unsigned char *p = (unsigned char *)pasc;
@@ -31026,6 +31051,29 @@ public:
 	}
 
 
+	static tbool ConvBmp4To3( std::string strFnIn, std::string strFnOut )
+	{
+		SFile fl;
+		SCake ck;
+		SCake ck2;
+		int width, height, depth;
+
+		fl.bind( strFnIn );
+		fl.read( ck );
+		Conv2Ck( ck, ck2, width, height, depth );
+
+		if( depth == 4 )
+		{
+			SBmp::Ck4Ck3( ck2, width, ck );
+			wl::SBmp::Conv2Bmp( ck, width, 3 );
+			fl.bind( strFnOut );
+			fl.write(ck);
+			return 1;
+		}
+		return 0;
+	}
+
+
 	static tbool Turn_180( const SCake & ckIn, SCake & ckOut )
 	{
 		const tchar *p1;
@@ -31246,7 +31294,7 @@ public:
 		return x;
 	}
 
-	
+
 	int out1hz_scale( const char *phz, int x=0, int y=0, double dRateX = 1.0 , double dRateY = 1.0 )
 	{
 		int x_ori = x;
@@ -31258,6 +31306,8 @@ public:
 		long aa = 0;
 		double dStep_x = 1.0 / dRateX ;
 		double dStep_y = 1.0 / dRateY ;
+
+		c = (unsigned char *)m_HZ_ZK16_NOZK;
 
 		if( p[0] == 0xa1 && p[1] == 0xa3 )
 		{
@@ -31295,7 +31345,7 @@ public:
 		return x;
 	}
 
-	
+
 	int out1asc( const char *pasc, int x=0, int y=0 )
 	{
 		unsigned char *p = (unsigned char *)pasc;

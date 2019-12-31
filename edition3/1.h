@@ -16,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2019c04c23c周二-11c03c47.47  
+2019c12c31c周二-20c34c59.18  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -467,6 +467,20 @@ public:
 			return;
 		}
 		writebit( pbin, sufx , val );
+	}
+
+
+	unsigned char rev_bit( unsigned char c )
+	{
+		static unsigned char sta[16] =
+		{
+			0x00,0x08,0x04,0x0C,0x02,0x0A,0x06,0x0E,0x01,0x09,0x05,0x0D,0x03,0x0B,0x07,0x0F
+		};
+
+		unsigned char d = 0; 
+		d |= (sta[c&0xF]) << 4;
+		d |= sta[c>>4];
+		return d;
 	}
 
 
@@ -1066,23 +1080,10 @@ public:
 	
 	
 
-	
-	static std::string Chg2XmlCode( std::string s )
-	{
-		sreplstr( s, "&",  "&amp;" );
-		sreplstr( s, "<",  "&lt;" );
-		sreplstr( s, ">",  "&gt;" );
-		sreplstr( s, " ",  "&nbsp;" );
-		sreplstr( s, "\"", "&quot;" );
-		sreplstr( s, "\r", ""  );
-		sreplstr( s, "\n", "<br>\r\n" );
-
-		return s;
-	}
 
 
 	
-
+	
 	static std::string & str_trim_base( tchar *(*f)( tchar *, const tchar * ), std::string & str, const tchar *str_space="\r\n \t" )
 	{
 		tchar * pstr;
@@ -1443,6 +1444,38 @@ public:
 	}
 
 
+	
+	static std::string Chg2XmlCode( std::string s )
+	{
+		sreplstr( s, "&",  "&amp;" );
+		sreplstr( s, "<",  "&lt;" );
+		sreplstr( s, ">",  "&gt;" );
+		sreplstr( s, " ",  "&nbsp;" );
+		sreplstr( s, "\"", "&quot;" );
+		sreplstr( s, "\r", ""  );
+		sreplstr( s, "\n", "<br>\r\n" );
+
+		return s;
+	}
+
+	
+	static void bs_en_uri( std::string & strData )
+	{
+		SStrf::bs_en( strData , bs_esc2 );
+		
+		strData.erase( strData.end() - 1 );
+		strData.erase( strData.end() - 1 );
+		strData.erase( strData.end() - 1 );
+	}
+
+
+	static void bs_de_uri( std::string & strData )
+	{
+		SStrf::bs_de( strData , bs_esc2 ); 
+	}
+
+
+	
 	static std::string b2s( void *p, long len )
 	{
 		std::string str1;
@@ -6154,6 +6187,29 @@ public:
 	}
 
 
+	static tbool ConvBmp4To3( std::string strFnIn, std::string strFnOut )
+	{
+		SFile fl;
+		SCake ck;
+		SCake ck2;
+		int width, height, depth;
+
+		fl.bind( strFnIn );
+		fl.read( ck );
+		Conv2Ck( ck, ck2, width, height, depth );
+
+		if( depth == 4 )
+		{
+			SBmp::Ck4Ck3( ck2, width, ck );
+			wl::SBmp::Conv2Bmp( ck, width, 3 );
+			fl.bind( strFnOut );
+			fl.write(ck);
+			return 1;
+		}
+		return 0;
+	}
+
+
 	static tbool Turn_180( const SCake & ckIn, SCake & ckOut )
 	{
 		const tchar *p1;
@@ -6374,7 +6430,7 @@ public:
 		return x;
 	}
 
-	
+
 	int out1hz_scale( const char *phz, int x=0, int y=0, double dRateX = 1.0 , double dRateY = 1.0 )
 	{
 		int x_ori = x;
@@ -6386,6 +6442,8 @@ public:
 		long aa = 0;
 		double dStep_x = 1.0 / dRateX ;
 		double dStep_y = 1.0 / dRateY ;
+
+		c = (unsigned char *)m_HZ_ZK16_NOZK;
 
 		if( p[0] == 0xa1 && p[1] == 0xa3 )
 		{
@@ -6423,7 +6481,7 @@ public:
 		return x;
 	}
 
-	
+
 	int out1asc( const char *pasc, int x=0, int y=0 )
 	{
 		unsigned char *p = (unsigned char *)pasc;
@@ -8836,6 +8894,69 @@ public:
 
 
 
+
+
+class ICursorDs2
+{
+private:
+
+public:
+	ICursorDs2( )
+	{
+	}
+
+	virtual ~ICursorDs2( )
+	{
+	}
+
+public:
+	virtual tbool OpenDb( std::string strDb )
+	{
+		return 0;
+	}
+
+	virtual tbool Exec( std::string strSql )
+	{
+		return 0;
+	}
+
+	virtual tbool OpenTbl( std::string strSql )
+	{
+		return 0;
+	}
+
+	virtual tbool Fetch()
+	{
+		return 0;
+	}
+
+	virtual tbool GetCol( int i , std::string &refStrVal )
+	{
+		return 0;
+	}
+
+	virtual void CloseTbl()
+	{
+		return;
+	}
+
+	virtual void CloseDb()
+	{
+		return;
+	}
+
+	
+	
+	
+	
+	
+};
+
+
+
+
+
+
 X011_NAMESPACE_END
 
 #endif
@@ -9743,7 +9864,7 @@ public:
 	}
 
 	
-	tbool SaveF() 
+	tbool SaveF( tbool isForce = 0 )
 	{
 		SDB_t< T > * p=NULL;
 
@@ -9751,8 +9872,15 @@ public:
 		{
 			WCrsc aaLock( &(this->m_ut_tbl_lck) );
 
-			
-			DetectDirty();
+			if( isForce )
+			{
+				m_Dirty1 = m_Dirty2 = 1;
+			}
+			else
+			{
+				
+				DetectDirty();
+			}
 
 			if( m_Dirty1 || m_Dirty2 )
 			{
@@ -9770,10 +9898,10 @@ public:
 		}
 
 		if( p )
-		p->Save( 0, 0 );
+			p->Save( 0, 0 );
 
 		if( p )
-		delete p;
+			delete p;
 
 		return 1;
 	}
@@ -10126,11 +10254,118 @@ X011_NAMESPACE_END
 
 
 
+#ifndef X011__H_w_WClp_h
+#define X011__H_w_WClp_h
+
+
+X011_NAMESPACE_BEGIN
+
+
+#ifdef WMSG_ENABLED_X011_
+
+
+class WClp
+{
+
+public:
+
+	WClp()
+	{
+	}
+
+	 ~WClp()
+	{
+	}
+
+	static tbool txt_put( std::string txtdata )
+	{
+		tchar *buffer;
+		if(OpenClipboard(0)) {
+			HGLOBAL clipbuffer;
+			EmptyClipboard();
+			clipbuffer = GlobalAlloc(GMEM_MOVEABLE, SStrf::slen(txtdata.c_str())+1);
+			buffer = (tchar *)GlobalLock(clipbuffer);
+			SStrf::scpy( buffer, txtdata.c_str() );
+			GlobalUnlock( clipbuffer );
+			SetClipboardData( CF_TEXT, clipbuffer );
+			CloseClipboard();
+			GlobalFree(clipbuffer);
+			return 1;
+		}else{
+			return 0;
+		}
+	}
+
+	static tbool txt_put( tchar * txtdata )
+	{
+		return txt_put( std::string(txtdata?txtdata:"") );
+	}
+
+
+	static std::string txt_get()
+	{
+		char *buffer;
+		std::string strtmp("");
+
+		if ( OpenClipboard(0) )
+		{
+			HANDLE hData = GetClipboardData(CF_TEXT);
+			buffer = (char *)GlobalLock(hData);
+
+			if(buffer)
+				strtmp = buffer;
+
+			GlobalUnlock(hData);
+			CloseClipboard();
+		}
+		return strtmp;
+	}
+
+	
+	static CString txt_getTS()
+	{
+		CStringW strtmp(L"");
+
+		if ( OpenClipboard(0) )
+		{
+			HANDLE hData = GetClipboardData(CF_UNICODETEXT);
+			wchar_t * buffer = (wchar_t *)GlobalLock(hData);
+
+			if(buffer)
+				strtmp = buffer;
+
+			GlobalUnlock(hData);
+			CloseClipboard();
+		}
+		return CString(strtmp);
+	}
+
+}; 
+
+
+#else
+
+
+#endif	
+
+
+
+X011_NAMESPACE_END
+
+#endif
+
+
+
+
+
 #ifndef X011__H_w_wmsg_h
 #define X011__H_w_wmsg_h
 
 
 X011_NAMESPACE_BEGIN
+
+
+#ifdef WMSG_ENABLED_X011_
 
 
 class WMsg
@@ -11749,6 +11984,12 @@ public:
 
 
 
+#else
+
+
+#endif	
+
+
 
 X011_NAMESPACE_END
 
@@ -12163,6 +12404,8 @@ public:
 	}
 
 
+#ifdef WMSG_ENABLED_X011_
+
 	tbool bind_tmpfile( const tchar * pszExt = NULL , int iThreadId = 0 ) 
 	{
 		std::string  strEnvTmpPath;
@@ -12170,6 +12413,12 @@ public:
 		if( strEnvTmpPath == "" ) return 0;
 		return bind_nofile( strEnvTmpPath, pszExt, iThreadId );
 	}
+
+#else
+
+
+#endif	
+
 
 
 	
@@ -12782,16 +13031,16 @@ public:
 		strOut = "";
 		for( MAP_MAPKNL_CONSTIT it = m_mapKnl.begin(); it != m_mapKnl.end(); ++it )
 		{
-			strOut += it->first;
+			strOut += it->first; 
 			strOut += "=";
 			std::string s2 = it->second;
 			SStrf::bs_en( s2 , SStrf::bs_esc2 );
 			
-			s2.erase( s2.end() -1 );s2.erase( s2.end() -1 );s2.erase( s2.end() -1 );
+			s2.erase( s2.end() - 1 ); s2.erase( s2.end() - 1 ); s2.erase( s2.end() - 1 );
 			strOut += s2;
 			strOut += "&";
 		}
-		if( strOut != "" ) strOut.erase( strOut.end() -1 );
+		if( strOut != "" ) strOut.erase( strOut.end() - 1 );
 	}
 
 	
@@ -12933,7 +13182,11 @@ X011_NAMESPACE_END
 X011_NAMESPACE_BEGIN
 
 
-class WReg32 {
+#ifdef WMSG_ENABLED_X011_
+
+
+class WReg32
+{
 
 private:
 
@@ -13270,6 +13523,13 @@ public:
 
 
 }; 
+
+
+#else
+
+
+#endif	
+
 
 
 
@@ -14655,7 +14915,7 @@ private:
 
 private:
 	std::string  m_strProcImg;
-	std::string  m_strCmdLn;
+	std::string  m_strCmdLnPara;
     int  m_Rc;
     int  m_ExitCode;
     int  m_IsRunning;
@@ -14699,10 +14959,10 @@ public:
 	}
 
 	
-	void Init( std::string strProcImg, std::string strCmdLn )
+	void Init( std::string strProcImg, std::string strCmdLnPara )
 	{
 		m_strProcImg = strProcImg;
-		m_strCmdLn = strCmdLn;
+		m_strCmdLnPara = strCmdLnPara;
 	}
 
 	
@@ -14719,7 +14979,7 @@ public:
 		m_pBoy = new daemon_boy_t;
 
 		m_pBoy->m_pstrProcImg = &m_strProcImg;
-		m_pBoy->m_pstrCmdLn = &m_strCmdLn;
+		m_pBoy->m_pstrCmdLn = &m_strCmdLnPara;
 		m_pBoy->m_pRc = &m_Rc;
 		m_pBoy->m_pExitCode = &m_ExitCode;
 		m_pBoy->m_pIsRunning = &m_IsRunning;
@@ -17650,6 +17910,7 @@ public:
 	}
 
 
+#ifdef WMSG_ENABLED_X011_
 
 	static std::string GetRegIEProxyAddr()
 	{
@@ -17688,6 +17949,15 @@ public:
 
 		return strProxyAddr;
 	}
+
+#else
+
+	static std::string GetRegIEProxyAddr()
+	{
+		return "";
+	}
+
+#endif	
 
 
 	const std::string & SetProxyAddr( std::string strPxyAddr )
@@ -17775,9 +18045,28 @@ public:
 		return m_mapSvrRtnHeadPara;
 	}
 
+
+	static std::string GetSvrRtnHeadParaVal_i( MAP_HTTPHEADPARA & m, std::string k )
+	{
+		MAP_HTTPHEADPARA_IT it;
+		it = m.find( k );
+		if( it != m.end() ) return it->second;
+
+		MAP_HTTPHEADPARA m2;
+		for( it = m.begin(); it != m.end(); ++it )
+		{
+			std::string s1 = it->first;
+			SStrf::sucase(s1);
+			m2.insert( MAP_HTTPHEADPARA_VT( s1, it->second ) );
+		}
+		return m2[SStrf::sucase(k)];
+	}
+
+
 	std::string GetSvrRtnHeadParaVal( const std::string & strParaName )
 	{
-		return m_mapSvrRtnHeadPara[strParaName];
+		
+		return GetSvrRtnHeadParaVal_i( m_mapSvrRtnHeadPara, strParaName );
 	}
 
 
@@ -31215,13 +31504,32 @@ public:
 	SDte		m_dtnow;
 
 public:
+	std::string  m_strCommuCR;  
+	std::string  m_strHtmlCR;   
+
+public:
 	AFlowEle_t()
 	{
+
+#ifdef AWEB_STRCOMMU_CR_X011_
+	m_strCommuCR = AWEB_STRCOMMU_CR_X011_;
+#else
+	 m_strCommuCR = "\r\n";
+#endif
+
+#ifdef AWEB_STRHTMLPAGE_CR_X011_
+	m_strHtmlCR = AWEB_STRHTMLPAGE_CR_X011_;
+#else
+	 m_strHtmlCR = "\r\n";
+#endif
+		
+		
+
 		m_tSvrGoodFlag = 1;
 		m_WebFormBeginDoneFlag = 0;
 		m_RawMode = 0;
 
-		m_strFormTableHead = "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n";
+		m_strFormTableHead = "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">" + m_strHtmlCR;
 	}
 
 	virtual ~AFlowEle_t()
@@ -31251,17 +31559,17 @@ public:
 
 		std::string strOut;
 
-		strOut = "HTTP/1.0 200 OK\r\n";
-		strOut += "Server: NotApache/" + wl::SDte::GetNow().ReadStringPack() + "\r\n";
-		strOut += "Cache-Control: no-cache\r\n";
-		strOut += "Pragma: no-cache\r\n";
+		strOut = "HTTP/1.0 200 OK" + m_strCommuCR;
+		strOut += "Server: NotApache/" + wl::SDte::GetNow().ReadStringPack() + m_strCommuCR;
+		strOut += "Cache-Control: no-cache" + m_strCommuCR;
+		strOut += "Pragma: no-cache" + m_strCommuCR;
 
 		
-		strOut += content_type + "\r\n";
+		strOut += content_type + m_strCommuCR;
 
-		strOut += "Content-Length: " + SStrf::sltoa( (int)ck.len() ) + "\r\n";
-		strOut += "Connection: close\r\n";
-		strOut += "\r\n";
+		strOut += "Content-Length: " + SStrf::sltoa( (int)ck.len() ) + m_strCommuCR;
+		strOut += "Connection: close" + m_strCommuCR;
+		strOut += m_strCommuCR;
 
 		if( m_tSvrGoodFlag )
 			m_tSvrGoodFlag = m_tSvr.send_str( strOut );
@@ -31415,18 +31723,18 @@ public:
 
 		for( int j = 0; j < (int)v1.size(); j++ )
 		{
-			WebSendString( "<tr>\r\n" );
+			WebSendString( "<tr>" + m_strHtmlCR );
 			WebSendString( "<td>" );
 			WebSendString( Chg2XmlCode(v1[j]) );
 			WebSendString( "</td>" );
-			WebSendString( "\r\n" );
+			WebSendString( m_strHtmlCR );
 			WebSendString( "<td>" );
 			WebSendString( Chg2XmlCode(v2[j]) );
 			WebSendString( "</td>" );
-			WebSendString( "\r\n" );
-			WebSendString( "</tr>\r\n" );
+			WebSendString( m_strHtmlCR );
+			WebSendString( "</tr>" + m_strHtmlCR );
 		}
-		WebSendString( "</table>\r\n" );
+		WebSendString( "</table>" + m_strHtmlCR );
 
 		WebAddTextBox( "name1", "value1" );
 		WebAddButt( "name2", "value2" );
@@ -31440,7 +31748,7 @@ public:
 		m_dtnow.MakeNow();
 
 		
-		m_tSvr.recv_ln2( ckTmp, "\r\n\r\n" );
+		m_tSvr.recv_ln2( ckTmp, (m_strCommuCR + m_strCommuCR).c_str() );
 		ckTmp.mk_str(m_strHttpHead);
 		WTcpHttp::GetLine1ParaFromHead( m_strHttpHead, m_strCmdLine1, m_strCmdVerb, m_strProtocolName, m_strAddr, m_strUPfn ); 
 
@@ -31506,23 +31814,23 @@ public:
 
 		std::string strOut;
 
-		strOut = "HTTP/1.0 200 OK\r\n";
-		strOut += "Server: NotApache/" + wl::SDte::GetNow().ReadStringPack() + "\r\n";
-		strOut += "Cache-Control: no-cache\r\n";
-		strOut += "Pragma: no-cache\r\n";
+		strOut = "HTTP/1.0 200 OK" + m_strCommuCR;
+		strOut += "Server: NotApache/" + wl::SDte::GetNow().ReadStringPack() + m_strCommuCR;
+		strOut += "Cache-Control: no-cache" + m_strCommuCR;
+		strOut += "Pragma: no-cache" + m_strCommuCR;
 
 		
 		if( m_RawMode )
 		{
-			strOut += "Content-Type: text/plain; charset=gb2312\r\n";
+			strOut += "Content-Type: text/plain; charset=gb2312" + m_strCommuCR;
 		}
 		else
 		{
-			strOut += "Content-Type: text/html; charset=gb2312\r\n";
+			strOut += "Content-Type: text/html; charset=gb2312" + m_strCommuCR;
 		}
 
-		strOut += "Connection: close\r\n";
-		strOut += "\r\n";
+		strOut += "Connection: close" + m_strCommuCR;
+		strOut += m_strCommuCR;
 
 			if( m_RawMode )
 			{
@@ -31916,28 +32224,12 @@ public:
 
 class AWeb2_t : public AFlowEle_t
 {
+public:
+	WTcpHttp m_HeadPara;
+	SCake ckPostBody;
+
 private:
-	
-	
-	
 
-	
-
-	
-
-	
-
-	
-
-	
-	
-	
-
-
-	
-
-
-	
 	
 	virtual tbool On_StaticFlow()
 	{
@@ -31969,7 +32261,30 @@ private:
 		}
 
 
-		this->OnGet( s2 , this->m_nvHTTPGET , strAfterWen );
+		WTcpHttp &h(m_HeadPara);
+
+		h.ImportSvrRtnHeadPara( this->m_strHttpHead );
+
+		std::string s3;
+		s3 = h.GetSvrRtnHeadParaVal( "Host" );
+		s3 = h.GetSvrRtnHeadParaVal( "User-Agent" );
+		s3 = h.GetSvrRtnHeadParaVal( "Content-Length" );
+
+		SStrf::strim(m_strCmdVerb);
+		SStrf::sucase(m_strCmdVerb);
+
+		if( m_strCmdVerb == "POST" )
+		{
+			long i = SStrf::satol( h.GetSvrRtnHeadParaVal( "Content-Length" ) );
+
+			if( i > 0 )
+			{
+				m_tSvr.recv_len( ckPostBody, i );
+				
+			}
+		}
+
+		this->OnGet( s2 , this->m_nvHTTPGET , strAfterWen ); 
 
 		return 1;
 	}
@@ -31979,7 +32294,9 @@ public:
 	virtual ~AWeb2_t(){}
 
 public:
-	virtual void OnGet( const std::string &strFn , WNava &para , const std::string &strWholePara ) {} 	
+	
+	virtual void OnGet( const std::string &strFn , WNava &para , const std::string &strWholePara )
+	{	}
 };
 
 
@@ -32012,41 +32329,49 @@ public:
 	{
 		if( strType == "RAW" )
 		{
-			if( !strContent.empty() )
-			{
-				m_tSvr.send_str( strContent );
-			}
-
 			if( pck && pck->len() )
+			{
 				m_tSvr.send_bin( *pck );
+			}
+			else
+			{
+				if( !strContent.empty() )
+				{
+					m_tSvr.send_str( strContent );
+				}
+			}
 		}
 		else
 		{
 			std::string strOut;
 
-			strOut = "HTTP/1.0 200 OK\r\n";
-			strOut += "Server: NotApache/" + SDte::GetNow().ReadStringPack() + WFile::MkRUStr()+ "\r\n";
-			strOut += "Cache-Control: no-cache\r\n";
-			strOut += "Pragma: no-cache\r\n";
+			strOut = "HTTP/1.0 200 OK" + m_strCommuCR;
+			strOut += "Server: NotApache/" + SDte::GetNow().ReadStringPack() + WFile::MkRUStr() + m_strCommuCR;
+			strOut += "Cache-Control: no-cache" + m_strCommuCR;
+			strOut += "Pragma: no-cache" + m_strCommuCR;
 
 			
 			
 			if( strType == "" )
 			{
-				strOut += "Content-Type: text/plain; charset=gb2312\r\n";
+				strOut += "Content-Type: text/plain; charset=gb2312" + m_strCommuCR;
 			}
 			else
 			{
-				strOut += "Content-Type: " + strType + "; charset=gb2312\r\n";
+				strOut += "Content-Type: " + strType + "; charset=gb2312" + m_strCommuCR;
 			}
 
 			if( pck && pck->len() )
 			{
-				strOut += "Content-Length: " + SStrf::sltoa( (int)pck->len() ) + "\r\n";
+				strOut += "Content-Length: " + SStrf::sltoa( (int)pck->len() ) + m_strCommuCR;
+			}
+			else
+			{
+				strOut += "Content-Length: " + SStrf::sltoa( (int)strContent.length() ) + m_strCommuCR;
 			}
 
-			strOut += "Connection: close\r\n";
-			strOut += "\r\n";
+			strOut += "Connection: close" + m_strCommuCR;
+			strOut += m_strCommuCR;
 			m_tSvr.send_str( strOut );
 
 			if( pck && pck->len() )
@@ -32068,7 +32393,8 @@ public:
 
 		strOut = strFn;
 		strOut += "{JSON(JavaScript Object Notation, JS 对象标记) " + SDte::GetNow().ReadString();
-		strOut += "\r\n\r\n";
+		strOut += m_strCommuCR;
+		strOut += m_strCommuCR;
 
 		this->RtnWebContent( "", strOut );
 
@@ -32101,8 +32427,9 @@ public:
 
 		virtual void OnGet( const std::string &strFn , WNava &para , const std::string &strWholePara )
 		{
-			if( m_pFather->lingy( strFn , para , strWholePara , this ) ) return;
-			actwebele1_t::OnGet( strFn , para , strWholePara );
+			if( m_pFather->lingy( strFn , para , strWholePara , this ) ) return;  
+
+			actwebele1_t::OnGet( strFn , para , strWholePara ); 
 		}
 	};
 
@@ -32119,18 +32446,39 @@ public:
 		{
 		}
 
+		
+		
+		
+		
+		
+		
+
 		virtual ~item_t()
 		{
 			WCrsc aLoc_myLck (&(m_pFather->m_lckItems));
+			for( std::vector< item_t * >::iterator it = m_pFather->m_vItemsHigh.begin(); it != m_pFather->m_vItemsHigh.end(); ++it )
+			{
+				if( *it != this ) continue;
+				m_pFather->m_vItemsHigh.erase( it );
+				
+				break;
+			}
 			for( std::vector< item_t * >::iterator it = m_pFather->m_vItems.begin(); it != m_pFather->m_vItems.end(); ++it )
 			{
 				if( *it != this ) continue;
 				m_pFather->m_vItems.erase( it );
-				return;
+				
+				break;
 			}
 		}
 
 	public:
+		void LinkFcHigh( funcandy_t *pFather )
+		{
+			m_pFather = pFather;
+			WCrsc aLoc_myLck (&(m_pFather->m_lckItems));
+			m_pFather->m_vItemsHigh.push_back( this );
+		}
 		void LinkFc( funcandy_t *pFather )
 		{
 			m_pFather = pFather;
@@ -32142,7 +32490,6 @@ public:
 		{
 			return 0;
 		}
-
 	};
 
 
@@ -32173,6 +32520,7 @@ public:
 
 private:
 	WCrsc	m_lckItems;
+	std::vector< item_t * > m_vItemsHigh; 
 	std::vector< item_t * > m_vItems;
 
 public:
@@ -32185,17 +32533,41 @@ public:
 	}
 
 public:
-	tbool lingy( const std::string &strFn , WNava &para , const std::string &strWholePara , actwebele_t *pweb )
+
+	virtual tbool lingy( const std::string &strFn , WNava &para , const std::string &strWholePara , actwebele_t *pweb )
 	{
 		WCrsc aLoc_myLck (&(m_lckItems));
+
 		tbool rc;
-		for( std::vector< item_t * >::iterator it = m_vItems.begin(); it != m_vItems.end(); ++it )
+
+		
+		
+		
+
+		
+		for( long j = (long)m_vItemsHigh.size() - 1 ; j >= 0; j -- )
 		{
-			rc = (*it)->lingy( strFn , para , strWholePara , pweb );
-			if( rc ) return 1;
+			rc = (m_vItemsHigh[j])->lingy( strFn , para , strWholePara , pweb );
+			if( rc )
+			{
+				return 1;
+			}
 		}
+
+		
+		for( long j = (long)m_vItems.size() - 1 ; j >= 0; j -- )
+		{
+			rc = (m_vItems[j])->lingy( strFn , para , strWholePara , pweb );
+			if( rc )
+			{
+				return 1;
+			}
+		}
+
+
 		return 0;
 	}
+
 
 public:
 	tbool InitFlow( tuint16 iPort )
@@ -32302,10 +32674,129 @@ public:
 		return 0;
 	}
 
+
+	
+	static tbool WGet(
+						std::string strAddr ,    
+						std::string strUniFn , 
+						std::string strMethod = "GET",  
+						std::string strTxtType = "" ,
+						std::string strContent = "" ,
+						SCake		*pckBody = NULL ,
+						std::string *pstrRtn1 = NULL ,
+						SCake		*pckRtn2 = NULL ,
+						std::string strCommuCR = "\r\n"
+					)
+	{
+		WTcpCellc cc;
+		std::string s1;
+		tbool rc;
+
+		
+		for( int j = 0; j < 3; j++ )
+		{
+			rc = cc.Conn( strAddr );
+			if( rc ) break;
+		}
+		if( !rc )
+		{
+			return 0;
+		}
+
+		
+		if( strTxtType == "RAW" )
+		{
+			if( pckBody && pckBody->len() )
+			{
+				cc.send_bin( *pckBody );
+			}
+			else
+			{
+				if( !strContent.empty() )
+					cc.send_str( strContent );
+			}
+		}
+		
+		else if( strMethod == "GET" )
+		{
+			std::string strOut;
+
+			strOut = strMethod + " " + strUniFn + " HTTP/1.0" + strCommuCR;
+			strOut += "Cache-Control: no-cache" + strCommuCR;
+			strOut += "Pragma: no-cache" + strCommuCR;
+			strOut += strCommuCR;
+			cc.send_str( strOut );
+		}
+		
+		else
+		{
+			std::string strOut;
+
+			strOut = strMethod + " " + strUniFn + " HTTP/1.0" + strCommuCR;
+			strOut += "Server: NotApache/" + SDte::GetNow().ReadStringPack() + WFile::MkRUStr() + strCommuCR;
+			strOut += "Cache-Control: no-cache" + strCommuCR;
+			strOut += "Pragma: no-cache" + strCommuCR;
+
+			if( strTxtType == "" )
+			{
+				strOut += "Content-Type: text/plain; charset=gb2312" + strCommuCR;
+			}
+			else
+			{
+				
+				
+				strOut += "Content-Type: " + strTxtType + "; charset=gb2312" + strCommuCR;
+			}
+
+			if( pckBody && pckBody->len() )
+			{
+				strOut += "Content-Length: " + SStrf::sltoa( (int)pckBody->len() ) + strCommuCR;
+			}
+			else
+			{
+				strOut += "Content-Length: " + SStrf::sltoa( (int)strContent.length() ) + strCommuCR;
+			}
+
+			strOut += "Connection: close" + strCommuCR;
+			strOut += strCommuCR;
+			cc.send_str( strOut );
+
+			if( pckBody && pckBody->len() )
+			{
+				cc.send_bin( *pckBody );
+			}
+			else
+			{
+				if( !strContent.empty() )
+					cc.send_str( strContent );
+			}
+		}
+
+		
+		WTcpHttp h;
+		SCake ck;
+		std::string strHttpHead;
+
+		if( pstrRtn1 ) *pstrRtn1 = "";
+		if( pckRtn2 ) pckRtn2->redim(0);
+
+		cc.recv_ln2( ck, (strCommuCR+strCommuCR).c_str() );
+		if( ck.len() != 0 && pstrRtn1 ) ck.mk_str(*pstrRtn1);
+		ck.mk_str(strHttpHead);
+
+		h.ImportSvrRtnHeadPara( strHttpHead );
+		long i = SStrf::satol( h.GetSvrRtnHeadParaVal( "Content-Length" ) );
+
+		if( i > 0 && pckRtn2 )
+		{
+			cc.recv_len( *pckRtn2, i );
+		}
+
+		return 1;
+	}
+
+
 };
-
-
-
 
 
 
@@ -32803,6 +33294,20 @@ public:
 			return;
 		}
 		writebit( pbin, sufx , val );
+	}
+
+
+	unsigned char rev_bit( unsigned char c )
+	{
+		static unsigned char sta[16] =
+		{
+			0x00,0x08,0x04,0x0C,0x02,0x0A,0x06,0x0E,0x01,0x09,0x05,0x0D,0x03,0x0B,0x07,0x0F
+		};
+
+		unsigned char d = 0; 
+		d |= (sta[c&0xF]) << 4;
+		d |= sta[c>>4];
+		return d;
 	}
 
 
@@ -33402,23 +33907,10 @@ public:
 	
 	
 
-	
-	static std::string Chg2XmlCode( std::string s )
-	{
-		sreplstr( s, "&",  "&amp;" );
-		sreplstr( s, "<",  "&lt;" );
-		sreplstr( s, ">",  "&gt;" );
-		sreplstr( s, " ",  "&nbsp;" );
-		sreplstr( s, "\"", "&quot;" );
-		sreplstr( s, "\r", ""  );
-		sreplstr( s, "\n", "<br>\r\n" );
-
-		return s;
-	}
 
 
 	
-
+	
 	static std::string & str_trim_base( tchar *(*f)( tchar *, const tchar * ), std::string & str, const tchar *str_space="\r\n \t" )
 	{
 		tchar * pstr;
@@ -33779,6 +34271,38 @@ public:
 	}
 
 
+	
+	static std::string Chg2XmlCode( std::string s )
+	{
+		sreplstr( s, "&",  "&amp;" );
+		sreplstr( s, "<",  "&lt;" );
+		sreplstr( s, ">",  "&gt;" );
+		sreplstr( s, " ",  "&nbsp;" );
+		sreplstr( s, "\"", "&quot;" );
+		sreplstr( s, "\r", ""  );
+		sreplstr( s, "\n", "<br>\r\n" );
+
+		return s;
+	}
+
+	
+	static void bs_en_uri( std::string & strData )
+	{
+		SStrf::bs_en( strData , bs_esc2 );
+		
+		strData.erase( strData.end() - 1 );
+		strData.erase( strData.end() - 1 );
+		strData.erase( strData.end() - 1 );
+	}
+
+
+	static void bs_de_uri( std::string & strData )
+	{
+		SStrf::bs_de( strData , bs_esc2 ); 
+	}
+
+
+	
 	static std::string b2s( void *p, long len )
 	{
 		std::string str1;
@@ -38487,6 +39011,29 @@ public:
 	}
 
 
+	static tbool ConvBmp4To3( std::string strFnIn, std::string strFnOut )
+	{
+		SFile fl;
+		SCake ck;
+		SCake ck2;
+		int width, height, depth;
+
+		fl.bind( strFnIn );
+		fl.read( ck );
+		Conv2Ck( ck, ck2, width, height, depth );
+
+		if( depth == 4 )
+		{
+			SBmp::Ck4Ck3( ck2, width, ck );
+			wl::SBmp::Conv2Bmp( ck, width, 3 );
+			fl.bind( strFnOut );
+			fl.write(ck);
+			return 1;
+		}
+		return 0;
+	}
+
+
 	static tbool Turn_180( const SCake & ckIn, SCake & ckOut )
 	{
 		const tchar *p1;
@@ -38707,7 +39254,7 @@ public:
 		return x;
 	}
 
-	
+
 	int out1hz_scale( const char *phz, int x=0, int y=0, double dRateX = 1.0 , double dRateY = 1.0 )
 	{
 		int x_ori = x;
@@ -38719,6 +39266,8 @@ public:
 		long aa = 0;
 		double dStep_x = 1.0 / dRateX ;
 		double dStep_y = 1.0 / dRateY ;
+
+		c = (unsigned char *)m_HZ_ZK16_NOZK;
 
 		if( p[0] == 0xa1 && p[1] == 0xa3 )
 		{
@@ -38756,7 +39305,7 @@ public:
 		return x;
 	}
 
-	
+
 	int out1asc( const char *pasc, int x=0, int y=0 )
 	{
 		unsigned char *p = (unsigned char *)pasc;
@@ -40987,6 +41536,69 @@ public:
 
 
 
+
+
+class ICursorDs2
+{
+private:
+
+public:
+	ICursorDs2( )
+	{
+	}
+
+	virtual ~ICursorDs2( )
+	{
+	}
+
+public:
+	virtual tbool OpenDb( std::string strDb )
+	{
+		return 0;
+	}
+
+	virtual tbool Exec( std::string strSql )
+	{
+		return 0;
+	}
+
+	virtual tbool OpenTbl( std::string strSql )
+	{
+		return 0;
+	}
+
+	virtual tbool Fetch()
+	{
+		return 0;
+	}
+
+	virtual tbool GetCol( int i , std::string &refStrVal )
+	{
+		return 0;
+	}
+
+	virtual void CloseTbl()
+	{
+		return;
+	}
+
+	virtual void CloseDb()
+	{
+		return;
+	}
+
+	
+	
+	
+	
+	
+};
+
+
+
+
+
+
 X011_NAMESPACE_END
 
 #endif
@@ -41759,7 +42371,7 @@ public:
 	}
 
 	
-	tbool SaveF() 
+	tbool SaveF( tbool isForce = 0 )
 	{
 		SDB_t< T > * p=NULL;
 
@@ -41767,8 +42379,15 @@ public:
 		{
 			WCrsc aaLock( &(this->m_ut_tbl_lck) );
 
-			
-			DetectDirty();
+			if( isForce )
+			{
+				m_Dirty1 = m_Dirty2 = 1;
+			}
+			else
+			{
+				
+				DetectDirty();
+			}
 
 			if( m_Dirty1 || m_Dirty2 )
 			{
@@ -41786,10 +42405,10 @@ public:
 		}
 
 		if( p )
-		p->Save( 0, 0 );
+			p->Save( 0, 0 );
 
 		if( p )
-		delete p;
+			delete p;
 
 		return 1;
 	}
@@ -42917,16 +43536,16 @@ public:
 		strOut = "";
 		for( MAP_MAPKNL_CONSTIT it = m_mapKnl.begin(); it != m_mapKnl.end(); ++it )
 		{
-			strOut += it->first;
+			strOut += it->first; 
 			strOut += "=";
 			std::string s2 = it->second;
 			SStrf::bs_en( s2 , SStrf::bs_esc2 );
 			
-			s2.erase( s2.end() -1 );s2.erase( s2.end() -1 );s2.erase( s2.end() -1 );
+			s2.erase( s2.end() - 1 ); s2.erase( s2.end() - 1 ); s2.erase( s2.end() - 1 );
 			strOut += s2;
 			strOut += "&";
 		}
-		if( strOut != "" ) strOut.erase( strOut.end() -1 );
+		if( strOut != "" ) strOut.erase( strOut.end() - 1 );
 	}
 
 	
@@ -44403,7 +45022,7 @@ private:
 
 private:
 	std::string  m_strProcImg;
-	std::string  m_strCmdLn;
+	std::string  m_strCmdLnPara;
     int  m_Rc;
     int  m_ExitCode;
     int  m_IsRunning;
@@ -44447,10 +45066,10 @@ public:
 	}
 
 	
-	void Init( std::string strProcImg, std::string strCmdLn )
+	void Init( std::string strProcImg, std::string strCmdLnPara )
 	{
 		m_strProcImg = strProcImg;
-		m_strCmdLn = strCmdLn;
+		m_strCmdLnPara = strCmdLnPara;
 	}
 
 	
@@ -44467,7 +45086,7 @@ public:
 		m_pBoy = new daemon_boy_t;
 
 		m_pBoy->m_pstrProcImg = &m_strProcImg;
-		m_pBoy->m_pstrCmdLn = &m_strCmdLn;
+		m_pBoy->m_pstrCmdLn = &m_strCmdLnPara;
 		m_pBoy->m_pRc = &m_Rc;
 		m_pBoy->m_pExitCode = &m_ExitCode;
 		m_pBoy->m_pIsRunning = &m_IsRunning;
@@ -47566,9 +48185,28 @@ public:
 		return m_mapSvrRtnHeadPara;
 	}
 
+
+	static std::string GetSvrRtnHeadParaVal_i( MAP_HTTPHEADPARA & m, std::string k )
+	{
+		MAP_HTTPHEADPARA_IT it;
+		it = m.find( k );
+		if( it != m.end() ) return it->second;
+
+		MAP_HTTPHEADPARA m2;
+		for( it = m.begin(); it != m.end(); ++it )
+		{
+			std::string s1 = it->first;
+			SStrf::sucase(s1);
+			m2.insert( MAP_HTTPHEADPARA_VT( s1, it->second ) );
+		}
+		return m2[SStrf::sucase(k)];
+	}
+
+
 	std::string GetSvrRtnHeadParaVal( const std::string & strParaName )
 	{
-		return m_mapSvrRtnHeadPara[strParaName];
+		
+		return GetSvrRtnHeadParaVal_i( m_mapSvrRtnHeadPara, strParaName );
 	}
 
 
@@ -48821,7 +49459,8 @@ public:
 		DisConn();
 
 		WNava nv;
-		char ss[55];
+		char *ss;
+		SCake ck;
 		std::string strComName;
 
 		nv.impconf( strname, ";", "=" );
@@ -48831,11 +49470,24 @@ public:
 		if( strComName.empty() )
 			return 0;
 
-		if( SStrf::sisdec(strComName[0]) )
-			(*SClib::p_sprintf())( ss, "/dev/ttyS%d", (int)SStrf::satol( nv.get("com") ) - 1 );  
-		else
-			(*SClib::p_sprintf())( ss, "/dev/%s", strComName.c_str() );        
+		ck.redim( (int)strComName.length() + 66 );
+		ss = (char*)ck.buf();
 
+		if( strComName.find("/") != std::string::npos )
+		{
+			(*SClib::p_sprintf())( ss, "%s", strComName.c_str() );  
+		}
+		else
+		{
+			if( SStrf::sisdec(strComName[0]) )
+			{
+				(*SClib::p_sprintf())( ss, "/dev/ttyS%d", (int)SStrf::satol( nv.get("com") ) - 1 );  
+			}
+			else
+			{
+				(*SClib::p_sprintf())( ss, "/dev/%s", strComName.c_str() );        
+			}
+		}
 		m_hComport = open( ss, O_RDWR | O_NOCTTY | O_NDELAY );
 
 		if ( m_hComport < 0 )
@@ -60431,13 +61083,32 @@ public:
 	SDte		m_dtnow;
 
 public:
+	std::string  m_strCommuCR;  
+	std::string  m_strHtmlCR;   
+
+public:
 	AFlowEle_t()
 	{
+
+#ifdef AWEB_STRCOMMU_CR_X011_
+	m_strCommuCR = AWEB_STRCOMMU_CR_X011_;
+#else
+	 m_strCommuCR = "\r\n";
+#endif
+
+#ifdef AWEB_STRHTMLPAGE_CR_X011_
+	m_strHtmlCR = AWEB_STRHTMLPAGE_CR_X011_;
+#else
+	 m_strHtmlCR = "\r\n";
+#endif
+		
+		
+
 		m_tSvrGoodFlag = 1;
 		m_WebFormBeginDoneFlag = 0;
 		m_RawMode = 0;
 
-		m_strFormTableHead = "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">\r\n";
+		m_strFormTableHead = "<table border=1 cellspacing=0 cellpadding=0 bordercolor=\"yellow\">" + m_strHtmlCR;
 	}
 
 	virtual ~AFlowEle_t()
@@ -60467,17 +61138,17 @@ public:
 
 		std::string strOut;
 
-		strOut = "HTTP/1.0 200 OK\r\n";
-		strOut += "Server: NotApache/" + wl::SDte::GetNow().ReadStringPack() + "\r\n";
-		strOut += "Cache-Control: no-cache\r\n";
-		strOut += "Pragma: no-cache\r\n";
+		strOut = "HTTP/1.0 200 OK" + m_strCommuCR;
+		strOut += "Server: NotApache/" + wl::SDte::GetNow().ReadStringPack() + m_strCommuCR;
+		strOut += "Cache-Control: no-cache" + m_strCommuCR;
+		strOut += "Pragma: no-cache" + m_strCommuCR;
 
 		
-		strOut += content_type + "\r\n";
+		strOut += content_type + m_strCommuCR;
 
-		strOut += "Content-Length: " + SStrf::sltoa( (int)ck.len() ) + "\r\n";
-		strOut += "Connection: close\r\n";
-		strOut += "\r\n";
+		strOut += "Content-Length: " + SStrf::sltoa( (int)ck.len() ) + m_strCommuCR;
+		strOut += "Connection: close" + m_strCommuCR;
+		strOut += m_strCommuCR;
 
 		if( m_tSvrGoodFlag )
 			m_tSvrGoodFlag = m_tSvr.send_str( strOut );
@@ -60631,18 +61302,18 @@ public:
 
 		for( int j = 0; j < (int)v1.size(); j++ )
 		{
-			WebSendString( "<tr>\r\n" );
+			WebSendString( "<tr>" + m_strHtmlCR );
 			WebSendString( "<td>" );
 			WebSendString( Chg2XmlCode(v1[j]) );
 			WebSendString( "</td>" );
-			WebSendString( "\r\n" );
+			WebSendString( m_strHtmlCR );
 			WebSendString( "<td>" );
 			WebSendString( Chg2XmlCode(v2[j]) );
 			WebSendString( "</td>" );
-			WebSendString( "\r\n" );
-			WebSendString( "</tr>\r\n" );
+			WebSendString( m_strHtmlCR );
+			WebSendString( "</tr>" + m_strHtmlCR );
 		}
-		WebSendString( "</table>\r\n" );
+		WebSendString( "</table>" + m_strHtmlCR );
 
 		WebAddTextBox( "name1", "value1" );
 		WebAddButt( "name2", "value2" );
@@ -60656,7 +61327,7 @@ public:
 		m_dtnow.MakeNow();
 
 		
-		m_tSvr.recv_ln2( ckTmp, "\r\n\r\n" );
+		m_tSvr.recv_ln2( ckTmp, (m_strCommuCR + m_strCommuCR).c_str() );
 		ckTmp.mk_str(m_strHttpHead);
 		WTcpHttp::GetLine1ParaFromHead( m_strHttpHead, m_strCmdLine1, m_strCmdVerb, m_strProtocolName, m_strAddr, m_strUPfn ); 
 
@@ -60722,23 +61393,23 @@ public:
 
 		std::string strOut;
 
-		strOut = "HTTP/1.0 200 OK\r\n";
-		strOut += "Server: NotApache/" + wl::SDte::GetNow().ReadStringPack() + "\r\n";
-		strOut += "Cache-Control: no-cache\r\n";
-		strOut += "Pragma: no-cache\r\n";
+		strOut = "HTTP/1.0 200 OK" + m_strCommuCR;
+		strOut += "Server: NotApache/" + wl::SDte::GetNow().ReadStringPack() + m_strCommuCR;
+		strOut += "Cache-Control: no-cache" + m_strCommuCR;
+		strOut += "Pragma: no-cache" + m_strCommuCR;
 
 		
 		if( m_RawMode )
 		{
-			strOut += "Content-Type: text/plain; charset=gb2312\r\n";
+			strOut += "Content-Type: text/plain; charset=gb2312" + m_strCommuCR;
 		}
 		else
 		{
-			strOut += "Content-Type: text/html; charset=gb2312\r\n";
+			strOut += "Content-Type: text/html; charset=gb2312" + m_strCommuCR;
 		}
 
-		strOut += "Connection: close\r\n";
-		strOut += "\r\n";
+		strOut += "Connection: close" + m_strCommuCR;
+		strOut += m_strCommuCR;
 
 			if( m_RawMode )
 			{
@@ -61132,28 +61803,12 @@ public:
 
 class AWeb2_t : public AFlowEle_t
 {
+public:
+	WTcpHttp m_HeadPara;
+	SCake ckPostBody;
+
 private:
-	
-	
-	
 
-	
-
-	
-
-	
-
-	
-
-	
-	
-	
-
-
-	
-
-
-	
 	
 	virtual tbool On_StaticFlow()
 	{
@@ -61185,7 +61840,30 @@ private:
 		}
 
 
-		this->OnGet( s2 , this->m_nvHTTPGET , strAfterWen );
+		WTcpHttp &h(m_HeadPara);
+
+		h.ImportSvrRtnHeadPara( this->m_strHttpHead );
+
+		std::string s3;
+		s3 = h.GetSvrRtnHeadParaVal( "Host" );
+		s3 = h.GetSvrRtnHeadParaVal( "User-Agent" );
+		s3 = h.GetSvrRtnHeadParaVal( "Content-Length" );
+
+		SStrf::strim(m_strCmdVerb);
+		SStrf::sucase(m_strCmdVerb);
+
+		if( m_strCmdVerb == "POST" )
+		{
+			long i = SStrf::satol( h.GetSvrRtnHeadParaVal( "Content-Length" ) );
+
+			if( i > 0 )
+			{
+				m_tSvr.recv_len( ckPostBody, i );
+				
+			}
+		}
+
+		this->OnGet( s2 , this->m_nvHTTPGET , strAfterWen ); 
 
 		return 1;
 	}
@@ -61195,7 +61873,9 @@ public:
 	virtual ~AWeb2_t(){}
 
 public:
-	virtual void OnGet( const std::string &strFn , WNava &para , const std::string &strWholePara ) {} 	
+	
+	virtual void OnGet( const std::string &strFn , WNava &para , const std::string &strWholePara )
+	{	}
 };
 
 
@@ -61228,41 +61908,49 @@ public:
 	{
 		if( strType == "RAW" )
 		{
-			if( !strContent.empty() )
-			{
-				m_tSvr.send_str( strContent );
-			}
-
 			if( pck && pck->len() )
+			{
 				m_tSvr.send_bin( *pck );
+			}
+			else
+			{
+				if( !strContent.empty() )
+				{
+					m_tSvr.send_str( strContent );
+				}
+			}
 		}
 		else
 		{
 			std::string strOut;
 
-			strOut = "HTTP/1.0 200 OK\r\n";
-			strOut += "Server: NotApache/" + SDte::GetNow().ReadStringPack() + WFile::MkRUStr()+ "\r\n";
-			strOut += "Cache-Control: no-cache\r\n";
-			strOut += "Pragma: no-cache\r\n";
+			strOut = "HTTP/1.0 200 OK" + m_strCommuCR;
+			strOut += "Server: NotApache/" + SDte::GetNow().ReadStringPack() + WFile::MkRUStr() + m_strCommuCR;
+			strOut += "Cache-Control: no-cache" + m_strCommuCR;
+			strOut += "Pragma: no-cache" + m_strCommuCR;
 
 			
 			
 			if( strType == "" )
 			{
-				strOut += "Content-Type: text/plain; charset=gb2312\r\n";
+				strOut += "Content-Type: text/plain; charset=gb2312" + m_strCommuCR;
 			}
 			else
 			{
-				strOut += "Content-Type: " + strType + "; charset=gb2312\r\n";
+				strOut += "Content-Type: " + strType + "; charset=gb2312" + m_strCommuCR;
 			}
 
 			if( pck && pck->len() )
 			{
-				strOut += "Content-Length: " + SStrf::sltoa( (int)pck->len() ) + "\r\n";
+				strOut += "Content-Length: " + SStrf::sltoa( (int)pck->len() ) + m_strCommuCR;
+			}
+			else
+			{
+				strOut += "Content-Length: " + SStrf::sltoa( (int)strContent.length() ) + m_strCommuCR;
 			}
 
-			strOut += "Connection: close\r\n";
-			strOut += "\r\n";
+			strOut += "Connection: close" + m_strCommuCR;
+			strOut += m_strCommuCR;
 			m_tSvr.send_str( strOut );
 
 			if( pck && pck->len() )
@@ -61284,7 +61972,8 @@ public:
 
 		strOut = strFn;
 		strOut += "{JSON(JavaScript Object Notation, JS 对象标记) " + SDte::GetNow().ReadString();
-		strOut += "\r\n\r\n";
+		strOut += m_strCommuCR;
+		strOut += m_strCommuCR;
 
 		this->RtnWebContent( "", strOut );
 
@@ -61317,8 +62006,9 @@ public:
 
 		virtual void OnGet( const std::string &strFn , WNava &para , const std::string &strWholePara )
 		{
-			if( m_pFather->lingy( strFn , para , strWholePara , this ) ) return;
-			actwebele1_t::OnGet( strFn , para , strWholePara );
+			if( m_pFather->lingy( strFn , para , strWholePara , this ) ) return;  
+
+			actwebele1_t::OnGet( strFn , para , strWholePara ); 
 		}
 	};
 
@@ -61335,18 +62025,39 @@ public:
 		{
 		}
 
+		
+		
+		
+		
+		
+		
+
 		virtual ~item_t()
 		{
 			WCrsc aLoc_myLck (&(m_pFather->m_lckItems));
+			for( std::vector< item_t * >::iterator it = m_pFather->m_vItemsHigh.begin(); it != m_pFather->m_vItemsHigh.end(); ++it )
+			{
+				if( *it != this ) continue;
+				m_pFather->m_vItemsHigh.erase( it );
+				
+				break;
+			}
 			for( std::vector< item_t * >::iterator it = m_pFather->m_vItems.begin(); it != m_pFather->m_vItems.end(); ++it )
 			{
 				if( *it != this ) continue;
 				m_pFather->m_vItems.erase( it );
-				return;
+				
+				break;
 			}
 		}
 
 	public:
+		void LinkFcHigh( funcandy_t *pFather )
+		{
+			m_pFather = pFather;
+			WCrsc aLoc_myLck (&(m_pFather->m_lckItems));
+			m_pFather->m_vItemsHigh.push_back( this );
+		}
 		void LinkFc( funcandy_t *pFather )
 		{
 			m_pFather = pFather;
@@ -61358,7 +62069,6 @@ public:
 		{
 			return 0;
 		}
-
 	};
 
 
@@ -61389,6 +62099,7 @@ public:
 
 private:
 	WCrsc	m_lckItems;
+	std::vector< item_t * > m_vItemsHigh; 
 	std::vector< item_t * > m_vItems;
 
 public:
@@ -61401,17 +62112,41 @@ public:
 	}
 
 public:
-	tbool lingy( const std::string &strFn , WNava &para , const std::string &strWholePara , actwebele_t *pweb )
+
+	virtual tbool lingy( const std::string &strFn , WNava &para , const std::string &strWholePara , actwebele_t *pweb )
 	{
 		WCrsc aLoc_myLck (&(m_lckItems));
+
 		tbool rc;
-		for( std::vector< item_t * >::iterator it = m_vItems.begin(); it != m_vItems.end(); ++it )
+
+		
+		
+		
+
+		
+		for( long j = (long)m_vItemsHigh.size() - 1 ; j >= 0; j -- )
 		{
-			rc = (*it)->lingy( strFn , para , strWholePara , pweb );
-			if( rc ) return 1;
+			rc = (m_vItemsHigh[j])->lingy( strFn , para , strWholePara , pweb );
+			if( rc )
+			{
+				return 1;
+			}
 		}
+
+		
+		for( long j = (long)m_vItems.size() - 1 ; j >= 0; j -- )
+		{
+			rc = (m_vItems[j])->lingy( strFn , para , strWholePara , pweb );
+			if( rc )
+			{
+				return 1;
+			}
+		}
+
+
 		return 0;
 	}
+
 
 public:
 	tbool InitFlow( tuint16 iPort )
@@ -61518,10 +62253,129 @@ public:
 		return 0;
 	}
 
+
+	
+	static tbool WGet(
+						std::string strAddr ,    
+						std::string strUniFn , 
+						std::string strMethod = "GET",  
+						std::string strTxtType = "" ,
+						std::string strContent = "" ,
+						SCake		*pckBody = NULL ,
+						std::string *pstrRtn1 = NULL ,
+						SCake		*pckRtn2 = NULL ,
+						std::string strCommuCR = "\r\n"
+					)
+	{
+		WTcpCellc cc;
+		std::string s1;
+		tbool rc;
+
+		
+		for( int j = 0; j < 3; j++ )
+		{
+			rc = cc.Conn( strAddr );
+			if( rc ) break;
+		}
+		if( !rc )
+		{
+			return 0;
+		}
+
+		
+		if( strTxtType == "RAW" )
+		{
+			if( pckBody && pckBody->len() )
+			{
+				cc.send_bin( *pckBody );
+			}
+			else
+			{
+				if( !strContent.empty() )
+					cc.send_str( strContent );
+			}
+		}
+		
+		else if( strMethod == "GET" )
+		{
+			std::string strOut;
+
+			strOut = strMethod + " " + strUniFn + " HTTP/1.0" + strCommuCR;
+			strOut += "Cache-Control: no-cache" + strCommuCR;
+			strOut += "Pragma: no-cache" + strCommuCR;
+			strOut += strCommuCR;
+			cc.send_str( strOut );
+		}
+		
+		else
+		{
+			std::string strOut;
+
+			strOut = strMethod + " " + strUniFn + " HTTP/1.0" + strCommuCR;
+			strOut += "Server: NotApache/" + SDte::GetNow().ReadStringPack() + WFile::MkRUStr() + strCommuCR;
+			strOut += "Cache-Control: no-cache" + strCommuCR;
+			strOut += "Pragma: no-cache" + strCommuCR;
+
+			if( strTxtType == "" )
+			{
+				strOut += "Content-Type: text/plain; charset=gb2312" + strCommuCR;
+			}
+			else
+			{
+				
+				
+				strOut += "Content-Type: " + strTxtType + "; charset=gb2312" + strCommuCR;
+			}
+
+			if( pckBody && pckBody->len() )
+			{
+				strOut += "Content-Length: " + SStrf::sltoa( (int)pckBody->len() ) + strCommuCR;
+			}
+			else
+			{
+				strOut += "Content-Length: " + SStrf::sltoa( (int)strContent.length() ) + strCommuCR;
+			}
+
+			strOut += "Connection: close" + strCommuCR;
+			strOut += strCommuCR;
+			cc.send_str( strOut );
+
+			if( pckBody && pckBody->len() )
+			{
+				cc.send_bin( *pckBody );
+			}
+			else
+			{
+				if( !strContent.empty() )
+					cc.send_str( strContent );
+			}
+		}
+
+		
+		WTcpHttp h;
+		SCake ck;
+		std::string strHttpHead;
+
+		if( pstrRtn1 ) *pstrRtn1 = "";
+		if( pckRtn2 ) pckRtn2->redim(0);
+
+		cc.recv_ln2( ck, (strCommuCR+strCommuCR).c_str() );
+		if( ck.len() != 0 && pstrRtn1 ) ck.mk_str(*pstrRtn1);
+		ck.mk_str(strHttpHead);
+
+		h.ImportSvrRtnHeadPara( strHttpHead );
+		long i = SStrf::satol( h.GetSvrRtnHeadParaVal( "Content-Length" ) );
+
+		if( i > 0 && pckRtn2 )
+		{
+			cc.recv_len( *pckRtn2, i );
+		}
+
+		return 1;
+	}
+
+
 };
-
-
-
 
 
 
