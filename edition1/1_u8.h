@@ -16,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2019c12c31c周二-20c36c02.10  
+2020c01c01c周三-22c33c35.92  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -6113,19 +6113,35 @@ public:
 		{
 			rtn_iDepth = 4;
 		}
-		else return 0;
+		else
+			return 0;
 
 		tsize iWidthNew;
+		tsize iWidthNewAdd(0); 
+		tsize iLineByte(0); 
 
-		for( iWidthNew = rtn_iWidth; ; iWidthNew++ )
+		if( rtn_iDepth == 4 )
 		{
-			if( iWidthNew % 4 == 0 ) break;
+			iWidthNew = rtn_iWidth;
 		}
+		else
+		{
+			for( iWidthNew = rtn_iWidth; ; iWidthNew++ )
+			{
+				if( iWidthNew % 4 == 0 ) break;
+				iWidthNewAdd++;
+			}
+		}
+
+		iLineByte = rtn_iWidth * rtn_iDepth + iWidthNewAdd;
 
 		if( rtn_iDepth == 3 || rtn_iDepth == 4 ) 
 		{
-			if( ckBmpIn.len() < iWidthNew * rtn_iHeight * rtn_iDepth )
+			
+			if( ckBmpIn.len() < iLineByte * rtn_iHeight )
+			{
 				return 0;
+			}
 
 			ckOut.redim( rtn_iWidth * rtn_iHeight * rtn_iDepth );
 
@@ -6133,13 +6149,17 @@ public:
 			char *p1;
 
 			p = ckBmpIn.buf_const() + ckBmpIn.len();
-			p -= iWidthNew * rtn_iDepth;
+			
+			p -= iLineByte;
 			p1 = ckOut.buf();
 
 			for( int j = 0; j < rtn_iHeight; j++ )
 			{
 				SStrf::smemcpy( p1, p, rtn_iWidth * rtn_iDepth );
-				p -= iWidthNew * rtn_iDepth;
+
+				
+				p -= iLineByte;
+
 				p1 += rtn_iWidth * rtn_iDepth;
 			}
 
@@ -6196,7 +6216,8 @@ public:
 
 		fl.bind( strFnIn );
 		fl.read( ck );
-		Conv2Ck( ck, ck2, width, height, depth );
+
+		if( ! Conv2Ck( ck, ck2, width, height, depth ) ) return 0;
 
 		if( depth == 4 )
 		{
@@ -6206,7 +6227,14 @@ public:
 			fl.write(ck);
 			return 1;
 		}
-		return 0;
+
+		return 1;
+	}
+
+
+	static tbool ConvBmp4To3( std::string strFnInOut )
+	{
+		return ConvBmp4To3( strFnInOut, strFnInOut );
 	}
 
 
@@ -6846,12 +6874,15 @@ public:
 			if( L < 0 )
 			{
 				L = L * (-1);
-				SBmp::Conv2Ck( ck, m_ckBuf, m_width, m_height, depth );
+				rc = SBmp::Conv2Ck( ck, m_ckBuf, m_width, m_height, depth );
+				if( rc == 0 ) return 0;
 				TurnUpDn();
 				return 1;
 			}
 			return 0;
 		}
+
+		if( rc == 0 ) return 0;
 
 		return 1;
 	}
@@ -38289,19 +38320,35 @@ public:
 		{
 			rtn_iDepth = 4;
 		}
-		else return 0;
+		else
+			return 0;
 
 		tsize iWidthNew;
+		tsize iWidthNewAdd(0); 
+		tsize iLineByte(0); 
 
-		for( iWidthNew = rtn_iWidth; ; iWidthNew++ )
+		if( rtn_iDepth == 4 )
 		{
-			if( iWidthNew % 4 == 0 ) break;
+			iWidthNew = rtn_iWidth;
 		}
+		else
+		{
+			for( iWidthNew = rtn_iWidth; ; iWidthNew++ )
+			{
+				if( iWidthNew % 4 == 0 ) break;
+				iWidthNewAdd++;
+			}
+		}
+
+		iLineByte = rtn_iWidth * rtn_iDepth + iWidthNewAdd;
 
 		if( rtn_iDepth == 3 || rtn_iDepth == 4 ) 
 		{
-			if( ckBmpIn.len() < iWidthNew * rtn_iHeight * rtn_iDepth )
+			
+			if( ckBmpIn.len() < iLineByte * rtn_iHeight )
+			{
 				return 0;
+			}
 
 			ckOut.redim( rtn_iWidth * rtn_iHeight * rtn_iDepth );
 
@@ -38309,13 +38356,17 @@ public:
 			char *p1;
 
 			p = ckBmpIn.buf_const() + ckBmpIn.len();
-			p -= iWidthNew * rtn_iDepth;
+			
+			p -= iLineByte;
 			p1 = ckOut.buf();
 
 			for( int j = 0; j < rtn_iHeight; j++ )
 			{
 				SStrf::smemcpy( p1, p, rtn_iWidth * rtn_iDepth );
-				p -= iWidthNew * rtn_iDepth;
+
+				
+				p -= iLineByte;
+
 				p1 += rtn_iWidth * rtn_iDepth;
 			}
 
@@ -38372,7 +38423,8 @@ public:
 
 		fl.bind( strFnIn );
 		fl.read( ck );
-		Conv2Ck( ck, ck2, width, height, depth );
+
+		if( ! Conv2Ck( ck, ck2, width, height, depth ) ) return 0;
 
 		if( depth == 4 )
 		{
@@ -38382,7 +38434,14 @@ public:
 			fl.write(ck);
 			return 1;
 		}
-		return 0;
+
+		return 1;
+	}
+
+
+	static tbool ConvBmp4To3( std::string strFnInOut )
+	{
+		return ConvBmp4To3( strFnInOut, strFnInOut );
 	}
 
 
@@ -39022,12 +39081,15 @@ public:
 			if( L < 0 )
 			{
 				L = L * (-1);
-				SBmp::Conv2Ck( ck, m_ckBuf, m_width, m_height, depth );
+				rc = SBmp::Conv2Ck( ck, m_ckBuf, m_width, m_height, depth );
+				if( rc == 0 ) return 0;
 				TurnUpDn();
 				return 1;
 			}
 			return 0;
 		}
+
+		if( rc == 0 ) return 0;
 
 		return 1;
 	}
