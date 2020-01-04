@@ -16,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2019c12c31c÷‹∂˛-20c34c16.63  
+2020c01c04c÷‹¡˘-16c45c01.45  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -4491,6 +4491,10 @@ public:
 		return (double)clock()/(double)CLOCKS_PER_SEC;
 	}
 
+
+
+#ifdef WMSG_GET_NOW_MTIME_REAL_X011_
+
 	static int Get_msec() 
 	{
 		
@@ -4499,6 +4503,17 @@ public:
 		GetLocalTime( &sys );
 		return (int)sys.wMilliseconds;
 	}
+
+#else
+
+	static int Get_msec() 
+	{
+		int i = (int)( e_proctime() * 1000 );
+		return i % 1000;
+	}
+
+#endif
+
 
 	static std::string Get_now_mtime( int wei = 2 ) 
 	{
@@ -6113,19 +6128,35 @@ public:
 		{
 			rtn_iDepth = 4;
 		}
-		else return 0;
+		else
+			return 0;
 
 		tsize iWidthNew;
+		tsize iWidthNewAdd(0); 
+		tsize iLineByte(0); 
 
-		for( iWidthNew = rtn_iWidth; ; iWidthNew++ )
+		if( rtn_iDepth == 4 )
 		{
-			if( iWidthNew % 4 == 0 ) break;
+			iWidthNew = rtn_iWidth;
 		}
+		else
+		{
+			for( iWidthNew = rtn_iWidth; ; iWidthNew++ )
+			{
+				if( iWidthNew % 4 == 0 ) break;
+				iWidthNewAdd++;
+			}
+		}
+
+		iLineByte = rtn_iWidth * rtn_iDepth + iWidthNewAdd;
 
 		if( rtn_iDepth == 3 || rtn_iDepth == 4 ) 
 		{
-			if( ckBmpIn.len() < iWidthNew * rtn_iHeight * rtn_iDepth )
+			
+			if( ckBmpIn.len() < iLineByte * rtn_iHeight )
+			{
 				return 0;
+			}
 
 			ckOut.redim( rtn_iWidth * rtn_iHeight * rtn_iDepth );
 
@@ -6133,13 +6164,17 @@ public:
 			char *p1;
 
 			p = ckBmpIn.buf_const() + ckBmpIn.len();
-			p -= iWidthNew * rtn_iDepth;
+			
+			p -= iLineByte;
 			p1 = ckOut.buf();
 
 			for( int j = 0; j < rtn_iHeight; j++ )
 			{
 				SStrf::smemcpy( p1, p, rtn_iWidth * rtn_iDepth );
-				p -= iWidthNew * rtn_iDepth;
+
+				
+				p -= iLineByte;
+
 				p1 += rtn_iWidth * rtn_iDepth;
 			}
 
@@ -6196,7 +6231,8 @@ public:
 
 		fl.bind( strFnIn );
 		fl.read( ck );
-		Conv2Ck( ck, ck2, width, height, depth );
+
+		if( ! Conv2Ck( ck, ck2, width, height, depth ) ) return 0;
 
 		if( depth == 4 )
 		{
@@ -6206,7 +6242,14 @@ public:
 			fl.write(ck);
 			return 1;
 		}
-		return 0;
+
+		return 1;
+	}
+
+
+	static tbool ConvBmp4To3( std::string strFnInOut )
+	{
+		return ConvBmp4To3( strFnInOut, strFnInOut );
 	}
 
 
@@ -6846,12 +6889,15 @@ public:
 			if( L < 0 )
 			{
 				L = L * (-1);
-				SBmp::Conv2Ck( ck, m_ckBuf, m_width, m_height, depth );
+				rc = SBmp::Conv2Ck( ck, m_ckBuf, m_width, m_height, depth );
+				if( rc == 0 ) return 0;
 				TurnUpDn();
 				return 1;
 			}
 			return 0;
 		}
+
+		if( rc == 0 ) return 0;
 
 		return 1;
 	}
@@ -12056,8 +12102,12 @@ public:
 		SStrf::sreplstr( str, "\\", "|" );
 		SStrf::sreplstr( str, "/", "|" );
 		SStrf::sreplstr( str, "|", GetPathSep() );
-		CString cstr1(str.c_str());
-		BOOL a = ::CreateDirectory( cstr1, NULL );
+
+		
+
+		std::string cstr1(str.c_str());
+		BOOL a = ::CreateDirectoryA( cstr1.c_str(), NULL );
+
 		return;
 	}
 
@@ -12147,6 +12197,10 @@ public:
 		
 
 	}
+
+
+
+#ifdef WMSG_ENABLED_X011_
 
 
 
@@ -12269,6 +12323,12 @@ public:
 			ListFile_ce( strRootPathOrDir, strPattern, vecstrRtnBuf, bIncludeDirName, bIncludeFileName, bRetFullName );
 		}
 	}
+
+
+
+#endif
+
+
 
 
 	static void ListAllFile(	std::string strRootPathOrDir,		
@@ -12727,6 +12787,9 @@ public:
 	}
 
 
+#ifdef WMSG_CHTOUTF8_REAL_X011_
+
+	
 	static std::string & ChtoUtf8( std::string & s )
 	{
 		std::string ss2( 3 * s.length() + 3 , 'a' );
@@ -12745,6 +12808,19 @@ public:
 		 delete []psText;
 		 return s;
 	}
+
+#else
+
+	static std::string & ChtoUtf8( std::string & s )
+	{
+		 return s;
+	}
+	static std::string & Utf8toCh( std::string & s )
+	{
+		 return s;
+	}
+
+#endif
 
 
 
@@ -30977,19 +31053,35 @@ public:
 		{
 			rtn_iDepth = 4;
 		}
-		else return 0;
+		else
+			return 0;
 
 		tsize iWidthNew;
+		tsize iWidthNewAdd(0); 
+		tsize iLineByte(0); 
 
-		for( iWidthNew = rtn_iWidth; ; iWidthNew++ )
+		if( rtn_iDepth == 4 )
 		{
-			if( iWidthNew % 4 == 0 ) break;
+			iWidthNew = rtn_iWidth;
 		}
+		else
+		{
+			for( iWidthNew = rtn_iWidth; ; iWidthNew++ )
+			{
+				if( iWidthNew % 4 == 0 ) break;
+				iWidthNewAdd++;
+			}
+		}
+
+		iLineByte = rtn_iWidth * rtn_iDepth + iWidthNewAdd;
 
 		if( rtn_iDepth == 3 || rtn_iDepth == 4 ) 
 		{
-			if( ckBmpIn.len() < iWidthNew * rtn_iHeight * rtn_iDepth )
+			
+			if( ckBmpIn.len() < iLineByte * rtn_iHeight )
+			{
 				return 0;
+			}
 
 			ckOut.redim( rtn_iWidth * rtn_iHeight * rtn_iDepth );
 
@@ -30997,13 +31089,17 @@ public:
 			char *p1;
 
 			p = ckBmpIn.buf_const() + ckBmpIn.len();
-			p -= iWidthNew * rtn_iDepth;
+			
+			p -= iLineByte;
 			p1 = ckOut.buf();
 
 			for( int j = 0; j < rtn_iHeight; j++ )
 			{
 				SStrf::smemcpy( p1, p, rtn_iWidth * rtn_iDepth );
-				p -= iWidthNew * rtn_iDepth;
+
+				
+				p -= iLineByte;
+
 				p1 += rtn_iWidth * rtn_iDepth;
 			}
 
@@ -31060,7 +31156,8 @@ public:
 
 		fl.bind( strFnIn );
 		fl.read( ck );
-		Conv2Ck( ck, ck2, width, height, depth );
+
+		if( ! Conv2Ck( ck, ck2, width, height, depth ) ) return 0;
 
 		if( depth == 4 )
 		{
@@ -31070,7 +31167,14 @@ public:
 			fl.write(ck);
 			return 1;
 		}
-		return 0;
+
+		return 1;
+	}
+
+
+	static tbool ConvBmp4To3( std::string strFnInOut )
+	{
+		return ConvBmp4To3( strFnInOut, strFnInOut );
 	}
 
 
@@ -31710,12 +31814,15 @@ public:
 			if( L < 0 )
 			{
 				L = L * (-1);
-				SBmp::Conv2Ck( ck, m_ckBuf, m_width, m_height, depth );
+				rc = SBmp::Conv2Ck( ck, m_ckBuf, m_width, m_height, depth );
+				if( rc == 0 ) return 0;
 				TurnUpDn();
 				return 1;
 			}
 			return 0;
 		}
+
+		if( rc == 0 ) return 0;
 
 		return 1;
 	}
@@ -41584,6 +41691,10 @@ public:
 				m_biComportOpened = 0;
 				return 0;
 			}
+
+			
+			options.c_cflag &= ~CRTSCTS;
+
 			options.c_cflag &= ~CSIZE;
 			switch ( (tuint8)SStrf::satol( nv.get("datalen") ) )
 			{
@@ -41752,17 +41863,51 @@ public:
 
 		int len   =   0;
 
-		
-		len = (int)ckDataBuf.len();
-		len   = write( m_hComport, ckDataBuf.buf_const(), len );
-
-		if ( len > 0 )
+		while(1)
 		{
+			len   = (int)write( m_hComport, ckDataBuf.buf_const(), 1 );
+
 			
-			if( ckDataBuf.len() % 13 == 3 || SStrf::rand1() > 0.88 )
+
+			
+			if ( len > 0 )
 			{
 				
+				if( ckDataBuf.len() % 13 == 3 || SStrf::rand1() > 0.88 )
+				{
+					
+				}
 			}
+
+			if ( len > 0 )
+			{
+				return len;
+			}
+
+			if ( len == 0 )
+			{
+				WThrd::tr_sleep( 0, 0.001 );
+				if( ckDataBuf.len() % 13 == 3 || SStrf::rand1() > 0.88 )
+				{
+					WThrd::tr_sleep( 0, 0.01 );
+				}
+				continue;
+			}
+
+			if( len < 0 )
+			{
+				WThrd::tr_sleep( 0, 0.001 );
+				if( ckDataBuf.len() % 13 == 3 || SStrf::rand1() > 0.88 )
+				{
+					WThrd::tr_sleep( 0, 0.01 );
+				}
+				continue;
+			}
+
+
+			if( !m_biComportOpened )
+				return 0;
+
 		}
 
 		return (int)len > 0 ? len : 0;

@@ -34,9 +34,9 @@
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
 #endif
-#include <windows.h> 
+#include <windows.h>
 #include <shellapi.h>
-#include "atlstr.h" //CString in here
+//#include "atlstr.h" //CString in here
 //#import "msado27.tlb" rename("EOF", "adoEOF")  
 #include "list"
 //#include "\a2\dup\mydup04\CDUP\w_alls.h"

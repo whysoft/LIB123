@@ -34,16 +34,17 @@
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
 #endif
-#include <windows.h> 
+#include <windows.h>
 #include <shellapi.h>
-#include "atlstr.h" //CString in here
+//#include "atlstr.h" //CString in here
 //#import "msado27.tlb" rename("EOF", "adoEOF")  
 #include "list"
-//#include "\a1\\a\k\mydup04\CDUP\w_alls.h"
-//#include "\a1\a\k\mydup04\CDUP\w_allw.h"
-//#include "\a1\a\k\mydup04\CDUP\net\a01ref_net.h"
+//#include "\a2\dup\mydup04\CDUP\w_alls.h"
+//#include "\a2\dup\mydup04\CDUP\w_allw.h"
+//#include "\a2\dup\mydup04\CDUP\net\a01ref_net.h"
 #include "1.h"
 #endif
+#include <stack>
 
 //#include "SelfIpPicker_t.h"
 
@@ -51,22 +52,31 @@ using namespace wl;
 
 
 #define SADDR(s)  (&(s[0]))
-
-#define LOGPOSI  ( SDte::GetNow().Get_now_mtime() + "|" + std::string(__FUNCTION__) + "|" + SStrf::sltoa(__LINE__) + "\t" ).c_str()
-#define LOGSTREAM2(Suffix,logobj,streamexp)  do{std::stringstream stream1a ## Suffix ; stream1a ## Suffix<<streamexp; (logobj).LogPrintStr( stream1a ## Suffix.str() ); }while(0)
-#define LOGSTREAM1(Suffix,logobj,streamexp) LOGSTREAM2(Suffix,logobj,streamexp)
-#define LOGSTREAM(logobj,streamexp) LOGSTREAM1(__LINE__,logobj,streamexp)
-
+ 
 
 #define MYAUTOLOCK2(Suffix,obj)   WCrsc aLoc_myLck_ ## Suffix (&(obj))
 #define MYAUTOLOCK1(Suffix,obj) MYAUTOLOCK2(Suffix,obj)
 #define MYAUTOLOCK(obj) MYAUTOLOCK1(__COUNTER__,obj)
 
+#define MYLYOBJ2(Suffix,classname)    classname ly__ ## Suffix 
+#define MYLYOBJ1(Suffix,classname)    MYLYOBJ2(Suffix,classname)
+#define MYLYOBJ(classname) MYLYOBJ1(__COUNTER__,classname)
+
+
+typedef	 void *	PVOID_t;
 
 
 
-extern bool IsOsWin(); 
+#ifdef WINENV_
+#define WINSTRUPACK1STYLE_
+#else
+#define LINSTRUPACK1STYLE_
+#endif
+
+//typedef unsigned char  U8;       /* defined for unsigned 8-bits integer variable 	  无符号8位整型变量  */
+
 
 
 #endif
+
 
