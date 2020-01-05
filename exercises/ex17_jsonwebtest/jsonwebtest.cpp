@@ -46,11 +46,29 @@ void test_json()
 
     neb::CJsonObject oj2;
 
-	oj2.Add( 234 );
-	oj2.Add( 234 );
-	oj2.Add( 234 );
+	for( int i = 0; i < 4; i++ )
+	{
+		oj2.Add( 234 + i );
+	}
 
 	oJson.Add( "tt4", oj2 );
+  
+	neb::CJsonObject oj3;
+
+	for( int i = 0; i < 4; i++ )
+	{
+		neb::CJsonObject oj2;
+
+		for( int i = 0; i < 4; i++ )
+		{
+			oj2.Add( 555 + i );
+		}
+
+		oj3.Add( oj2 );
+	}
+
+	oJson.Add( "tt5", oj3 );
+
 	s1 = oJson.ToString();
 	std::cout << s1 << std::endl;
 
