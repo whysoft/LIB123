@@ -16,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2020c01c04c周六-16c45c01.45  
+2020c01c14c周二-13c57c51.08  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -19418,6 +19418,7 @@ public:
 		{
 			
 			
+			m_biComportOpened = 0;
 			return 0;
 		}
 
@@ -41640,6 +41641,7 @@ public:
 		if ( m_hComport < 0 )
 		{
 			
+			m_biComportOpened = 0;
 			return 0;
 		}
 
@@ -41865,6 +41867,10 @@ public:
 
 		while(1)
 		{
+			if( !m_biComportOpened ) return 0;
+			if(m_biShouldDisConn) return 0;
+
+
 			len   = (int)write( m_hComport, ckDataBuf.buf_const(), 1 );
 
 			
@@ -41903,10 +41909,6 @@ public:
 				}
 				continue;
 			}
-
-
-			if( !m_biComportOpened )
-				return 0;
 
 		}
 
