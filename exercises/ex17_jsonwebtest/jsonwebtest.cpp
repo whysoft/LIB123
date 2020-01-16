@@ -102,6 +102,8 @@ void test_web_recv_post()
 
 		virtual tbool lingy( const std::string &strFn , WNava &para , const std::string &strWholePara , funcandy_t::actwebele_t *pweb )
 		{
+			printf( "----%s---\n", pweb->m_tSvr.m_strRemoteIPAddress.c_str() );
+
 			if( pweb->m_strCmdVerb != "POST" ) return 0;
 
 			neb::CJsonObject oJson;
