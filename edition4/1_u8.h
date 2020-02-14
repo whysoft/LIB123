@@ -16,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2020c01c14c周二-13c57c51.08  
+2020c02c14c周五-15c03c37.50  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -39828,7 +39828,8 @@ public:
 		volatile unsigned int len = 0;
 		struct sockaddr_in addr;
 		struct sockaddr_in cliaddr;
-		int addrlen = sizeof(addr);
+		
+		socklen_t addrlen = sizeof(addr);
 		SOCKET udpfd;
 
 		len = (*SClib::p_sprintf())(buf,"%c%c%s%c%s%c", 0, 1, strFn.c_str(), 0, "octet", 0);    
@@ -41757,7 +41758,9 @@ public:
 			options.c_cc[VTIME] = 0;
 			options.c_cc[VMIN] = 1;
 
-			options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG); options.c_oflag &= ~OPOST;
+			options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
+
+			options.c_oflag &= ~OPOST;
 
 
 			options.c_iflag = 0;
