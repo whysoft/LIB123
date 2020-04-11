@@ -16,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2020c02c14cÖÜÎå-15c03c37.50  
+2020c04c11cÖÜÁù-18c43c20.38  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -1373,6 +1373,11 @@ public:
 
 		return strData = s1.c_str();
 	}
+
+
+	static std::string bs_de_cvn1( std::string strData ) 	{ return bs_de( strData , bs_esc ); }	
+	static std::string bs_de_cvn2( std::string strData ) 	{ return bs_de( strData , bs_esc2 ); }	
+
 
 	
 	static tsize bs_desize( const tchar *s , tchar(*apf1)()=bs_esc )
@@ -24442,6 +24447,8 @@ public:
 	}
 
 public:
+
+	
 	void RtnWebContent( std::string strType, std::string strContent, SCake *pck = NULL )
 	{
 		if( strType == "RAW" )
@@ -24457,6 +24464,7 @@ public:
 					m_tSvr.send_str( strContent );
 				}
 			}
+			return;
 		}
 		else
 		{
@@ -24466,6 +24474,11 @@ public:
 			strOut += "Server: NotApache/" + SDte::GetNow().ReadStringPack() + WFile::MkRUStr() + m_strCommuCR;
 			strOut += "Cache-Control: no-cache" + m_strCommuCR;
 			strOut += "Pragma: no-cache" + m_strCommuCR;
+			
+			strOut += "Access-Control-Allow-Origin: *" + m_strCommuCR;
+			strOut += "Access-Control-Allow-Methods: POST, GET, OPTIONS" + m_strCommuCR;
+			strOut += "Access-Control-Allow-Headers: Content-Type,If-Modified-Since" + m_strCommuCR;
+			strOut += "Access-Control-Max-Age: 30" + m_strCommuCR;
 
 			
 			
@@ -24503,6 +24516,63 @@ public:
 	}
 
 	
+	void RtnWebContent_Header( std::string strType )
+	{
+		std::string strOut;
+
+		strOut = "HTTP/1.0 200 OK" + m_strCommuCR;
+		strOut += "Connection: close" + m_strCommuCR;
+		strOut += "Server: NotApache/" + SDte::GetNow().ReadStringPack() + WFile::MkRUStr() + m_strCommuCR;
+		strOut += "Cache-Control: no-cache" + m_strCommuCR;
+		strOut += "Pragma: no-cache" + m_strCommuCR;
+		
+		strOut += "Access-Control-Allow-Origin: *" + m_strCommuCR;
+		strOut += "Access-Control-Allow-Methods: POST, GET, OPTIONS" + m_strCommuCR;
+		strOut += "Access-Control-Allow-Headers: Content-Type,If-Modified-Since" + m_strCommuCR;
+		strOut += "Access-Control-Max-Age: 30" + m_strCommuCR;
+
+		
+		
+		if( strType == "" )
+		{
+			strOut += "Content-Type: text/plain; charset=gb2312" + m_strCommuCR;
+		}
+		else
+		{
+			strOut += "Content-Type: " + strType + "; charset=gb2312" + m_strCommuCR;
+		}
+
+		m_tSvr.send_str( strOut );
+	}
+
+
+	void RtnWebContent_Body( std::string strContent, SCake *pck = NULL )
+	{
+		std::string strOut;
+
+		if( pck && pck->len() )
+		{
+			strOut += "Content-Length: " + SStrf::sltoa( (int)pck->len() ) + m_strCommuCR;
+		}
+		else
+		{
+			strOut += "Content-Length: " + SStrf::sltoa( (int)strContent.length() ) + m_strCommuCR;
+		}
+
+		strOut += m_strCommuCR;
+		m_tSvr.send_str( strOut );
+
+		if( pck && pck->len() )
+		{
+			m_tSvr.send_bin( *pck );
+		}
+		else
+		{
+			m_tSvr.send_str( strContent );
+		}
+	}
+
+
 	virtual void OnGet( const std::string &strFn , WNava &para , const std::string &strWholePara )
 	{
 		
@@ -24653,15 +24723,13 @@ public:
 
 	virtual tbool lingy( const std::string &strFn , WNava &para , const std::string &strWholePara , actwebele_t *pweb )
 	{
-		WCrsc aLoc_myLck (&(m_lckItems));
-
 		tbool rc;
 
 		
 		
 		
-
 		
+
 		for( long j = (long)m_vItemsHigh.size() - 1 ; j >= 0; j -- )
 		{
 			rc = (m_vItemsHigh[j])->lingy( strFn , para , strWholePara , pweb );
@@ -24671,16 +24739,20 @@ public:
 			}
 		}
 
-		
-		for( long j = (long)m_vItems.size() - 1 ; j >= 0; j -- )
+		if(1)
 		{
-			rc = (m_vItems[j])->lingy( strFn , para , strWholePara , pweb );
-			if( rc )
+			WCrsc aLoc_myLck (&(m_lckItems));
+
+			
+			for( long j = (long)m_vItems.size() - 1 ; j >= 0; j -- )
 			{
-				return 1;
+				rc = (m_vItems[j])->lingy( strFn , para , strWholePara , pweb );
+				if( rc )
+				{
+					return 1;
+				}
 			}
 		}
-
 
 		return 0;
 	}
@@ -26317,6 +26389,11 @@ public:
 
 		return strData = s1.c_str();
 	}
+
+
+	static std::string bs_de_cvn1( std::string strData ) 	{ return bs_de( strData , bs_esc ); }	
+	static std::string bs_de_cvn2( std::string strData ) 	{ return bs_de( strData , bs_esc2 ); }	
+
 
 	
 	static tsize bs_desize( const tchar *s , tchar(*apf1)()=bs_esc )
@@ -46782,6 +46859,8 @@ public:
 	}
 
 public:
+
+	
 	void RtnWebContent( std::string strType, std::string strContent, SCake *pck = NULL )
 	{
 		if( strType == "RAW" )
@@ -46797,6 +46876,7 @@ public:
 					m_tSvr.send_str( strContent );
 				}
 			}
+			return;
 		}
 		else
 		{
@@ -46806,6 +46886,11 @@ public:
 			strOut += "Server: NotApache/" + SDte::GetNow().ReadStringPack() + WFile::MkRUStr() + m_strCommuCR;
 			strOut += "Cache-Control: no-cache" + m_strCommuCR;
 			strOut += "Pragma: no-cache" + m_strCommuCR;
+			
+			strOut += "Access-Control-Allow-Origin: *" + m_strCommuCR;
+			strOut += "Access-Control-Allow-Methods: POST, GET, OPTIONS" + m_strCommuCR;
+			strOut += "Access-Control-Allow-Headers: Content-Type,If-Modified-Since" + m_strCommuCR;
+			strOut += "Access-Control-Max-Age: 30" + m_strCommuCR;
 
 			
 			
@@ -46843,6 +46928,63 @@ public:
 	}
 
 	
+	void RtnWebContent_Header( std::string strType )
+	{
+		std::string strOut;
+
+		strOut = "HTTP/1.0 200 OK" + m_strCommuCR;
+		strOut += "Connection: close" + m_strCommuCR;
+		strOut += "Server: NotApache/" + SDte::GetNow().ReadStringPack() + WFile::MkRUStr() + m_strCommuCR;
+		strOut += "Cache-Control: no-cache" + m_strCommuCR;
+		strOut += "Pragma: no-cache" + m_strCommuCR;
+		
+		strOut += "Access-Control-Allow-Origin: *" + m_strCommuCR;
+		strOut += "Access-Control-Allow-Methods: POST, GET, OPTIONS" + m_strCommuCR;
+		strOut += "Access-Control-Allow-Headers: Content-Type,If-Modified-Since" + m_strCommuCR;
+		strOut += "Access-Control-Max-Age: 30" + m_strCommuCR;
+
+		
+		
+		if( strType == "" )
+		{
+			strOut += "Content-Type: text/plain; charset=gb2312" + m_strCommuCR;
+		}
+		else
+		{
+			strOut += "Content-Type: " + strType + "; charset=gb2312" + m_strCommuCR;
+		}
+
+		m_tSvr.send_str( strOut );
+	}
+
+
+	void RtnWebContent_Body( std::string strContent, SCake *pck = NULL )
+	{
+		std::string strOut;
+
+		if( pck && pck->len() )
+		{
+			strOut += "Content-Length: " + SStrf::sltoa( (int)pck->len() ) + m_strCommuCR;
+		}
+		else
+		{
+			strOut += "Content-Length: " + SStrf::sltoa( (int)strContent.length() ) + m_strCommuCR;
+		}
+
+		strOut += m_strCommuCR;
+		m_tSvr.send_str( strOut );
+
+		if( pck && pck->len() )
+		{
+			m_tSvr.send_bin( *pck );
+		}
+		else
+		{
+			m_tSvr.send_str( strContent );
+		}
+	}
+
+
 	virtual void OnGet( const std::string &strFn , WNava &para , const std::string &strWholePara )
 	{
 		
@@ -46993,15 +47135,13 @@ public:
 
 	virtual tbool lingy( const std::string &strFn , WNava &para , const std::string &strWholePara , actwebele_t *pweb )
 	{
-		WCrsc aLoc_myLck (&(m_lckItems));
-
 		tbool rc;
 
 		
 		
 		
-
 		
+
 		for( long j = (long)m_vItemsHigh.size() - 1 ; j >= 0; j -- )
 		{
 			rc = (m_vItemsHigh[j])->lingy( strFn , para , strWholePara , pweb );
@@ -47011,16 +47151,20 @@ public:
 			}
 		}
 
-		
-		for( long j = (long)m_vItems.size() - 1 ; j >= 0; j -- )
+		if(1)
 		{
-			rc = (m_vItems[j])->lingy( strFn , para , strWholePara , pweb );
-			if( rc )
+			WCrsc aLoc_myLck (&(m_lckItems));
+
+			
+			for( long j = (long)m_vItems.size() - 1 ; j >= 0; j -- )
 			{
-				return 1;
+				rc = (m_vItems[j])->lingy( strFn , para , strWholePara , pweb );
+				if( rc )
+				{
+					return 1;
+				}
 			}
 		}
-
 
 		return 0;
 	}
