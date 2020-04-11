@@ -1,13 +1,15 @@
 
 ## LIB123简介
 ```
+https://github.com/whysoft/LIB123
+
 LIB123
 是一个可重用C++库
 面向应用开发。
 没有使用C++11特有的部分，以便尽量兼容旧的编译器。
 全部由C++源码实现。表现为.h文件的源代码。
 
-用于苹果mac OS、windowsXP、win7/win10、x86系Linux，ARM系列嵌入式linux。
+用于苹果macOS/windowsXP/win7/win10以及x86系Linux，ARM系列嵌入式linux。
 
 目标可执行文件只依赖标准C/C++库，没有其它依赖。
 
