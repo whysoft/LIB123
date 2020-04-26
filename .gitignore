@@ -4,7 +4,6 @@
 # Executables
 # Fortran module files
 # Precompiled Headers
-*.a
 *.app
 *.bsc
 *.dep
@@ -29,7 +28,6 @@
 *.rsp
 *.slo
 *.smod
-*.so
 *.suo
 *.tlog
 *.user
