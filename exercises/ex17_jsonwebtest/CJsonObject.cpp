@@ -1,11 +1,5 @@
 /*******************************************************************************
  * Project:  neb
- * @file     CJsonObject.cpp
- * @brief 
- * @author   bwarliao
- * @date:    2014-7-16
- * @note
- * Modify history:
  ******************************************************************************/
 
 #include "CJsonObject.h"
@@ -572,6 +566,7 @@ bool CJsonObject::Get(const std::string& strKey, CJsonObject& oJsonObject) const
 
 bool CJsonObject::Get(const std::string& strKey, std::string& strValue) const
 {
+	strValue="";
     cJSON* pJsonStruct = NULL;
     if (m_pJsonData != NULL)
     {
@@ -593,7 +588,25 @@ bool CJsonObject::Get(const std::string& strKey, std::string& strValue) const
     }
     if (pJsonStruct->type != cJSON_String)
     {
-        return(false);
+		//浮点和整数分别试一下，返回字符串形式。再不行才return(false) 
+
+		if (pJsonStruct->type == cJSON_Int)
+		{
+			std::stringstream stream;
+			stream << pJsonStruct->valueint;
+			strValue = stream.str();
+			return(true);
+		}
+
+		if (pJsonStruct->type == cJSON_Double)
+		{
+			std::stringstream stream;
+			stream << (pJsonStruct->valuedouble);
+			strValue = stream.str();
+			return(true);
+		}
+
+		return(false);
     }
     strValue = pJsonStruct->valuestring;
     return(true);
@@ -854,7 +867,7 @@ bool CJsonObject::Add(const std::string& strKey, const CJsonObject& oJsonObject)
     return(true);
 }
 
-bool CJsonObject::Add(const std::string& strKey, const std::string& strValue)
+bool CJsonObject::Add(const std::string& strKey, std::string strValue)
 {
     cJSON* pFocusData = NULL;
     if (m_pJsonData != NULL)

@@ -1,11 +1,5 @@
 /*******************************************************************************
  * Project:  neb
- * @file     CJsonObject.hpp
- * @brief    Json
- * @author   bwarliao
- * @date:    2014-7-16
- * @note
- * Modify history:
  ******************************************************************************/
 
 #ifndef CJSONOBJECT_HPP_
@@ -64,7 +58,7 @@ public:     // method of ordinary json object
     CJsonObject& operator[](const std::string& strKey);
     std::string operator()(const std::string& strKey) const;
     bool Get(const std::string& strKey, CJsonObject& oJsonObject) const;
-    bool Get(const std::string& strKey, std::string& strValue) const;
+    bool Get(const std::string& strKey, std::string& strValue) const;	//浮点和整数分别试一下，返回字符串形式。再不行才return(false) 
     bool Get(const std::string& strKey, int32& iValue) const;
     bool Get(const std::string& strKey, uint32& uiValue) const;
     bool Get(const std::string& strKey, int64& llValue) const;
@@ -73,7 +67,7 @@ public:     // method of ordinary json object
     bool Get(const std::string& strKey, float& fValue) const;
     bool Get(const std::string& strKey, double& dValue) const;
     bool Add(const std::string& strKey, const CJsonObject& oJsonObject);
-    bool Add(const std::string& strKey, const std::string& strValue);
+    bool Add(const std::string& strKey, std::string strValue);
     bool Add(const std::string& strKey, int32 iValue);
     bool Add(const std::string& strKey, uint32 uiValue);
     bool Add(const std::string& strKey, int64 llValue);
