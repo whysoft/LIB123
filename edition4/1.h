@@ -16,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2020c04c11c÷‹¡˘-18c43c20.38  
+2020c12c08c÷‹∂˛-15c59c23.88  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -606,8 +606,16 @@ public:
 	static tbool sisdec(const tchar *s)
 	{
 		if(s==NULL) return 0;
+		if(*s==0) return 0;
 		for(;*s;s++) if(!sisdec(*s)) return 0;
 		return 1;
+	}
+
+	
+	static tbool sisdec( const std::string &s )
+	{
+		if(s.empty()) return 0;
+		return sisdec(s.c_str());
 	}
 
 	
@@ -2872,7 +2880,7 @@ public:
 	}
 
 
-	void lets( const std::string & s) { lets(s.c_str()); }
+	void lets( const std::string & s ) { lets(s.c_str()); }
 
 	void lets( tint32 i)  { lets( SStrf::sltoa(i) ); }
 
@@ -3047,58 +3055,58 @@ public:
 	SCake(const std::string & s):SCake_base<tchar>( s) { }
 
 
-	SCake & bs_en()
+	SCake & bs_en( tchar(*apf1)()=SStrf::bs_esc )
 	{
 		SCake *pck = new SCake;
-		pck->redim( SStrf::bs_ensize( buf(), len() ) );
-		SStrf::bs_en( buf(), len(), pck->buf() );
+		pck->redim( SStrf::bs_ensize( buf(), len(), apf1 ) );
+		SStrf::bs_en( buf(), len(), pck->buf(), apf1 );
 		*this = *pck;
 		delete pck;
 		return *this;
 	}
 
-	SCake & bs_en( std::string & strOut )
+	SCake & bs_en( std::string & strOut , tchar(*apf1)()=SStrf::bs_esc )
 	{
 		SCake *pck = new SCake;
 		*pck = *this;
-		pck->bs_en();
+		pck->bs_en(apf1);
 		strOut = pck->buf();
 		delete pck;
 		return *this;
 	}
 
-	std::string bs_en( std::string *pstrOut )
+	std::string bs_en( std::string *pstrOut , tchar(*apf1)()=SStrf::bs_esc ) 
 	{
 		std::string strBuf;
 		if( pstrOut == NULL ) pstrOut = &strBuf;
-		bs_en( *pstrOut );
+		bs_en( *pstrOut , apf1 );
 		return ( *pstrOut );
 	}
 
 
-	SCake & bs_de() 
+	SCake & bs_de( tchar(*apf1)()=SStrf::bs_esc ) 
 	{
 		if( buf() == NULL )
 		{
 			redim(0);
 			return *this;
 		}
-		tsize iDatalen = SStrf::bs_desize( buf() );
-		SStrf::bs_de( buf() );
-		redim( iDatalen, 1 );
+		tsize iDatalen = SStrf::bs_desize( buf(), apf1 );
+		SStrf::bs_de( buf(), apf1 );
+		this->redim( iDatalen, 1 );
 		return *this;
 	}
 
-	SCake & bs_de( const std::string & str ) 
+	SCake & bs_de( const std::string & str, tchar(*apf1)()=SStrf::bs_esc ) 
 	{
 		if( str.empty() )
 		{
 			redim(0);
 			return *this;
 		}
-		redim( (tsize)str.size() + 1 );
+		this->redim( (tsize)str.size() + 1 );
 		(*SClib::p_strcpy())( buf(), str.c_str() );
-		return bs_de();
+		return this->bs_de(apf1);
 	}
 
 
@@ -7358,6 +7366,9 @@ public:
 		return m_mapKnl[name];
 	}
 
+	
+	
+	
 
 	tbool del( const nameT & name )
 	{
@@ -17228,7 +17239,7 @@ public:
 
 
 	
-	tbool FtpStor_begin( std::string strFn, WTcpCellc &cc )
+	tbool FtpStor_begin( std::string strFn, WTcpCellc &cc ) 
 	{
 		std::string str1;
 		SCake ck;
@@ -21531,6 +21542,8 @@ class WKeyinput2
 public:
 	typedef  KEYQUE_ITEM_T  KEYQUE_ITEM_t;
 
+	bool				m_is_timeout_enabled;	
+
 private:
 	volatile double m_timeout_fSec;
 	std::string		m_strConnAddress;
@@ -21540,9 +21553,11 @@ private:
 	bool			m_isConnOk;
 	WCrsc							m_KeyQueLck;
 	std::list< KEYQUE_ITEM_T >		m_KeyQue;
-	bool			m_isGot; 
-	WCrsc							m_GetKeyFuncLck;
-	WCrsc							m_PutKeyFuncLck;
+
+	bool				m_isGot;				
+
+	WCrsc				m_GetKeyFuncLck;
+	WCrsc				m_PutKeyFuncLck;
 
 
 private:
@@ -21594,7 +21609,7 @@ private:
 			}
 			else
 			{
-				if( m_pFather )
+				if( m_pFather && m_pFather->m_is_timeout_enabled )
 				{
 					m_pFather->PutNop();
 				}
@@ -21618,6 +21633,8 @@ public:
 
 	WKeyinput2()
 	{
+		m_is_timeout_enabled = true;
+
 		m_timeout_fSec = 0.93;
 		m_isConnOk = false;
 		m_ConnTimeoutMan.m_pFather = this;
@@ -21697,7 +21714,9 @@ public:
 	void PutNop()
 	{
 		if( this->m_isConnOk )
+		{
 			this->m_ts.send_str( "n" );
+		}
 	}
 
 
@@ -21795,6 +21814,75 @@ public:
 	{
 		WCrsc aLock( &m_KeyQueLck );
 		m_KeyQue.clear();
+	}
+
+};
+
+
+
+
+class WKeyinput3
+{
+public:
+
+private:
+	WTcpListener	m_lsn;
+	WTcpCells		m_ts;
+	WTcpCellc		m_tc;
+
+public:
+
+	WKeyinput3()
+	{
+
+	}
+
+	virtual ~WKeyinput3()
+	{
+		m_tc.DisConn();
+		m_ts.DisConn();
+
+	}
+
+public:
+	
+	tbool KeyInit( tuint16 iBeginPort = 53300 , tuint16 *pPortOut = NULL ) 
+	{
+		tuint16 iPortOut;
+		std::string strAddr;
+
+		for( iPortOut = iBeginPort; iPortOut <= 65531; iPortOut++ )
+		{
+			strAddr = "127.0.0.1:" + SStrf::sltoa( iPortOut );
+
+			if( m_lsn.Listen( strAddr ) )
+			{
+				m_tc.Conn( strAddr );
+				m_ts.Conn( m_lsn );
+				m_lsn.StopListen();
+				if( pPortOut ) *pPortOut = iPortOut;
+
+				return 1;
+			}
+		}
+
+		return 0;
+	}
+
+
+	void other_release()
+	{
+		this->m_ts.send_str( "a" );
+	}
+
+
+	tbool me_lock()
+	{
+		SCake ckTmp;
+
+		m_tc.recv_len( ckTmp, 1 );
+
+		return ( ckTmp.len() >= 1 ) ? 1 : 0;
 	}
 
 };
@@ -24974,9 +25062,26 @@ public:
 		ck.mk_str(strHttpHead);
 
 		h.ImportSvrRtnHeadPara( strHttpHead );
+		
+		if( !pckRtn2 ) 
+		{
+			return 1;
+		}
+
 		long i = SStrf::satol( h.GetSvrRtnHeadParaVal( "Content-Length" ) );
 
-		if( i > 0 && pckRtn2 )
+		
+		if( i == 0 )
+		{
+			std::string s = h.GetSvrRtnHeadParaVal( "Connection" );
+			if( SStrf::slcase(s) == "close" )
+			{
+				cc.recv_all_f( *pckRtn2 );
+			}
+			return 1;
+		}
+
+		if( i > 0 )
 		{
 			cc.recv_len( *pckRtn2, i );
 		}
@@ -25622,8 +25727,16 @@ public:
 	static tbool sisdec(const tchar *s)
 	{
 		if(s==NULL) return 0;
+		if(*s==0) return 0;
 		for(;*s;s++) if(!sisdec(*s)) return 0;
 		return 1;
+	}
+
+	
+	static tbool sisdec( const std::string &s )
+	{
+		if(s.empty()) return 0;
+		return sisdec(s.c_str());
 	}
 
 	
@@ -27888,7 +28001,7 @@ public:
 	}
 
 
-	void lets( const std::string & s) { lets(s.c_str()); }
+	void lets( const std::string & s ) { lets(s.c_str()); }
 
 	void lets( tint32 i)  { lets( SStrf::sltoa(i) ); }
 
@@ -28063,58 +28176,58 @@ public:
 	SCake(const std::string & s):SCake_base<tchar>( s) { }
 
 
-	SCake & bs_en()
+	SCake & bs_en( tchar(*apf1)()=SStrf::bs_esc )
 	{
 		SCake *pck = new SCake;
-		pck->redim( SStrf::bs_ensize( buf(), len() ) );
-		SStrf::bs_en( buf(), len(), pck->buf() );
+		pck->redim( SStrf::bs_ensize( buf(), len(), apf1 ) );
+		SStrf::bs_en( buf(), len(), pck->buf(), apf1 );
 		*this = *pck;
 		delete pck;
 		return *this;
 	}
 
-	SCake & bs_en( std::string & strOut )
+	SCake & bs_en( std::string & strOut , tchar(*apf1)()=SStrf::bs_esc )
 	{
 		SCake *pck = new SCake;
 		*pck = *this;
-		pck->bs_en();
+		pck->bs_en(apf1);
 		strOut = pck->buf();
 		delete pck;
 		return *this;
 	}
 
-	std::string bs_en( std::string *pstrOut )
+	std::string bs_en( std::string *pstrOut , tchar(*apf1)()=SStrf::bs_esc ) 
 	{
 		std::string strBuf;
 		if( pstrOut == NULL ) pstrOut = &strBuf;
-		bs_en( *pstrOut );
+		bs_en( *pstrOut , apf1 );
 		return ( *pstrOut );
 	}
 
 
-	SCake & bs_de() 
+	SCake & bs_de( tchar(*apf1)()=SStrf::bs_esc ) 
 	{
 		if( buf() == NULL )
 		{
 			redim(0);
 			return *this;
 		}
-		tsize iDatalen = SStrf::bs_desize( buf() );
-		SStrf::bs_de( buf() );
-		redim( iDatalen, 1 );
+		tsize iDatalen = SStrf::bs_desize( buf(), apf1 );
+		SStrf::bs_de( buf(), apf1 );
+		this->redim( iDatalen, 1 );
 		return *this;
 	}
 
-	SCake & bs_de( const std::string & str ) 
+	SCake & bs_de( const std::string & str, tchar(*apf1)()=SStrf::bs_esc ) 
 	{
 		if( str.empty() )
 		{
 			redim(0);
 			return *this;
 		}
-		redim( (tsize)str.size() + 1 );
+		this->redim( (tsize)str.size() + 1 );
 		(*SClib::p_strcpy())( buf(), str.c_str() );
-		return bs_de();
+		return this->bs_de(apf1);
 	}
 
 
@@ -32356,6 +32469,9 @@ public:
 		return m_mapKnl[name];
 	}
 
+	
+	
+	
 
 	tbool del( const nameT & name )
 	{
@@ -43943,6 +44059,8 @@ class WKeyinput2
 public:
 	typedef  KEYQUE_ITEM_T  KEYQUE_ITEM_t;
 
+	bool				m_is_timeout_enabled;	
+
 private:
 	volatile double m_timeout_fSec;
 	std::string		m_strConnAddress;
@@ -43952,9 +44070,11 @@ private:
 	bool			m_isConnOk;
 	WCrsc							m_KeyQueLck;
 	std::list< KEYQUE_ITEM_T >		m_KeyQue;
-	bool			m_isGot; 
-	WCrsc							m_GetKeyFuncLck;
-	WCrsc							m_PutKeyFuncLck;
+
+	bool				m_isGot;				
+
+	WCrsc				m_GetKeyFuncLck;
+	WCrsc				m_PutKeyFuncLck;
 
 
 private:
@@ -44006,7 +44126,7 @@ private:
 			}
 			else
 			{
-				if( m_pFather )
+				if( m_pFather && m_pFather->m_is_timeout_enabled )
 				{
 					m_pFather->PutNop();
 				}
@@ -44030,6 +44150,8 @@ public:
 
 	WKeyinput2()
 	{
+		m_is_timeout_enabled = true;
+
 		m_timeout_fSec = 0.93;
 		m_isConnOk = false;
 		m_ConnTimeoutMan.m_pFather = this;
@@ -44109,7 +44231,9 @@ public:
 	void PutNop()
 	{
 		if( this->m_isConnOk )
+		{
 			this->m_ts.send_str( "n" );
+		}
 	}
 
 
@@ -44207,6 +44331,75 @@ public:
 	{
 		WCrsc aLock( &m_KeyQueLck );
 		m_KeyQue.clear();
+	}
+
+};
+
+
+
+
+class WKeyinput3
+{
+public:
+
+private:
+	WTcpListener	m_lsn;
+	WTcpCells		m_ts;
+	WTcpCellc		m_tc;
+
+public:
+
+	WKeyinput3()
+	{
+
+	}
+
+	virtual ~WKeyinput3()
+	{
+		m_tc.DisConn();
+		m_ts.DisConn();
+
+	}
+
+public:
+	
+	tbool KeyInit( tuint16 iBeginPort = 53300 , tuint16 *pPortOut = NULL ) 
+	{
+		tuint16 iPortOut;
+		std::string strAddr;
+
+		for( iPortOut = iBeginPort; iPortOut <= 65531; iPortOut++ )
+		{
+			strAddr = "127.0.0.1:" + SStrf::sltoa( iPortOut );
+
+			if( m_lsn.Listen( strAddr ) )
+			{
+				m_tc.Conn( strAddr );
+				m_ts.Conn( m_lsn );
+				m_lsn.StopListen();
+				if( pPortOut ) *pPortOut = iPortOut;
+
+				return 1;
+			}
+		}
+
+		return 0;
+	}
+
+
+	void other_release()
+	{
+		this->m_ts.send_str( "a" );
+	}
+
+
+	tbool me_lock()
+	{
+		SCake ckTmp;
+
+		m_tc.recv_len( ckTmp, 1 );
+
+		return ( ckTmp.len() >= 1 ) ? 1 : 0;
 	}
 
 };
@@ -47386,9 +47579,26 @@ public:
 		ck.mk_str(strHttpHead);
 
 		h.ImportSvrRtnHeadPara( strHttpHead );
+		
+		if( !pckRtn2 ) 
+		{
+			return 1;
+		}
+
 		long i = SStrf::satol( h.GetSvrRtnHeadParaVal( "Content-Length" ) );
 
-		if( i > 0 && pckRtn2 )
+		
+		if( i == 0 )
+		{
+			std::string s = h.GetSvrRtnHeadParaVal( "Connection" );
+			if( SStrf::slcase(s) == "close" )
+			{
+				cc.recv_all_f( *pckRtn2 );
+			}
+			return 1;
+		}
+
+		if( i > 0 )
 		{
 			cc.recv_len( *pckRtn2, i );
 		}
