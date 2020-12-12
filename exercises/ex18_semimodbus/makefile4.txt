@@ -1,0 +1,17 @@
+#CC = arm-linux-gcc
+CC = gcc
+CC1 = $(CC) -c 
+CC3 = $(CC) -lpthread 
+
+O_FILES = env_t.o semimodbus.o 
+
+semimodbus: $(O_FILES)
+	$(CC) -o semimodbus $(O_FILES) -lpthread  -lstdc++
+
+env_t.o :env_t.cpp
+	$(CC1) env_t.cpp
+
+semimodbus.o :semimodbus.cpp
+	$(CC1) semimodbus.cpp
+
+
