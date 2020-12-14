@@ -37,7 +37,8 @@ int main(int argc, char* argv[])
 		}
 		else
 		{
-			strConn = "com=ttyUSB0;start=1;stop=1;speed=19200;parity=E;datalen=8;timeoutsec=0.50;";
+			//strConn = "com=ttyUSB0;start=1;stop=1;speed=19200;parity=E;datalen=8;timeoutsec=0.50;";
+			strConn = "com=ttyS0;start=1;stop=1;speed=19200;parity=E;datalen=8;timeoutsec=0.50;";
 		}
 		 
 		rc = uart.Conn( strConn );
