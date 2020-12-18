@@ -1,4 +1,7 @@
+ï»¿
 //
+//#ä¸€æ®µä¸­æ–‡æ³¨é‡Š	
+
 #include "2.h"
 #include "env_t.h"
 
@@ -38,7 +41,7 @@ int main(int argc, char* argv[])
 		else
 		{
 			//strConn = "com=ttyUSB0;start=1;stop=1;speed=19200;parity=E;datalen=8;timeoutsec=0.50;";
-			strConn = "com=ttyS0;start=1;stop=1;speed=19200;parity=E;datalen=8;timeoutsec=0.50;";
+			strConn = "com=ttyTEST0;start=1;stop=1;speed=19200;parity=E;datalen=8;timeoutsec=0.50;";
 		}
 		 
 		rc = uart.Conn( strConn );
@@ -46,10 +49,12 @@ int main(int argc, char* argv[])
 		if( !rc )
 		{
 			std::cout << "cannot open uart." << std::endl;
+			std::cout << strConn << std::endl;
 			goto L_MAINEND;
 		}
 
-		std::cout << "open uart ok. strConn=" << strConn << std::endl;
+		std::cout << "open uart ok. " << std::endl;
+		std::cout << strConn << std::endl;
 
 		//01 03 01 01 00 01 D4 36
 		//01 06 01 01 00 01 18 36
@@ -97,12 +102,12 @@ int main(int argc, char* argv[])
 
 				if( iReg6Name == 0x0101 )
 				{
-					std::cout << "½øÃÅ " << iReg6Val;
+					std::cout << "è¿›é—¨ " << iReg6Val;
 				}
 
 				if( iReg6Name == 0x0102 )
 				{
-					std::cout << "³öÃÅ " << iReg6Val;
+					std::cout << "å‡ºé—¨ " << iReg6Val;
 				}
 
 				std::cout << std::endl;
@@ -143,7 +148,7 @@ int main(int argc, char* argv[])
 
 				if( iRegLen == 0x02 )
 				{
-					//»Ø¸´	
+					//å›žå¤	
 					sprintf( sz1, "01 03 %02x %02x %02x a5 a5", (int)iRegLen, (int)(*prH), (int)(*prL) ); 
 					ck2.UnSeri3( sz1 );
 				}
@@ -167,7 +172,7 @@ int main(int argc, char* argv[])
 		}//end while
 	}
 
-	//show error msg, ²»ÄÜ½âÊÍµÄÃüÁîÐÐ²ÎÊý¡£	 
+	//show error msg, ä¸èƒ½è§£é‡Šçš„å‘½ä»¤è¡Œå‚æ•°ã€‚	 
 	printf( "%s %s\n", gp_env->m_strName.c_str(), gp_env->m_strVer.c_str() );
 	printf( "i cannot explain command line.\n" );
 
