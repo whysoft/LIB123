@@ -3,16 +3,16 @@ CC = gcc
 CC1 = $(CC) -c `pkg-config --cflags gtk+-2.0 gthread-2.0`
 CC3 = $(CC) -lpthread `pkg-config --cflags --libs gtk+-2.0 gthread-2.0`
 
-O_FILES = semimodbus.o env_t.o 
+O_FILES = env_t.o semimodbus.o 
 
 semimodbus: $(O_FILES)
 	$(CC) -o semimodbus $(O_FILES) -lpthread `pkg-config --cflags --libs gtk+-2.0 gthread-2.0` -lstdc++ -ldl
 
-semimodbus.o :semimodbus.cpp
-	$(CC1) semimodbus.cpp
-
 env_t.o :env_t.cpp
 	$(CC1) env_t.cpp
+
+semimodbus.o :semimodbus.cpp
+	$(CC1) semimodbus.cpp
 
 
 
