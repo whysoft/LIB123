@@ -34,3 +34,10 @@
 *.sdf
 *.zip
 *.exe
+# Generated files
+*/Debug/
+*/LOG1/
+#.swp½»»»ÎÄ¼þ
+~*.*
+.DS_Store
+Thumbs.db

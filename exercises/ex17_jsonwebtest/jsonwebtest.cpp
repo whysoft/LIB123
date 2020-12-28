@@ -118,6 +118,14 @@ void test_web_recv_post()
 			
 			pweb->RtnWebContent( "", s1 );  
 
+			WFile fl;
+			neb::CJsonObject j2;
+			
+			j2.Parse(s1);
+			s1 = j2.ToFormattedString();
+			fl.bind("111.xpp");
+			fl.write_str(s1);
+
 			return 1;
 
 			// return 0;
@@ -167,9 +175,9 @@ void test_web_send_post()
 //
 int main(int argc, char* argv[])
 {
-	test_json();
+	//test_json();
 	test_web_recv_post();
-	test_web_send_post();
+	//test_web_send_post();
 
 	if( IsOsWin() ) system("pause");
 
