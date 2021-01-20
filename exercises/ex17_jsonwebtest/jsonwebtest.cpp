@@ -88,8 +88,8 @@ void test_web_recv_post()
 	tbool rc;
 
 	gp_fc1 = new funcandy_t;
-	rc = gp_fc1->InitFlow( 8009 ); 
-	printf( "gp_fc1 init, rc=%d,Port=%d\n", (int)rc, (int)8009 );
+	rc = gp_fc1->InitFlow( 9900 ); 
+	printf( "gp_fc1 init, rc=%d,Port=%d\n", (int)rc, (int)9900 );
 
 	//upload
 	class _test_upload : public funcandy_t::item_t	  
@@ -124,7 +124,7 @@ void test_web_recv_post()
 			j2.Parse(s1);
 			s1 = j2.ToFormattedString();
 			fl.bind("111.xpp");
-			fl.write_str(s1);
+			fl.write_str( s1, 1 );
 
 			return 1;
 
@@ -175,9 +175,7 @@ void test_web_send_post()
 //
 int main(int argc, char* argv[])
 {
-	//test_json();
 	test_web_recv_post();
-	//test_web_send_post();
 
 	if( IsOsWin() ) system("pause");
 
