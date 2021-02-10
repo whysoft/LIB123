@@ -177,7 +177,12 @@ int main(int argc, char* argv[])
 {
 	test_web_recv_post();
 
-	if( IsOsWin() ) system("pause");
+	//if( IsOsWin() ) system("pause");
+
+	while(1)
+	{
+		wl::WThrd::tr_sleep(3);
+	}
 
 	return 0;
 }

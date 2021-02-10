@@ -1,0 +1,25 @@
+#CC = arm-linux-gcc
+CC = gcc
+CC1 = $(CC) -c `pkg-config --cflags gtk+-2.0 gthread-2.0`
+CC3 = $(CC) -lpthread `pkg-config --cflags --libs gtk+-2.0 gthread-2.0`
+
+O_FILES = CJsonObject.o cJSON.o jsonwebtest.o 
+
+jsonwebtest: $(O_FILES)
+	$(CC) -o jsonwebtest $(O_FILES) -lpthread `pkg-config --cflags --libs gtk+-2.0 gthread-2.0` -lstdc++ -ldl
+
+CJsonObject.o :CJsonObject.cpp
+	$(CC1) CJsonObject.cpp
+
+cJSON.o :cJSON.cpp
+	$(CC1) cJSON.cpp
+
+jsonwebtest.o :jsonwebtest.cpp
+	$(CC1) jsonwebtest.cpp
+
+
+
+clean :
+	rm -fv $(O_FILES)
+
+.PHONY: clean

@@ -1,0 +1,25 @@
+#CC = arm-linux-gcc
+CC = gcc
+CC1 = $(CC) -c 
+CC3 = $(CC) -lpthread 
+
+O_FILES = CJsonObject.o cJSON.o jsonwebtest.o 
+
+jsonwebtest: $(O_FILES)
+	$(CC) -o jsonwebtest $(O_FILES) -lpthread  -lstdc++ -ldl
+
+CJsonObject.o :CJsonObject.cpp
+	$(CC1) CJsonObject.cpp
+
+cJSON.o :cJSON.cpp
+	$(CC1) cJSON.cpp
+
+jsonwebtest.o :jsonwebtest.cpp
+	$(CC1) jsonwebtest.cpp
+
+
+
+clean :
+	rm -fv $(O_FILES)
+
+.PHONY: clean
