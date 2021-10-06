@@ -16,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2021c09c12c周日-21c29c13.65  
+2021c10c06c周三-11c20c05.11  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -1085,8 +1085,10 @@ public:
 	
 	
 
-	
-	
+	static std::string & sreplstr2( std::string & str, std::string string_to_replace, std::string new_string , std::string strQuoteHalf )
+	{
+		return sreplstr( str, string_to_replace, strQuoteHalf+new_string+strQuoteHalf ) ;
+	}
 
 
 
@@ -13843,7 +13845,9 @@ public:
 	static void tr_sleep( int iSec , double dSec = 0.0 ) 
 	{
 		if( iSec > 0 )
+		{
 			Sleep( iSec * 1000 );
+		}
 
 		if( dSec > 0.0 )
 		{
@@ -13857,6 +13861,15 @@ public:
 		if( dSec > 0 )
 		{
 			tr_sleep( (int)dSec, dSec - (int)dSec );
+		}
+	}
+
+	
+	static void tr_sleepu2( double dSec ) 
+	{
+		if( dSec > 0 )
+		{
+			tr_sleep( 0, dSec );
 		}
 	}
 
@@ -26427,8 +26440,10 @@ public:
 	
 	
 
-	
-	
+	static std::string & sreplstr2( std::string & str, std::string string_to_replace, std::string new_string , std::string strQuoteHalf )
+	{
+		return sreplstr( str, string_to_replace, strQuoteHalf+new_string+strQuoteHalf ) ;
+	}
 
 
 
@@ -36457,7 +36472,9 @@ public:
 	static void tr_sleep( int iSec , double dSec = 0.0 )	
 	{
 		if( iSec > 0 )
+		{
 			sleep( iSec );
+		}
 
 		if( dSec > 0.0 )
 		{
@@ -36475,6 +36492,15 @@ public:
 	}
 
 	
+	static void tr_sleepu2( double dSec ) 
+	{
+		if( dSec > 0 )
+		{
+			tr_sleep( 0, dSec );
+		}
+	}
+
+
 	tbool tr_open()
 	{
 		m_iCreationDone = 0;
