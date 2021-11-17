@@ -16,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2020c04c11c÷‹¡˘-18c44c08.71  
+2021c11c17c÷‹»˝-16c12c33.98  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -606,8 +606,16 @@ public:
 	static tbool sisdec(const tchar *s)
 	{
 		if(s==NULL) return 0;
+		if(*s==0) return 0;
 		for(;*s;s++) if(!sisdec(*s)) return 0;
 		return 1;
+	}
+
+	
+	static tbool sisdec( const std::string &s )
+	{
+		if(s.empty()) return 0;
+		return sisdec(s.c_str());
 	}
 
 	
@@ -1077,8 +1085,10 @@ public:
 	
 	
 
-	
-	
+	static std::string & sreplstr2( std::string & str, std::string string_to_replace, std::string new_string , std::string strQuoteHalf )
+	{
+		return sreplstr( str, string_to_replace, strQuoteHalf+new_string+strQuoteHalf ) ;
+	}
 
 
 
@@ -2747,12 +2757,15 @@ public:
 		let(cakesource);
 	}
 
+	explicit
 	SCake_base( CT c ) { init(); let(&c,1); }
 
 	SCake_base( const CT *psource, tsize isize ) { init(); let(psource,isize); }
 
+	explicit
 	SCake_base( const tchar *psource ) { init(); lets(psource); } 
 
+	explicit
 	SCake_base( const std::string & s) { init(); lets(s); } 
 
 
@@ -2783,7 +2796,7 @@ public:
 	}
 
 
-	void redim( tsize iNewSize, tbool reserve=0 )
+	void redim( tsize iNewSize, tbool reserve = 0 )
 	{
 		if( iNewSize <= len() && iNewSize > len()/2 )
 		{
@@ -2798,7 +2811,7 @@ public:
 				return;
 			}
 			lbuf = new CT[iNewSize] ;
-			if(reserve) copybuf( m_pbuf, lbuf, iNewSize<m_mysize?iNewSize:m_mysize );
+			if(reserve) copybuf( m_pbuf, lbuf, (iNewSize < m_mysize) ? iNewSize : m_mysize );
 			freeall();
 			m_pbuf = lbuf;
 			m_mysize = iNewSize;
@@ -2872,7 +2885,7 @@ public:
 	}
 
 
-	void lets( const std::string & s) { lets(s.c_str()); }
+	void lets( const std::string & s ) { lets(s.c_str()); }
 
 	void lets( tint32 i)  { lets( SStrf::sltoa(i) ); }
 
@@ -3047,58 +3060,58 @@ public:
 	SCake(const std::string & s):SCake_base<tchar>( s) { }
 
 
-	SCake & bs_en()
+	SCake & bs_en( tchar(*apf1)()=SStrf::bs_esc )
 	{
 		SCake *pck = new SCake;
-		pck->redim( SStrf::bs_ensize( buf(), len() ) );
-		SStrf::bs_en( buf(), len(), pck->buf() );
+		pck->redim( SStrf::bs_ensize( buf(), len(), apf1 ) );
+		SStrf::bs_en( buf(), len(), pck->buf(), apf1 );
 		*this = *pck;
 		delete pck;
 		return *this;
 	}
 
-	SCake & bs_en( std::string & strOut )
+	SCake & bs_en( std::string & strOut , tchar(*apf1)()=SStrf::bs_esc )
 	{
 		SCake *pck = new SCake;
 		*pck = *this;
-		pck->bs_en();
+		pck->bs_en(apf1);
 		strOut = pck->buf();
 		delete pck;
 		return *this;
 	}
 
-	std::string bs_en( std::string *pstrOut )
+	std::string bs_en( std::string *pstrOut , tchar(*apf1)()=SStrf::bs_esc ) 
 	{
 		std::string strBuf;
 		if( pstrOut == NULL ) pstrOut = &strBuf;
-		bs_en( *pstrOut );
+		bs_en( *pstrOut , apf1 );
 		return ( *pstrOut );
 	}
 
 
-	SCake & bs_de() 
+	SCake & bs_de( tchar(*apf1)()=SStrf::bs_esc ) 
 	{
 		if( buf() == NULL )
 		{
 			redim(0);
 			return *this;
 		}
-		tsize iDatalen = SStrf::bs_desize( buf() );
-		SStrf::bs_de( buf() );
-		redim( iDatalen, 1 );
+		tsize iDatalen = SStrf::bs_desize( buf(), apf1 );
+		SStrf::bs_de( buf(), apf1 );
+		this->redim( iDatalen, 1 );
 		return *this;
 	}
 
-	SCake & bs_de( const std::string & str ) 
+	SCake & bs_de( const std::string & str, tchar(*apf1)()=SStrf::bs_esc ) 
 	{
 		if( str.empty() )
 		{
 			redim(0);
 			return *this;
 		}
-		redim( (tsize)str.size() + 1 );
+		this->redim( (tsize)str.size() + 1 );
 		(*SClib::p_strcpy())( buf(), str.c_str() );
-		return bs_de();
+		return this->bs_de(apf1);
 	}
 
 
@@ -3997,8 +4010,8 @@ public:
 15,(char) 16,(char) 17,(char) 18,(char) 19,(char) 20,(char) 21,(char) 22,(char) 23,(char) 24,(char) 25,(char) -1,(char) -1,(char) -1,(char) -1,(char) -1,(char)
 -1,(char) 26,(char) 27,(char) 28,(char) 29,(char) 30,(char) 31,(char) 32,(char) 33,(char) 34,(char) 35,(char) 36,(char) 37,(char) 38,(char) 39,(char) 40,(char)
 41,(char) 42,(char) 43,(char) 44,(char) 45,(char) 46,(char) 47,(char) 48,(char) 49,(char) 50,(char) 51,(char) -1,(char) -1,(char) -1,(char) -1,(char) -1
-
 		};
+
 		return (((c) < 0 || (c) > 127) ? -1 : index_64[(c)]);
 	}
 
@@ -4045,7 +4058,7 @@ public:
 			}
 		}
 
-		*out = 0;                   
+		*out = 0;      
 		*outlen = len;
 
 		return 1;
@@ -4056,7 +4069,14 @@ public:
 	{
 		unsigned long i;
 
-		rtn_ck.redim( (int)strin.size() );
+		if( strin.size() == 0 )
+		{
+			rtn_ck.redim(0);
+			return 0;
+		}
+
+		rtn_ck.redim( (int)strin.size() ); 
+
 		if( decode64( strin.c_str(), (int)strin.size(), rtn_ck.buf(), &i ) )
 		{
 			rtn_ck.redim( i, 1 );
@@ -4101,7 +4121,26 @@ public:
 			*it = decode64str( *it );
 		}
 
-		if( !v_rtn.empty() ) v_rtn.pop_back();
+		if( !v_rtn.empty() ) v_rtn.pop_back(); 
+	}
+
+
+	static tbool email_header_decode( std::string strSubj, std::string &refstrRtn )
+	{
+		if( strSubj.find("=?") == 0 && strSubj.find("B?") != std::string::npos )
+		{
+			std::string::size_type i = strSubj.find("B?");
+			refstrRtn = SStrTbl::decode64str( strSubj.c_str() + i + 2 );
+			return 1;
+		}
+		if( strSubj.find("=X") == 0 && strSubj.find("BX") != std::string::npos )
+		{
+			std::string::size_type i = strSubj.find("BX");
+			refstrRtn = SStrTbl::decode64str( strSubj.c_str() + i + 2 );
+			return 1;
+		}
+		refstrRtn = strSubj;
+		return 0;
 	}
 
 };
@@ -4147,9 +4186,7 @@ public:
 	static tbool d_is_leap_year(int y)
 	{
 		
-
 		
-
 
 		return ( y % 400 == 0 ) ||
 				( ( y % 4 == 0 ) && ( y % 100 != 0 ) );
@@ -4473,6 +4510,7 @@ public:
 		
 	}
 
+	explicit
 	SDte( std::string str_dte )
 	{
 		if(str_dte=="") this->MakeNow();
@@ -4934,10 +4972,8 @@ public:
 	}
 
 	
-	operator std::string () const
-	{
-		return ReadStringPack() ;
-	}
+	
+	
 
 	
 	bool operator != (const SDte & rhs) const { return this->ReadStringPack() != rhs.ReadStringPack(); }
@@ -5137,7 +5173,7 @@ public:
 	}
 
 	
-	operator const tchar * () const
+	operator const char * () const
 	{
 		return m_strFilename.c_str();
 	}
@@ -7358,6 +7394,9 @@ public:
 		return m_mapKnl[name];
 	}
 
+	
+	
+	
 
 	tbool del( const nameT & name )
 	{
@@ -12891,16 +12930,16 @@ public:
 		memcpy( &j, &p, sizeof(int) );
 		SStrf::sfree(p);
 
-		double dd = SStrf::rand1() * i * i2 * j * SDte::e_proctime();
+		double dd = SStrf::rand1() * i * i2 * j + SDte::e_proctime();
 		std::string s2 = SStrf::sftoa(dd);
 		std::string s3 = SStrf::sftoa(dd);
 
 		std::reverse( (char*)(&dd), (char*)(&dd) + sizeof(double) );
 		std::reverse( s2.begin(), s2.end() );
 
-		tchar szBuf[35];
+		tchar szBuf[123];
 		tchar *pp=szBuf;
-		SClib::p_sprintf()( szBuf, "%p%x", *(int*)(&dd) + j + i + SStrf::satol(s2) + SStrf::satol(s3) + (int)time(0) + i2 , 0xfff & i );
+		SClib::p_sprintf()( szBuf, "%x%x", *(int*)(&dd) + j + i + SStrf::satol(s2) + SStrf::satol(s3) + (int)time(0) + i2 , 0xfff & i );
 		i++;
 
 		if( szBuf[0] == '0' && szBuf[1] == 'x' ) pp++;
@@ -13825,7 +13864,9 @@ public:
 	static void tr_sleep( int iSec , double dSec = 0.0 ) 
 	{
 		if( iSec > 0 )
+		{
 			Sleep( iSec * 1000 );
+		}
 
 		if( dSec > 0.0 )
 		{
@@ -13839,6 +13880,15 @@ public:
 		if( dSec > 0 )
 		{
 			tr_sleep( (int)dSec, dSec - (int)dSec );
+		}
+	}
+
+	
+	static void tr_sleepu2( double dSec ) 
+	{
+		if( dSec > 0 )
+		{
+			tr_sleep( 0, dSec );
 		}
 	}
 
@@ -17228,7 +17278,7 @@ public:
 
 
 	
-	tbool FtpStor_begin( std::string strFn, WTcpCellc &cc )
+	tbool FtpStor_begin( std::string strFn, WTcpCellc &cc ) 
 	{
 		std::string str1;
 		SCake ck;
@@ -18585,8 +18635,8 @@ public:
 		return str1;
 	}
 
-	
-	virtual tbool on_before_get_t2_del( std::string strNowTitle, std::string strNowSender )
+
+	virtual tbool on_before_get_t2_del( std::string &refstrNowTitle, std::string &refstrNowSender )
 	{
 		return 0;
 	}
@@ -18642,14 +18692,16 @@ public:
 			str1 = ck.mk_str();
 
 
-			std::string strNowTitle, strNowSender;
+			std::string strNowTitle;
+			std::string strNowSender;
 			std::string *ps=NULL;
 
 			if(pvSubject) pvSubject->push_back("");
 			if(pvFrom) pvFrom->push_back("");
 
+
 			if(pvSubject) ps = &(*(pvSubject->rbegin()));
-			if(1) 
+			if(1)
 			{
 				std::string strKey = "aSUBJECT: ";
 				std::string str2 = str1;
@@ -18674,8 +18726,9 @@ public:
 				}
 			}
 
+			
 			if(pvFrom) ps = &(*(pvFrom->rbegin()));
-			if(1) 
+			if(1)
 			{
 				std::string strKey = "aFROM: ";
 				std::string str2 = str1;
@@ -18713,8 +18766,13 @@ public:
 			}
 
 			tbool biWithDel = 1;
+			std::string *prefstrNowTitle;
+			std::string *prefstrNowSender;
 
-			biWithDel = on_before_get_t2_del( strNowTitle, strNowSender );
+			if(pvSubject) prefstrNowTitle = &(*(pvSubject->rbegin())); else prefstrNowTitle = &strNowTitle;
+			if(pvFrom) prefstrNowSender = &(*(pvFrom->rbegin())); else prefstrNowSender = &strNowSender;
+
+			biWithDel = on_before_get_t2_del( *prefstrNowTitle, *prefstrNowSender );
 
 			if( biWithDel )
 			{
@@ -18734,7 +18792,14 @@ public:
 	}
 
 
-	tbool send_t1( std::string strEHLO, std::string strUser, std::string strPass, std::string strFromEmailAddr, std::string strToEmailAddr, std::string strSubj, std::string strBody )
+	
+	tbool send_t1(  std::string strEHLO ,
+					std::string strUser ,
+					std::string strPass ,
+					std::string strFromEmailAddr ,
+					std::string strToEmailAddr ,
+					std::string strSubj ,		
+					std::string strBody   )
 	{
 		SCake ck;
 		tbool rc;
@@ -18783,11 +18848,123 @@ public:
 		str1 = read_welcome_msg();
 		if( SStrf::satol(str1) != 354 ) return 0;
 
-		rc = m_pCellc->send_str(__FUNCTION__);
+		if( strSubj == "" || strSubj == "*" )
+		{
+			std::string::size_type i;
+
+			i = strBody.find("\r");
+			if( i == std::string::npos ) SStrf::sreplstr( strBody, "\n", "\r\n" );
+			rc = m_pCellc->send_str( strBody );
+		}
+		else
+		{
+			rc = m_pCellc->send_str( "function: " + std::string(__FUNCTION__) );
+			rc = m_pCellc->send_str( "\r\n" );
+
+			rc = m_pCellc->send_str( "line: " + SStrf::sltoa(__LINE__) );
+			rc = m_pCellc->send_str( "\r\n" );
+
+			rc = m_pCellc->send_str( "Subject: " + strSubj + "\r\n" );
+
+			rc = m_pCellc->send_str( "\r\n" );
+			rc = m_pCellc->send_str( strBody );
+		}
+
+		rc = m_pCellc->send_str( "\r\n.\r\n" );
+
+		
+		
+		
+		str1 = read_welcome_msg();
+		if( SStrf::satol(str1) != 250 ) return 0;
+
+		rc = m_pCellc->send_str( "quit\r\n" );
+		str1 = read_welcome_msg();
+		
+
+		return 1;
+	}
+
+
+	
+	tbool send_t2(  std::string strEHLO ,
+					std::string strUser ,
+					std::string strPass ,
+					std::string strFromEmailAddr ,
+					std::string strToEmailAddr ,
+					std::string strSubj ,
+					std::string strBody ,
+					const char *pszFromShowName = NULL
+					)
+	{
+		SCake ck;
+		tbool rc;
+		std::string str1;
+
+		
+		str1 = read_welcome_msg();
+		if( SStrf::satol(str1) != 220 ) return 0;
+
+		
+		
+		
+		
+		
+		rc = m_pCellc->send_str( "ehlo " + strEHLO + "\r\n" );
+		str1 = read_welcome_msg();
+		if( SStrf::satol(str1) != 250 ) return 0;
+
+		
+		rc = m_pCellc->send_str( "auth login\r\n" );
+		str1 = read_welcome_msg();
+		if( SStrf::satol(str1) != 334 ) return 0;
+
+		
+		rc = m_pCellc->send_str( SStrTbl::encodebase64str(strUser) + "\r\n" );
+		str1 = read_welcome_msg();
+		if( SStrf::satol(str1) != 334 ) return 0;
+
+		
+		rc = m_pCellc->send_str( SStrTbl::encodebase64str(strPass) + "\r\n" );
+		str1 = read_welcome_msg();
+		if( SStrf::satol(str1) != 235 ) return 0;
+
+		
+		rc = m_pCellc->send_str( "mail from: <" +  strFromEmailAddr + ">\r\n" );
+		str1 = read_welcome_msg();
+		if( SStrf::satol(str1) != 250 ) return 0;
+
+		
+		rc = m_pCellc->send_str( "rcpt to: <" +  strToEmailAddr + ">\r\n" );
+		str1 = read_welcome_msg();
+		if( SStrf::satol(str1) != 250 ) return 0;
+
+		
+		rc = m_pCellc->send_str( "data\r\n" );
+		str1 = read_welcome_msg();
+		if( SStrf::satol(str1) != 354 ) return 0;
+
+		rc = m_pCellc->send_str( "function: " + std::string(__FUNCTION__) );
 		rc = m_pCellc->send_str( "\r\n" );
-		rc = m_pCellc->send_str(SStrf::sltoa(__LINE__));
+
+		rc = m_pCellc->send_str( "line: " + SStrf::sltoa(__LINE__) );
 		rc = m_pCellc->send_str( "\r\n" );
+
+		if( pszFromShowName && *pszFromShowName )
+		{
+			rc = m_pCellc->send_str( "From: " );
+			rc = m_pCellc->send_str( pszFromShowName );
+			rc = m_pCellc->send_str( "\r\n" );
+		}
+
+		rc = m_pCellc->send_str( "To: " + strToEmailAddr );
+		rc = m_pCellc->send_str( "\r\n" );
+
 		rc = m_pCellc->send_str( "Subject: " + strSubj + "\r\n" );
+
+		rc = m_pCellc->send_str( "Content-type: text/html;charset=gb2312" );
+		rc = m_pCellc->send_str( "\r\n" );
+
 
 		rc = m_pCellc->send_str( "\r\n" );
 		rc = m_pCellc->send_str( strBody );
@@ -18797,7 +18974,7 @@ public:
 		
 		
 		str1 = read_welcome_msg();
-		if( SStrf::satol(str1) != 250 ) return 0;
+		
 
 		rc = m_pCellc->send_str( "quit\r\n" );
 		str1 = read_welcome_msg();
@@ -18869,7 +19046,7 @@ public:
 	static tuint8 comesc_add ( tuint8 a, tuint8 b ) { return a + b; };
 
 
-	static SCake & comesc_en( SCake & ckDataInOut, tuint8 a1, tuint8 a2, tuint8 a3 , PfChkSum_t pf = comesc_add, SCake * pdata2 = NULL ) 
+	static SCake & comesc_en( SCake & ckDataInOut, tuint8 a1, tint32 a2, tuint8 a3 , PfChkSum_t pf = comesc_add, SCake * pdata2 = NULL ) 
 	{
 		
 
@@ -18884,20 +19061,20 @@ public:
 		for( tsize i2 = 0; pdata2 && i2 < pdata2->len(); i2++ )
 		{
 			c = *(tuint8*)(pdata2->buf()+i2);
-			if( c == a1 || c == a2 || c == a3 ) v1.push_back(a2);
+			if( c == a1 || c == a2 || c == a3 ) if(a2>0) v1.push_back((tuint8)a2);
 			v1.push_back( c );
 		}
 
 
 		c = static_cast<tuint8>( ckDataInOut.len() );
-		if( c == a1 || c == a2 || c == a3 ) v1.push_back(a2);
+		if( c == a1 || c == a2 || c == a3 ) if(a2>0) v1.push_back((tuint8)a2);
 		v1.push_back( c );
 
 
 		for( tsize i = 0; i < ckDataInOut.len(); i++ )
 		{
 			c = *(tuint8*)(ckDataInOut.buf()+i);
-			if( c == a1 || c == a2 || c == a3 ) v1.push_back(a2);
+			if( c == a1 || c == a2 || c == a3 ) if(a2>0) v1.push_back((tuint8)a2);
 			v1.push_back(c);
 		}
 
@@ -18915,7 +19092,7 @@ public:
 		 
 		c = (*pf)( ucChkSum, static_cast<tuint8>( ckDataInOut.len() ) );
 		
-		if( c == a1 || c == a2 || c == a3 ) v1.push_back(a2);
+		if( c == a1 || c == a2 || c == a3 ) if(a2>0) v1.push_back((tuint8)a2);
 		v1.push_back(c);
 
 
@@ -18930,14 +19107,14 @@ public:
 
 
 	
-	static SCake & comesc_en( SCake ckDataIn, SCake & ckDataOut, tuint8 a1, tuint8 a2, tuint8 a3 , PfChkSum_t pf = comesc_add, SCake * pdata2 = NULL ) 
+	static SCake & comesc_en( SCake ckDataIn, SCake & ckDataOut, tuint8 a1, tint32 a2, tuint8 a3 , PfChkSum_t pf = comesc_add, SCake * pdata2 = NULL ) 
 	{
 		return ckDataOut = comesc_en( ckDataIn, a1, a2, a3 , pf, pdata2 );
 	}
 
 
 	
-	static int comesc_de( SCake & ckDataInOut, tuint8 a1, tuint8 a2, tuint8 a3 , PfChkSum_t pf = NULL , SCake * pdata2 = NULL ) 
+	static int comesc_de( SCake & ckDataInOut, tuint8 a1, tint32 a2, tuint8 a3 , PfChkSum_t pf = NULL , SCake * pdata2 = NULL )
 	{
 		if( ckDataInOut.len() != 0 )
 		{
@@ -19067,7 +19244,7 @@ public:
 
 
 	
-	static int comesc_de(  SCake ckDataIn, SCake & ckDataOut, tuint8 a1, tuint8 a2, tuint8 a3 , PfChkSum_t pf = NULL , SCake * pdata2 = NULL )
+	static int comesc_de(  SCake ckDataIn, SCake & ckDataOut, tuint8 a1, tint32 a2, tuint8 a3 , PfChkSum_t pf = NULL , SCake * pdata2 = NULL )
 	{
 		int i = comesc_de( ckDataIn, a1, a2, a3 , pf, pdata2 );
 		ckDataOut = ckDataIn;
@@ -19320,8 +19497,47 @@ L_RECV_ESC:
 L_RECV_ESC:
 		ckData.redim(i+1);
 		m_ckDataL2CacheBuf.dump( ckData );
-		
+
 		return ckData.len()+m_ckDataL2CacheBuf.len()==0?0:1;
+	}
+
+
+	tbool recv_comesc2( SCake & ckData , tuint8 a1, tint32 a2, tuint8 a3 , tbool is_shd_de = 0 )
+	{
+		SCake ck;
+		unsigned int iLen;
+		unsigned char *p;
+
+		ckData.redim(0);
+
+		
+		if( !this->recv_len( ck, 1 ) ) return 0;
+		if( ck.len() == 0 ) return 0;
+		p = (unsigned char *)ck.buf();
+		if( (int)(*p) != a1 ) return 0;
+		ckData.append(ck);
+
+		
+		if( !this->recv_len( ck, 1 ) ) return 0;
+		if( ck.len() == 0 ) return 0;
+		p = (unsigned char *)ck.buf();
+		if( (int)(*p) == 0 ) return 0;
+		iLen = *p;
+		ckData.append(ck);
+
+		
+		if( !this->recv_len( ck, iLen ) ) return 0;
+		if( ck.len() == 0 ) return 0;
+		ckData.append(ck);
+
+		
+		if( !this->recv_len( ck, 2 ) ) return 0;
+		if( ck.len() != 2 ) return 0;
+		ckData.append(ck);
+
+		if( is_shd_de ) this->comesc_de( ckData, a1, a2, a3 );
+
+		return 1;
 	}
 
 
@@ -21531,6 +21747,8 @@ class WKeyinput2
 public:
 	typedef  KEYQUE_ITEM_T  KEYQUE_ITEM_t;
 
+	bool				m_is_timeout_enabled;	
+
 private:
 	volatile double m_timeout_fSec;
 	std::string		m_strConnAddress;
@@ -21540,9 +21758,11 @@ private:
 	bool			m_isConnOk;
 	WCrsc							m_KeyQueLck;
 	std::list< KEYQUE_ITEM_T >		m_KeyQue;
-	bool			m_isGot; 
-	WCrsc							m_GetKeyFuncLck;
-	WCrsc							m_PutKeyFuncLck;
+
+	bool				m_isGot;				
+
+	WCrsc				m_GetKeyFuncLck;
+	WCrsc				m_PutKeyFuncLck;
 
 
 private:
@@ -21594,7 +21814,7 @@ private:
 			}
 			else
 			{
-				if( m_pFather )
+				if( m_pFather && m_pFather->m_is_timeout_enabled )
 				{
 					m_pFather->PutNop();
 				}
@@ -21618,6 +21838,8 @@ public:
 
 	WKeyinput2()
 	{
+		m_is_timeout_enabled = true;
+
 		m_timeout_fSec = 0.93;
 		m_isConnOk = false;
 		m_ConnTimeoutMan.m_pFather = this;
@@ -21697,7 +21919,9 @@ public:
 	void PutNop()
 	{
 		if( this->m_isConnOk )
+		{
 			this->m_ts.send_str( "n" );
+		}
 	}
 
 
@@ -21795,6 +22019,75 @@ public:
 	{
 		WCrsc aLock( &m_KeyQueLck );
 		m_KeyQue.clear();
+	}
+
+};
+
+
+
+
+class WKeyinput3
+{
+public:
+
+private:
+	WTcpListener	m_lsn;
+	WTcpCells		m_ts;
+	WTcpCellc		m_tc;
+
+public:
+
+	WKeyinput3()
+	{
+
+	}
+
+	virtual ~WKeyinput3()
+	{
+		m_tc.DisConn();
+		m_ts.DisConn();
+
+	}
+
+public:
+	
+	tbool KeyInit( tuint16 iBeginPort = 53300 , tuint16 *pPortOut = NULL ) 
+	{
+		tuint16 iPortOut;
+		std::string strAddr;
+
+		for( iPortOut = iBeginPort; iPortOut <= 65531; iPortOut++ )
+		{
+			strAddr = "127.0.0.1:" + SStrf::sltoa( iPortOut );
+
+			if( m_lsn.Listen( strAddr ) )
+			{
+				m_tc.Conn( strAddr );
+				m_ts.Conn( m_lsn );
+				m_lsn.StopListen();
+				if( pPortOut ) *pPortOut = iPortOut;
+
+				return 1;
+			}
+		}
+
+		return 0;
+	}
+
+
+	void other_release()
+	{
+		this->m_ts.send_str( "a" );
+	}
+
+
+	tbool me_lock()
+	{
+		SCake ckTmp;
+
+		m_tc.recv_len( ckTmp, 1 );
+
+		return ( ckTmp.len() >= 1 ) ? 1 : 0;
 	}
 
 };
@@ -32564,10 +32857,13 @@ public:
 	public:
 		actwebele_t()
 		{
+			m_pFather = NULL;
 		}
 
 		virtual ~actwebele_t()
 		{
+			WCrsc aLoc_myLck (&(m_pFather->m_lck_ele_count));
+			m_pFather->m_i_ele_count --;
 		}
 
 	public:
@@ -32658,7 +32954,21 @@ public:
 		virtual tbool OnMgrPrepare( actwebele_t & t )
 		{
 			t.m_pFather = this->m_pFather;
+
+			if(1)
+			{
+				WCrsc aLoc_myLck (&(m_pFather->m_lck_ele_count));
+				m_pFather->m_i_ele_count ++;
+				if( m_pFather->m_i_ele_count < 0 ) m_pFather->m_i_ele_count = 0;
+			}
+
+			while( m_pFather->m_i_ele_count > 123 )
+			{
+				WThrd::tr_sleep( 1 );
+			}
+
 			if( !t.m_tSvr.Conn( m_Lsn ) ) return 0;
+
 			t.m_pFolder = &m_aFolder;
 			return 1;
 		}
@@ -32666,13 +32976,20 @@ public:
 
 
 private:
+	WCrsc	m_lck_ele_count;
+	volatile int m_i_ele_count;
+
 	WCrsc	m_lckItems;
 	std::vector< item_t * > m_vItemsHigh; 
 	std::vector< item_t * > m_vItems;
 
+	friend class actwebele_t;
+
 public:
 	funcandy_t()
 	{
+		WCrsc aLoc_myLck (&(m_lck_ele_count));
+		m_i_ele_count = 0;
 	}
 
 	virtual ~funcandy_t()
@@ -32722,13 +33039,16 @@ public:
 	tbool InitFlow( tuint16 iPort )
 	{
 		actwebmgr_t *p = new actwebmgr_t;
+
 		p->m_aFolder.m_iPurgeConfSec = 86400;
 		p->m_pFather = this;
+
 		if( p->m_Lsn.Listen((u_short)iPort) )
 		{
 			p->tr_openx();
 			return 1;
 		}
+
 		delete p;
 		return 0;
 	}
@@ -32834,18 +33154,32 @@ public:
 						SCake		*pckBody = NULL ,
 						std::string *pstrRtn1 = NULL ,
 						SCake		*pckRtn2 = NULL ,
-						std::string strCommuCR = "\r\n"
+						std::string strCommuCR = "\r\n"	,
+						int iKillerSec = 0 ,
+						int iTryTimes = 2
 					)
 	{
 		WTcpCellc cc;
 		std::string s1;
 		tbool rc;
+		tbool rc_killer(0);
+
+		if( iKillerSec > 0 && iKillerSec <= 66 ) rc_killer = 1;
 
 		
-		for( int j = 0; j < 3; j++ )
+		for( int j = 0; j < iTryTimes; j++ )
 		{
+			if(rc_killer)
+			{
+				cc.killer_up( iKillerSec );
+			}
+
 			rc = cc.Conn( strAddr );
 			if( rc ) break;
+			else
+			{
+				if(rc_killer) cc.killer_dn();
+			}
 		}
 		if( !rc )
 		{
@@ -32894,7 +33228,8 @@ public:
 			{
 				
 				
-				strOut += "Content-Type: " + strTxtType + "; charset=gb2312" + strCommuCR;
+				
+				strOut += "Content-Type: " + strTxtType + ";" + strCommuCR;
 			}
 
 			if( pckBody && pckBody->len() )
@@ -32934,12 +33269,35 @@ public:
 		ck.mk_str(strHttpHead);
 
 		h.ImportSvrRtnHeadPara( strHttpHead );
+		
+		if( !pckRtn2 ) 
+		{
+			if(rc_killer) cc.killer_dn();
+			return 1;
+		}
+
 		long i = SStrf::satol( h.GetSvrRtnHeadParaVal( "Content-Length" ) );
 
-		if( i > 0 && pckRtn2 )
+		
+		if( i == 0 )
+		{
+			std::string s = h.GetSvrRtnHeadParaVal( "Connection" );
+			if( SStrf::slcase(s) == "close" )
+			{
+				cc.recv_all_f( *pckRtn2 );
+			}
+
+			if(rc_killer) cc.killer_dn();
+			return 1;
+		}
+
+		if( i > 0 )
 		{
 			cc.recv_len( *pckRtn2, i );
 		}
+
+
+		if(rc_killer) cc.killer_dn();
 
 		return 1;
 	}
@@ -33582,8 +33940,16 @@ public:
 	static tbool sisdec(const tchar *s)
 	{
 		if(s==NULL) return 0;
+		if(*s==0) return 0;
 		for(;*s;s++) if(!sisdec(*s)) return 0;
 		return 1;
+	}
+
+	
+	static tbool sisdec( const std::string &s )
+	{
+		if(s.empty()) return 0;
+		return sisdec(s.c_str());
 	}
 
 	
@@ -34053,8 +34419,10 @@ public:
 	
 	
 
-	
-	
+	static std::string & sreplstr2( std::string & str, std::string string_to_replace, std::string new_string , std::string strQuoteHalf )
+	{
+		return sreplstr( str, string_to_replace, strQuoteHalf+new_string+strQuoteHalf ) ;
+	}
 
 
 
@@ -35723,12 +36091,15 @@ public:
 		let(cakesource);
 	}
 
+	explicit
 	SCake_base( CT c ) { init(); let(&c,1); }
 
 	SCake_base( const CT *psource, tsize isize ) { init(); let(psource,isize); }
 
+	explicit
 	SCake_base( const tchar *psource ) { init(); lets(psource); } 
 
+	explicit
 	SCake_base( const std::string & s) { init(); lets(s); } 
 
 
@@ -35759,7 +36130,7 @@ public:
 	}
 
 
-	void redim( tsize iNewSize, tbool reserve=0 )
+	void redim( tsize iNewSize, tbool reserve = 0 )
 	{
 		if( iNewSize <= len() && iNewSize > len()/2 )
 		{
@@ -35774,7 +36145,7 @@ public:
 				return;
 			}
 			lbuf = new CT[iNewSize] ;
-			if(reserve) copybuf( m_pbuf, lbuf, iNewSize<m_mysize?iNewSize:m_mysize );
+			if(reserve) copybuf( m_pbuf, lbuf, (iNewSize < m_mysize) ? iNewSize : m_mysize );
 			freeall();
 			m_pbuf = lbuf;
 			m_mysize = iNewSize;
@@ -35848,7 +36219,7 @@ public:
 	}
 
 
-	void lets( const std::string & s) { lets(s.c_str()); }
+	void lets( const std::string & s ) { lets(s.c_str()); }
 
 	void lets( tint32 i)  { lets( SStrf::sltoa(i) ); }
 
@@ -36023,58 +36394,58 @@ public:
 	SCake(const std::string & s):SCake_base<tchar>( s) { }
 
 
-	SCake & bs_en()
+	SCake & bs_en( tchar(*apf1)()=SStrf::bs_esc )
 	{
 		SCake *pck = new SCake;
-		pck->redim( SStrf::bs_ensize( buf(), len() ) );
-		SStrf::bs_en( buf(), len(), pck->buf() );
+		pck->redim( SStrf::bs_ensize( buf(), len(), apf1 ) );
+		SStrf::bs_en( buf(), len(), pck->buf(), apf1 );
 		*this = *pck;
 		delete pck;
 		return *this;
 	}
 
-	SCake & bs_en( std::string & strOut )
+	SCake & bs_en( std::string & strOut , tchar(*apf1)()=SStrf::bs_esc )
 	{
 		SCake *pck = new SCake;
 		*pck = *this;
-		pck->bs_en();
+		pck->bs_en(apf1);
 		strOut = pck->buf();
 		delete pck;
 		return *this;
 	}
 
-	std::string bs_en( std::string *pstrOut )
+	std::string bs_en( std::string *pstrOut , tchar(*apf1)()=SStrf::bs_esc ) 
 	{
 		std::string strBuf;
 		if( pstrOut == NULL ) pstrOut = &strBuf;
-		bs_en( *pstrOut );
+		bs_en( *pstrOut , apf1 );
 		return ( *pstrOut );
 	}
 
 
-	SCake & bs_de() 
+	SCake & bs_de( tchar(*apf1)()=SStrf::bs_esc ) 
 	{
 		if( buf() == NULL )
 		{
 			redim(0);
 			return *this;
 		}
-		tsize iDatalen = SStrf::bs_desize( buf() );
-		SStrf::bs_de( buf() );
-		redim( iDatalen, 1 );
+		tsize iDatalen = SStrf::bs_desize( buf(), apf1 );
+		SStrf::bs_de( buf(), apf1 );
+		this->redim( iDatalen, 1 );
 		return *this;
 	}
 
-	SCake & bs_de( const std::string & str ) 
+	SCake & bs_de( const std::string & str, tchar(*apf1)()=SStrf::bs_esc ) 
 	{
 		if( str.empty() )
 		{
 			redim(0);
 			return *this;
 		}
-		redim( (tsize)str.size() + 1 );
+		this->redim( (tsize)str.size() + 1 );
 		(*SClib::p_strcpy())( buf(), str.c_str() );
-		return bs_de();
+		return this->bs_de(apf1);
 	}
 
 
@@ -36973,8 +37344,8 @@ public:
 15,(char) 16,(char) 17,(char) 18,(char) 19,(char) 20,(char) 21,(char) 22,(char) 23,(char) 24,(char) 25,(char) -1,(char) -1,(char) -1,(char) -1,(char) -1,(char)
 -1,(char) 26,(char) 27,(char) 28,(char) 29,(char) 30,(char) 31,(char) 32,(char) 33,(char) 34,(char) 35,(char) 36,(char) 37,(char) 38,(char) 39,(char) 40,(char)
 41,(char) 42,(char) 43,(char) 44,(char) 45,(char) 46,(char) 47,(char) 48,(char) 49,(char) 50,(char) 51,(char) -1,(char) -1,(char) -1,(char) -1,(char) -1
-
 		};
+
 		return (((c) < 0 || (c) > 127) ? -1 : index_64[(c)]);
 	}
 
@@ -37021,7 +37392,7 @@ public:
 			}
 		}
 
-		*out = 0;                   
+		*out = 0;      
 		*outlen = len;
 
 		return 1;
@@ -37032,7 +37403,14 @@ public:
 	{
 		unsigned long i;
 
-		rtn_ck.redim( (int)strin.size() );
+		if( strin.size() == 0 )
+		{
+			rtn_ck.redim(0);
+			return 0;
+		}
+
+		rtn_ck.redim( (int)strin.size() ); 
+
 		if( decode64( strin.c_str(), (int)strin.size(), rtn_ck.buf(), &i ) )
 		{
 			rtn_ck.redim( i, 1 );
@@ -37077,7 +37455,26 @@ public:
 			*it = decode64str( *it );
 		}
 
-		if( !v_rtn.empty() ) v_rtn.pop_back();
+		if( !v_rtn.empty() ) v_rtn.pop_back(); 
+	}
+
+
+	static tbool email_header_decode( std::string strSubj, std::string &refstrRtn )
+	{
+		if( strSubj.find("=?") == 0 && strSubj.find("B?") != std::string::npos )
+		{
+			std::string::size_type i = strSubj.find("B?");
+			refstrRtn = SStrTbl::decode64str( strSubj.c_str() + i + 2 );
+			return 1;
+		}
+		if( strSubj.find("=X") == 0 && strSubj.find("BX") != std::string::npos )
+		{
+			std::string::size_type i = strSubj.find("BX");
+			refstrRtn = SStrTbl::decode64str( strSubj.c_str() + i + 2 );
+			return 1;
+		}
+		refstrRtn = strSubj;
+		return 0;
 	}
 
 };
@@ -37447,6 +37844,7 @@ public:
 		
 	}
 
+	explicit
 	SDte( std::string str_dte )
 	{
 		if(str_dte=="") this->MakeNow();
@@ -38093,7 +38491,7 @@ public:
 	}
 
 	
-	operator const tchar * () const
+	operator const char * () const
 	{
 		return m_strFilename.c_str();
 	}
@@ -40316,6 +40714,9 @@ public:
 		return m_mapKnl[name];
 	}
 
+	
+	
+	
 
 	tbool del( const nameT & name )
 	{
@@ -43564,17 +43965,32 @@ public:
 
 	
 
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
 	static void lf_conv_code( std::string & s , const char *tocode, const char *fromcode )
 	{
 		iconv_t cd = iconv_open( tocode, fromcode );
-		unsigned int inlen  = strlen(s.c_str());
-		char *outbuf = (char *)malloc( inlen * 4 );
-		memset( outbuf, (int)0, inlen * 4);
-		char *in2 = (char*)s.c_str();
+		size_t inlen  = strlen(s.c_str());
+		int iMAX = (int)( inlen * 5 + 9 );
+		char *outbuf = (char *)malloc(iMAX);
+		memset( outbuf, (int)0, iMAX);
+		std::string s2 = s;
+		s2.reserve(iMAX*2);
+		char *in2 = (char*)&(s2[0]);
 		char *out2 = outbuf;
-		size_t outlen = inlen *4;
+		size_t outlen = iMAX-1;
 		iconv(cd, &in2, (size_t *)&inlen, &out2, &outlen);
-		outlen = strlen(outbuf);
+		
 		
 		s = outbuf;
 		free(outbuf);
@@ -43585,6 +44001,7 @@ public:
 	static std::string & ChtoUtf8( std::string & s ) 
 	{
 		lf_conv_code( s, "UTF-8", "GBK" );
+		
 		return s;
 	}
 
@@ -43622,16 +44039,16 @@ public:
 		memcpy( &j, &p, sizeof(int) );
 		SStrf::sfree(p);
 
-		double dd = SStrf::rand1() * i * i2 * j * SDte::e_proctime();
+		double dd = SStrf::rand1() * i * i2 * j + SDte::e_proctime();
 		std::string s2 = SStrf::sftoa(dd);
 		std::string s3 = SStrf::sftoa(dd);
 
 		std::reverse( (char*)(&dd), (char*)(&dd) + sizeof(double) );
 		std::reverse( s2.begin(), s2.end() );
 
-		tchar szBuf[33];
+		tchar szBuf[123];
 		tchar *pp=szBuf;
-		SClib::p_sprintf()( szBuf, "%p%x", *(int*)(&dd) + j + i + SStrf::satol(s2) + SStrf::satol(s3) + (int)time(0) + i2 , 0xfff & i );
+		SClib::p_sprintf()( szBuf, "%x%x", *(int*)(&dd) + j + i + SStrf::satol(s2) + SStrf::satol(s3) + (int)time(0) + i2 , 0xfff & i );
 		i++;
 
 		if( szBuf[0] == '0' && szBuf[1] == 'x' ) pp++;
@@ -44053,7 +44470,9 @@ public:
 	static void tr_sleep( int iSec , double dSec = 0.0 )	
 	{
 		if( iSec > 0 )
+		{
 			sleep( iSec );
+		}
 
 		if( dSec > 0.0 )
 		{
@@ -44071,6 +44490,15 @@ public:
 	}
 
 	
+	static void tr_sleepu2( double dSec ) 
+	{
+		if( dSec > 0 )
+		{
+			tr_sleep( 0, dSec );
+		}
+	}
+
+
 	tbool tr_open()
 	{
 		m_iCreationDone = 0;
@@ -48826,8 +49254,8 @@ public:
 		return str1;
 	}
 
-	
-	virtual tbool on_before_get_t2_del( std::string strNowTitle, std::string strNowSender )
+
+	virtual tbool on_before_get_t2_del( std::string &refstrNowTitle, std::string &refstrNowSender )
 	{
 		return 0;
 	}
@@ -48883,14 +49311,16 @@ public:
 			str1 = ck.mk_str();
 
 
-			std::string strNowTitle, strNowSender;
+			std::string strNowTitle;
+			std::string strNowSender;
 			std::string *ps=NULL;
 
 			if(pvSubject) pvSubject->push_back("");
 			if(pvFrom) pvFrom->push_back("");
 
+
 			if(pvSubject) ps = &(*(pvSubject->rbegin()));
-			if(1) 
+			if(1)
 			{
 				std::string strKey = "aSUBJECT: ";
 				std::string str2 = str1;
@@ -48915,8 +49345,9 @@ public:
 				}
 			}
 
+			
 			if(pvFrom) ps = &(*(pvFrom->rbegin()));
-			if(1) 
+			if(1)
 			{
 				std::string strKey = "aFROM: ";
 				std::string str2 = str1;
@@ -48954,8 +49385,13 @@ public:
 			}
 
 			tbool biWithDel = 1;
+			std::string *prefstrNowTitle;
+			std::string *prefstrNowSender;
 
-			biWithDel = on_before_get_t2_del( strNowTitle, strNowSender );
+			if(pvSubject) prefstrNowTitle = &(*(pvSubject->rbegin())); else prefstrNowTitle = &strNowTitle;
+			if(pvFrom) prefstrNowSender = &(*(pvFrom->rbegin())); else prefstrNowSender = &strNowSender;
+
+			biWithDel = on_before_get_t2_del( *prefstrNowTitle, *prefstrNowSender );
 
 			if( biWithDel )
 			{
@@ -48975,7 +49411,14 @@ public:
 	}
 
 
-	tbool send_t1( std::string strEHLO, std::string strUser, std::string strPass, std::string strFromEmailAddr, std::string strToEmailAddr, std::string strSubj, std::string strBody )
+	
+	tbool send_t1(  std::string strEHLO ,
+					std::string strUser ,
+					std::string strPass ,
+					std::string strFromEmailAddr ,
+					std::string strToEmailAddr ,
+					std::string strSubj ,		
+					std::string strBody   )
 	{
 		SCake ck;
 		tbool rc;
@@ -49024,11 +49467,123 @@ public:
 		str1 = read_welcome_msg();
 		if( SStrf::satol(str1) != 354 ) return 0;
 
-		rc = m_pCellc->send_str(__FUNCTION__);
+		if( strSubj == "" || strSubj == "*" )
+		{
+			std::string::size_type i;
+
+			i = strBody.find("\r");
+			if( i == std::string::npos ) SStrf::sreplstr( strBody, "\n", "\r\n" );
+			rc = m_pCellc->send_str( strBody );
+		}
+		else
+		{
+			rc = m_pCellc->send_str( "function: " + std::string(__FUNCTION__) );
+			rc = m_pCellc->send_str( "\r\n" );
+
+			rc = m_pCellc->send_str( "line: " + SStrf::sltoa(__LINE__) );
+			rc = m_pCellc->send_str( "\r\n" );
+
+			rc = m_pCellc->send_str( "Subject: " + strSubj + "\r\n" );
+
+			rc = m_pCellc->send_str( "\r\n" );
+			rc = m_pCellc->send_str( strBody );
+		}
+
+		rc = m_pCellc->send_str( "\r\n.\r\n" );
+
+		
+		
+		
+		str1 = read_welcome_msg();
+		if( SStrf::satol(str1) != 250 ) return 0;
+
+		rc = m_pCellc->send_str( "quit\r\n" );
+		str1 = read_welcome_msg();
+		
+
+		return 1;
+	}
+
+
+	
+	tbool send_t2(  std::string strEHLO ,
+					std::string strUser ,
+					std::string strPass ,
+					std::string strFromEmailAddr ,
+					std::string strToEmailAddr ,
+					std::string strSubj ,
+					std::string strBody ,
+					const char *pszFromShowName = NULL
+					)
+	{
+		SCake ck;
+		tbool rc;
+		std::string str1;
+
+		
+		str1 = read_welcome_msg();
+		if( SStrf::satol(str1) != 220 ) return 0;
+
+		
+		
+		
+		
+		
+		rc = m_pCellc->send_str( "ehlo " + strEHLO + "\r\n" );
+		str1 = read_welcome_msg();
+		if( SStrf::satol(str1) != 250 ) return 0;
+
+		
+		rc = m_pCellc->send_str( "auth login\r\n" );
+		str1 = read_welcome_msg();
+		if( SStrf::satol(str1) != 334 ) return 0;
+
+		
+		rc = m_pCellc->send_str( SStrTbl::encodebase64str(strUser) + "\r\n" );
+		str1 = read_welcome_msg();
+		if( SStrf::satol(str1) != 334 ) return 0;
+
+		
+		rc = m_pCellc->send_str( SStrTbl::encodebase64str(strPass) + "\r\n" );
+		str1 = read_welcome_msg();
+		if( SStrf::satol(str1) != 235 ) return 0;
+
+		
+		rc = m_pCellc->send_str( "mail from: <" +  strFromEmailAddr + ">\r\n" );
+		str1 = read_welcome_msg();
+		if( SStrf::satol(str1) != 250 ) return 0;
+
+		
+		rc = m_pCellc->send_str( "rcpt to: <" +  strToEmailAddr + ">\r\n" );
+		str1 = read_welcome_msg();
+		if( SStrf::satol(str1) != 250 ) return 0;
+
+		
+		rc = m_pCellc->send_str( "data\r\n" );
+		str1 = read_welcome_msg();
+		if( SStrf::satol(str1) != 354 ) return 0;
+
+		rc = m_pCellc->send_str( "function: " + std::string(__FUNCTION__) );
 		rc = m_pCellc->send_str( "\r\n" );
-		rc = m_pCellc->send_str(SStrf::sltoa(__LINE__));
+
+		rc = m_pCellc->send_str( "line: " + SStrf::sltoa(__LINE__) );
 		rc = m_pCellc->send_str( "\r\n" );
+
+		if( pszFromShowName && *pszFromShowName )
+		{
+			rc = m_pCellc->send_str( "From: " );
+			rc = m_pCellc->send_str( pszFromShowName );
+			rc = m_pCellc->send_str( "\r\n" );
+		}
+
+		rc = m_pCellc->send_str( "To: " + strToEmailAddr );
+		rc = m_pCellc->send_str( "\r\n" );
+
 		rc = m_pCellc->send_str( "Subject: " + strSubj + "\r\n" );
+
+		rc = m_pCellc->send_str( "Content-type: text/html;charset=gb2312" );
+		rc = m_pCellc->send_str( "\r\n" );
+
 
 		rc = m_pCellc->send_str( "\r\n" );
 		rc = m_pCellc->send_str( strBody );
@@ -49038,7 +49593,7 @@ public:
 		
 		
 		str1 = read_welcome_msg();
-		if( SStrf::satol(str1) != 250 ) return 0;
+		
 
 		rc = m_pCellc->send_str( "quit\r\n" );
 		str1 = read_welcome_msg();
@@ -49110,7 +49665,7 @@ public:
 	static tuint8 comesc_add ( tuint8 a, tuint8 b ) { return a + b; };
 
 
-	static SCake & comesc_en( SCake & ckDataInOut, tuint8 a1, tuint8 a2, tuint8 a3 , PfChkSum_t pf = comesc_add, SCake * pdata2 = NULL ) 
+	static SCake & comesc_en( SCake & ckDataInOut, tuint8 a1, tint32 a2, tuint8 a3 , PfChkSum_t pf = comesc_add, SCake * pdata2 = NULL ) 
 	{
 		
 
@@ -49125,20 +49680,20 @@ public:
 		for( tsize i2 = 0; pdata2 && i2 < pdata2->len(); i2++ )
 		{
 			c = *(tuint8*)(pdata2->buf()+i2);
-			if( c == a1 || c == a2 || c == a3 ) v1.push_back(a2);
+			if( c == a1 || c == a2 || c == a3 ) if(a2>0) v1.push_back((tuint8)a2);
 			v1.push_back( c );
 		}
 
 
 		c = static_cast<tuint8>( ckDataInOut.len() );
-		if( c == a1 || c == a2 || c == a3 ) v1.push_back(a2);
+		if( c == a1 || c == a2 || c == a3 ) if(a2>0) v1.push_back((tuint8)a2);
 		v1.push_back( c );
 
 
 		for( tsize i = 0; i < ckDataInOut.len(); i++ )
 		{
 			c = *(tuint8*)(ckDataInOut.buf()+i);
-			if( c == a1 || c == a2 || c == a3 ) v1.push_back(a2);
+			if( c == a1 || c == a2 || c == a3 ) if(a2>0) v1.push_back((tuint8)a2);
 			v1.push_back(c);
 		}
 
@@ -49156,7 +49711,7 @@ public:
 		 
 		c = (*pf)( ucChkSum, static_cast<tuint8>( ckDataInOut.len() ) );
 		
-		if( c == a1 || c == a2 || c == a3 ) v1.push_back(a2);
+		if( c == a1 || c == a2 || c == a3 ) if(a2>0) v1.push_back((tuint8)a2);
 		v1.push_back(c);
 
 
@@ -49171,14 +49726,14 @@ public:
 
 
 	
-	static SCake & comesc_en( SCake ckDataIn, SCake & ckDataOut, tuint8 a1, tuint8 a2, tuint8 a3 , PfChkSum_t pf = comesc_add, SCake * pdata2 = NULL ) 
+	static SCake & comesc_en( SCake ckDataIn, SCake & ckDataOut, tuint8 a1, tint32 a2, tuint8 a3 , PfChkSum_t pf = comesc_add, SCake * pdata2 = NULL ) 
 	{
 		return ckDataOut = comesc_en( ckDataIn, a1, a2, a3 , pf, pdata2 );
 	}
 
 
 	
-	static int comesc_de( SCake & ckDataInOut, tuint8 a1, tuint8 a2, tuint8 a3 , PfChkSum_t pf = NULL , SCake * pdata2 = NULL ) 
+	static int comesc_de( SCake & ckDataInOut, tuint8 a1, tint32 a2, tuint8 a3 , PfChkSum_t pf = NULL , SCake * pdata2 = NULL )
 	{
 		if( ckDataInOut.len() != 0 )
 		{
@@ -49308,7 +49863,7 @@ public:
 
 
 	
-	static int comesc_de(  SCake ckDataIn, SCake & ckDataOut, tuint8 a1, tuint8 a2, tuint8 a3 , PfChkSum_t pf = NULL , SCake * pdata2 = NULL )
+	static int comesc_de(  SCake ckDataIn, SCake & ckDataOut, tuint8 a1, tint32 a2, tuint8 a3 , PfChkSum_t pf = NULL , SCake * pdata2 = NULL )
 	{
 		int i = comesc_de( ckDataIn, a1, a2, a3 , pf, pdata2 );
 		ckDataOut = ckDataIn;
@@ -49561,8 +50116,47 @@ L_RECV_ESC:
 L_RECV_ESC:
 		ckData.redim(i+1);
 		m_ckDataL2CacheBuf.dump( ckData );
-		
+
 		return ckData.len()+m_ckDataL2CacheBuf.len()==0?0:1;
+	}
+
+
+	tbool recv_comesc2( SCake & ckData , tuint8 a1, tint32 a2, tuint8 a3 , tbool is_shd_de = 0 )
+	{
+		SCake ck;
+		unsigned int iLen;
+		unsigned char *p;
+
+		ckData.redim(0);
+
+		
+		if( !this->recv_len( ck, 1 ) ) return 0;
+		if( ck.len() == 0 ) return 0;
+		p = (unsigned char *)ck.buf();
+		if( (int)(*p) != a1 ) return 0;
+		ckData.append(ck);
+
+		
+		if( !this->recv_len( ck, 1 ) ) return 0;
+		if( ck.len() == 0 ) return 0;
+		p = (unsigned char *)ck.buf();
+		if( (int)(*p) == 0 ) return 0;
+		iLen = *p;
+		ckData.append(ck);
+
+		
+		if( !this->recv_len( ck, iLen ) ) return 0;
+		if( ck.len() == 0 ) return 0;
+		ckData.append(ck);
+
+		
+		if( !this->recv_len( ck, 2 ) ) return 0;
+		if( ck.len() != 2 ) return 0;
+		ckData.append(ck);
+
+		if( is_shd_de ) this->comesc_de( ckData, a1, a2, a3 );
+
+		return 1;
 	}
 
 
@@ -51903,6 +52497,8 @@ class WKeyinput2
 public:
 	typedef  KEYQUE_ITEM_T  KEYQUE_ITEM_t;
 
+	bool				m_is_timeout_enabled;	
+
 private:
 	volatile double m_timeout_fSec;
 	std::string		m_strConnAddress;
@@ -51912,9 +52508,11 @@ private:
 	bool			m_isConnOk;
 	WCrsc							m_KeyQueLck;
 	std::list< KEYQUE_ITEM_T >		m_KeyQue;
-	bool			m_isGot; 
-	WCrsc							m_GetKeyFuncLck;
-	WCrsc							m_PutKeyFuncLck;
+
+	bool				m_isGot;				
+
+	WCrsc				m_GetKeyFuncLck;
+	WCrsc				m_PutKeyFuncLck;
 
 
 private:
@@ -51966,7 +52564,7 @@ private:
 			}
 			else
 			{
-				if( m_pFather )
+				if( m_pFather && m_pFather->m_is_timeout_enabled )
 				{
 					m_pFather->PutNop();
 				}
@@ -51990,6 +52588,8 @@ public:
 
 	WKeyinput2()
 	{
+		m_is_timeout_enabled = true;
+
 		m_timeout_fSec = 0.93;
 		m_isConnOk = false;
 		m_ConnTimeoutMan.m_pFather = this;
@@ -52069,7 +52669,9 @@ public:
 	void PutNop()
 	{
 		if( this->m_isConnOk )
+		{
 			this->m_ts.send_str( "n" );
+		}
 	}
 
 
@@ -52167,6 +52769,75 @@ public:
 	{
 		WCrsc aLock( &m_KeyQueLck );
 		m_KeyQue.clear();
+	}
+
+};
+
+
+
+
+class WKeyinput3
+{
+public:
+
+private:
+	WTcpListener	m_lsn;
+	WTcpCells		m_ts;
+	WTcpCellc		m_tc;
+
+public:
+
+	WKeyinput3()
+	{
+
+	}
+
+	virtual ~WKeyinput3()
+	{
+		m_tc.DisConn();
+		m_ts.DisConn();
+
+	}
+
+public:
+	
+	tbool KeyInit( tuint16 iBeginPort = 53300 , tuint16 *pPortOut = NULL ) 
+	{
+		tuint16 iPortOut;
+		std::string strAddr;
+
+		for( iPortOut = iBeginPort; iPortOut <= 65531; iPortOut++ )
+		{
+			strAddr = "127.0.0.1:" + SStrf::sltoa( iPortOut );
+
+			if( m_lsn.Listen( strAddr ) )
+			{
+				m_tc.Conn( strAddr );
+				m_ts.Conn( m_lsn );
+				m_lsn.StopListen();
+				if( pPortOut ) *pPortOut = iPortOut;
+
+				return 1;
+			}
+		}
+
+		return 0;
+	}
+
+
+	void other_release()
+	{
+		this->m_ts.send_str( "a" );
+	}
+
+
+	tbool me_lock()
+	{
+		SCake ckTmp;
+
+		m_tc.recv_len( ckTmp, 1 );
+
+		return ( ckTmp.len() >= 1 ) ? 1 : 0;
 	}
 
 };
@@ -62288,10 +62959,13 @@ public:
 	public:
 		actwebele_t()
 		{
+			m_pFather = NULL;
 		}
 
 		virtual ~actwebele_t()
 		{
+			WCrsc aLoc_myLck (&(m_pFather->m_lck_ele_count));
+			m_pFather->m_i_ele_count --;
 		}
 
 	public:
@@ -62382,7 +63056,21 @@ public:
 		virtual tbool OnMgrPrepare( actwebele_t & t )
 		{
 			t.m_pFather = this->m_pFather;
+
+			if(1)
+			{
+				WCrsc aLoc_myLck (&(m_pFather->m_lck_ele_count));
+				m_pFather->m_i_ele_count ++;
+				if( m_pFather->m_i_ele_count < 0 ) m_pFather->m_i_ele_count = 0;
+			}
+
+			while( m_pFather->m_i_ele_count > 123 )
+			{
+				WThrd::tr_sleep( 1 );
+			}
+
 			if( !t.m_tSvr.Conn( m_Lsn ) ) return 0;
+
 			t.m_pFolder = &m_aFolder;
 			return 1;
 		}
@@ -62390,13 +63078,20 @@ public:
 
 
 private:
+	WCrsc	m_lck_ele_count;
+	volatile int m_i_ele_count;
+
 	WCrsc	m_lckItems;
 	std::vector< item_t * > m_vItemsHigh; 
 	std::vector< item_t * > m_vItems;
 
+	friend class actwebele_t;
+
 public:
 	funcandy_t()
 	{
+		WCrsc aLoc_myLck (&(m_lck_ele_count));
+		m_i_ele_count = 0;
 	}
 
 	virtual ~funcandy_t()
@@ -62446,13 +63141,16 @@ public:
 	tbool InitFlow( tuint16 iPort )
 	{
 		actwebmgr_t *p = new actwebmgr_t;
+
 		p->m_aFolder.m_iPurgeConfSec = 86400;
 		p->m_pFather = this;
+
 		if( p->m_Lsn.Listen((u_short)iPort) )
 		{
 			p->tr_openx();
 			return 1;
 		}
+
 		delete p;
 		return 0;
 	}
@@ -62558,18 +63256,32 @@ public:
 						SCake		*pckBody = NULL ,
 						std::string *pstrRtn1 = NULL ,
 						SCake		*pckRtn2 = NULL ,
-						std::string strCommuCR = "\r\n"
+						std::string strCommuCR = "\r\n"	,
+						int iKillerSec = 0 ,
+						int iTryTimes = 2
 					)
 	{
 		WTcpCellc cc;
 		std::string s1;
 		tbool rc;
+		tbool rc_killer(0);
+
+		if( iKillerSec > 0 && iKillerSec <= 66 ) rc_killer = 1;
 
 		
-		for( int j = 0; j < 3; j++ )
+		for( int j = 0; j < iTryTimes; j++ )
 		{
+			if(rc_killer)
+			{
+				cc.killer_up( iKillerSec );
+			}
+
 			rc = cc.Conn( strAddr );
 			if( rc ) break;
+			else
+			{
+				if(rc_killer) cc.killer_dn();
+			}
 		}
 		if( !rc )
 		{
@@ -62618,7 +63330,8 @@ public:
 			{
 				
 				
-				strOut += "Content-Type: " + strTxtType + "; charset=gb2312" + strCommuCR;
+				
+				strOut += "Content-Type: " + strTxtType + ";" + strCommuCR;
 			}
 
 			if( pckBody && pckBody->len() )
@@ -62658,12 +63371,35 @@ public:
 		ck.mk_str(strHttpHead);
 
 		h.ImportSvrRtnHeadPara( strHttpHead );
+		
+		if( !pckRtn2 ) 
+		{
+			if(rc_killer) cc.killer_dn();
+			return 1;
+		}
+
 		long i = SStrf::satol( h.GetSvrRtnHeadParaVal( "Content-Length" ) );
 
-		if( i > 0 && pckRtn2 )
+		
+		if( i == 0 )
+		{
+			std::string s = h.GetSvrRtnHeadParaVal( "Connection" );
+			if( SStrf::slcase(s) == "close" )
+			{
+				cc.recv_all_f( *pckRtn2 );
+			}
+
+			if(rc_killer) cc.killer_dn();
+			return 1;
+		}
+
+		if( i > 0 )
 		{
 			cc.recv_len( *pckRtn2, i );
 		}
+
+
+		if(rc_killer) cc.killer_dn();
 
 		return 1;
 	}
