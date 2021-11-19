@@ -16,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2021c11c17c周三-16c12c51.03  
+2021c11c19c周五-10c10c46.37  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -4122,25 +4122,6 @@ public:
 		}
 
 		if( !v_rtn.empty() ) v_rtn.pop_back(); 
-	}
-
-
-	static tbool email_header_decode( std::string strSubj, std::string &refstrRtn )
-	{
-		if( strSubj.find("=?") == 0 && strSubj.find("B?") != std::string::npos )
-		{
-			std::string::size_type i = strSubj.find("B?");
-			refstrRtn = SStrTbl::decode64str( strSubj.c_str() + i + 2 );
-			return 1;
-		}
-		if( strSubj.find("=X") == 0 && strSubj.find("BX") != std::string::npos )
-		{
-			std::string::size_type i = strSubj.find("BX");
-			refstrRtn = SStrTbl::decode64str( strSubj.c_str() + i + 2 );
-			return 1;
-		}
-		refstrRtn = strSubj;
-		return 0;
 	}
 
 };
@@ -18983,6 +18964,35 @@ public:
 		return 1;
 	}
 
+
+	static tbool header_decode( std::string strSubj, std::string &refstrRtn )
+	{
+		if( strSubj.find("=?") == 0 && strSubj.find("B?") != std::string::npos )
+		{
+			std::string::size_type i = strSubj.find("B?");
+			refstrRtn = SStrTbl::decode64str( strSubj.c_str() + i + 2 );
+			return 1;
+		}
+		if( strSubj.find("=X") == 0 && strSubj.find("BX") != std::string::npos )
+		{
+			std::string::size_type i = strSubj.find("BX");
+			refstrRtn = SStrTbl::decode64str( strSubj.c_str() + i + 2 );
+			return 1;
+		}
+		refstrRtn = strSubj;
+		return 0;
+	}
+
+	static std::string header_decode( std::string strSubj )
+	{
+		std::string re;
+		header_decode( strSubj, re );
+		SStrf::sucase(strSubj);
+		if( strSubj.length() > 3 && strSubj[2] == 'U' ) WFile::Utf8toCh( re );
+		return re;
+	}
+
+
 };
 
 
@@ -30144,25 +30154,6 @@ public:
 		}
 
 		if( !v_rtn.empty() ) v_rtn.pop_back(); 
-	}
-
-
-	static tbool email_header_decode( std::string strSubj, std::string &refstrRtn )
-	{
-		if( strSubj.find("=?") == 0 && strSubj.find("B?") != std::string::npos )
-		{
-			std::string::size_type i = strSubj.find("B?");
-			refstrRtn = SStrTbl::decode64str( strSubj.c_str() + i + 2 );
-			return 1;
-		}
-		if( strSubj.find("=X") == 0 && strSubj.find("BX") != std::string::npos )
-		{
-			std::string::size_type i = strSubj.find("BX");
-			refstrRtn = SStrTbl::decode64str( strSubj.c_str() + i + 2 );
-			return 1;
-		}
-		refstrRtn = strSubj;
-		return 0;
 	}
 
 };
@@ -42289,6 +42280,35 @@ public:
 
 		return 1;
 	}
+
+
+	static tbool header_decode( std::string strSubj, std::string &refstrRtn )
+	{
+		if( strSubj.find("=?") == 0 && strSubj.find("B?") != std::string::npos )
+		{
+			std::string::size_type i = strSubj.find("B?");
+			refstrRtn = SStrTbl::decode64str( strSubj.c_str() + i + 2 );
+			return 1;
+		}
+		if( strSubj.find("=X") == 0 && strSubj.find("BX") != std::string::npos )
+		{
+			std::string::size_type i = strSubj.find("BX");
+			refstrRtn = SStrTbl::decode64str( strSubj.c_str() + i + 2 );
+			return 1;
+		}
+		refstrRtn = strSubj;
+		return 0;
+	}
+
+	static std::string header_decode( std::string strSubj )
+	{
+		std::string re;
+		header_decode( strSubj, re );
+		SStrf::sucase(strSubj);
+		if( strSubj.length() > 3 && strSubj[2] == 'U' ) WFile::Utf8toCh( re );
+		return re;
+	}
+
 
 };
 
