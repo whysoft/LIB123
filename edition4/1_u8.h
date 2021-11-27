@@ -16,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2021c11c19c周五-10c09c34.71  
+2021c11c26c周五-10c06c22.56  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -18494,6 +18494,114 @@ public:
 public:
 
 	
+	static tbool header_decode( std::string strSubj, std::string &refstrRtn )
+	{
+		if( strSubj.find("=?") == 0 && strSubj.find("B?") != std::string::npos )
+		{
+			wl::SStrf::sreplch( &(strSubj[0]), '.', '\0' );
+			std::string::size_type i = strSubj.find("B?");
+			refstrRtn = SStrTbl::decode64str( std::string( strSubj.c_str() + i + 2 ) );
+			return 1;
+		}
+		if( strSubj.find("=X") == 0 && strSubj.find("BX") != std::string::npos )
+		{
+			wl::SStrf::sreplch( &(strSubj[0]), '.', '\0' );
+			std::string::size_type i = strSubj.find("BX");
+			refstrRtn = SStrTbl::decode64str( std::string( strSubj.c_str() + i + 2 ) );
+			return 1;
+		}
+		refstrRtn = strSubj;
+		return 0;
+	}
+
+	
+	static std::string header_decode( std::string strSubj )
+	{
+		std::string re;
+		tbool rc = header_decode( strSubj, re );
+		
+		return re;
+	}
+
+	
+	static std::string get_value_bykey( std::string strAllContent , std::string strKey, tbool should_decode = 0 )
+	{
+		
+		
+		strKey = "a" + strKey + ": ";
+
+		std::string strUpper = strAllContent;
+		std::string::size_type i1, i2;
+		std::string strNowTitle;
+
+		strKey[0] = 0x0a;
+		SStrf::sucase(strUpper);
+
+		i1 = strUpper.find(strKey);
+		if( i1 == std::string::npos ) return "";
+
+		i2 = i1 + SStrf::slen(strKey.c_str());
+		i1++;
+
+		strNowTitle = &(strAllContent[i2]);
+		for( ; i1 != std::string::npos && i1 < strAllContent.size() ; i1++ )
+		{
+			if( strAllContent[i1] == 0x0d || strAllContent[i1] == 0x0a )
+			{
+				strAllContent[i1] = 0;
+				strNowTitle = &(strAllContent[i2]);
+				break;
+			}
+		}
+
+		if( should_decode ) return header_decode(strNowTitle);
+		return strNowTitle;
+	}
+
+	
+	static std::string get_subj( std::string strAllContent , tbool should_decode = 0 )
+	{
+		std::string strKey = "SUBJECT";
+		std::string strNowTitle = get_value_bykey( strAllContent, strKey, should_decode );
+		return strNowTitle;
+	}
+
+	
+	static std::string get_fromwho( std::string strAllContent , std::string *pstrName = NULL, tbool should_decode_name = 0 , std::string *pstrAddr = NULL )
+	{
+		std::string strKey = "FROM";
+		std::string s1 = get_value_bykey( strAllContent, strKey );
+		std::string strNowSender;
+		std::string str2;
+
+		if(pstrName)
+		{
+			strNowSender = s1;
+			if( strNowSender.find("<") != std::string::npos )
+			{
+				str2 = SStrvs::vsa_get( strNowSender, "<", 0, 0 );
+				SStrf::strim( str2 );
+				if( should_decode_name ) *pstrName = header_decode(str2); else *pstrName = str2;
+			}
+		}
+
+		strNowSender = s1;
+		if( strNowSender.find("<") != std::string::npos )
+		{
+			str2 = SStrvs::vsa_get( strNowSender, "<", 0, 1 );
+			strNowSender = SStrvs::vsa_get( str2, ">", 0, 0 );
+		}
+		SStrf::strim( strNowSender );
+
+		if( pstrAddr ) *pstrAddr = strNowSender;
+
+		return strNowSender;
+	}
+
+
+public:
+
+	
 	void LinkCellc( IRice * p )
 	{
 		m_pCellc = p;
@@ -18541,7 +18649,7 @@ public:
 		return "";
 	}
 
-	
+
 	std::string get_t1( std::string strUser, std::string strPass )  
 	{
 		SCake ck;
@@ -18682,69 +18790,14 @@ public:
 
 
 			if(pvSubject) ps = &(*(pvSubject->rbegin()));
-			if(1)
-			{
-				std::string strKey = "aSUBJECT: ";
-				std::string str2 = str1;
-				std::string strUpper = str2;
+			strNowTitle = get_subj( str1, 0 );
+			if(pvSubject) *ps = strNowTitle;
 
-				strKey[0] = 0x0a;
-				SStrf::sucase(strUpper);
 
-				std::string::size_type i1 = strUpper.find(strKey);
-				std::string::size_type i2 = i1 + SStrf::slen(strKey.c_str());
-
-				if( i1 != std::string::npos ) i1++;
-
-				for( ; i1 != std::string::npos && i1 < str2.size() ; i1++ )
-				{
-					if( str2[i1] == 0x0d || str2[i1] == 0x0a )
-					{
-						str2[i1] = 0;
-						strNowTitle = &(str2[i2]);
-						if(pvSubject) { *ps = &(str2[i2]); break; }
-					}
-				}
-			}
-
-			
 			if(pvFrom) ps = &(*(pvFrom->rbegin()));
-			if(1)
-			{
-				std::string strKey = "aFROM: ";
-				std::string str2 = str1;
-				std::string strUpper = str2;
+			strNowSender = get_fromwho( str1 );
+			if(pvFrom) *ps = strNowSender;
 
-				strKey[0] = 0x0a;
-				SStrf::sucase(strUpper);
-
-				std::string::size_type i1 = strUpper.find(strKey);
-				std::string::size_type i2 = i1 + SStrf::slen(strKey.c_str());
-
-				if( i1 != std::string::npos ) i1++;
-
-				for( ; i1 != std::string::npos && i1 < str2.size() ; i1++ )
-				{
-					if( str2[i1] == 0x0d || str2[i1] == 0x0a )
-					{
-						str2[i1] = 0;
-
-						strNowSender = &(str2[i2]);	
-
-						if( strNowSender.find("<") != std::string::npos )
-						{
-							str2 = SStrvs::vsa_get( strNowSender, "<", 0, 1 );
-							strNowSender = SStrvs::vsa_get( str2, ">", 0, 0 );
-						}
-
-						if(pvFrom)
-						{
-							*ps = strNowSender;
-							break;
-						}
-					}
-				}
-			}
 
 			tbool biWithDel = 1;
 			std::string *prefstrNowTitle;
@@ -18963,35 +19016,6 @@ public:
 
 		return 1;
 	}
-
-
-	static tbool header_decode( std::string strSubj, std::string &refstrRtn )
-	{
-		if( strSubj.find("=?") == 0 && strSubj.find("B?") != std::string::npos )
-		{
-			std::string::size_type i = strSubj.find("B?");
-			refstrRtn = SStrTbl::decode64str( strSubj.c_str() + i + 2 );
-			return 1;
-		}
-		if( strSubj.find("=X") == 0 && strSubj.find("BX") != std::string::npos )
-		{
-			std::string::size_type i = strSubj.find("BX");
-			refstrRtn = SStrTbl::decode64str( strSubj.c_str() + i + 2 );
-			return 1;
-		}
-		refstrRtn = strSubj;
-		return 0;
-	}
-
-	static std::string header_decode( std::string strSubj )
-	{
-		std::string re;
-		header_decode( strSubj, re );
-		SStrf::sucase(strSubj);
-		if( strSubj.length() > 3 && strSubj[2] == 'U' ) WFile::Utf8toCh( re );
-		return re;
-	}
-
 
 };
 
@@ -41163,6 +41187,114 @@ public:
 public:
 
 	
+	static tbool header_decode( std::string strSubj, std::string &refstrRtn )
+	{
+		if( strSubj.find("=?") == 0 && strSubj.find("B?") != std::string::npos )
+		{
+			wl::SStrf::sreplch( &(strSubj[0]), '.', '\0' );
+			std::string::size_type i = strSubj.find("B?");
+			refstrRtn = SStrTbl::decode64str( std::string( strSubj.c_str() + i + 2 ) );
+			return 1;
+		}
+		if( strSubj.find("=X") == 0 && strSubj.find("BX") != std::string::npos )
+		{
+			wl::SStrf::sreplch( &(strSubj[0]), '.', '\0' );
+			std::string::size_type i = strSubj.find("BX");
+			refstrRtn = SStrTbl::decode64str( std::string( strSubj.c_str() + i + 2 ) );
+			return 1;
+		}
+		refstrRtn = strSubj;
+		return 0;
+	}
+
+	
+	static std::string header_decode( std::string strSubj )
+	{
+		std::string re;
+		tbool rc = header_decode( strSubj, re );
+		
+		return re;
+	}
+
+	
+	static std::string get_value_bykey( std::string strAllContent , std::string strKey, tbool should_decode = 0 )
+	{
+		
+		
+		strKey = "a" + strKey + ": ";
+
+		std::string strUpper = strAllContent;
+		std::string::size_type i1, i2;
+		std::string strNowTitle;
+
+		strKey[0] = 0x0a;
+		SStrf::sucase(strUpper);
+
+		i1 = strUpper.find(strKey);
+		if( i1 == std::string::npos ) return "";
+
+		i2 = i1 + SStrf::slen(strKey.c_str());
+		i1++;
+
+		strNowTitle = &(strAllContent[i2]);
+		for( ; i1 != std::string::npos && i1 < strAllContent.size() ; i1++ )
+		{
+			if( strAllContent[i1] == 0x0d || strAllContent[i1] == 0x0a )
+			{
+				strAllContent[i1] = 0;
+				strNowTitle = &(strAllContent[i2]);
+				break;
+			}
+		}
+
+		if( should_decode ) return header_decode(strNowTitle);
+		return strNowTitle;
+	}
+
+	
+	static std::string get_subj( std::string strAllContent , tbool should_decode = 0 )
+	{
+		std::string strKey = "SUBJECT";
+		std::string strNowTitle = get_value_bykey( strAllContent, strKey, should_decode );
+		return strNowTitle;
+	}
+
+	
+	static std::string get_fromwho( std::string strAllContent , std::string *pstrName = NULL, tbool should_decode_name = 0 , std::string *pstrAddr = NULL )
+	{
+		std::string strKey = "FROM";
+		std::string s1 = get_value_bykey( strAllContent, strKey );
+		std::string strNowSender;
+		std::string str2;
+
+		if(pstrName)
+		{
+			strNowSender = s1;
+			if( strNowSender.find("<") != std::string::npos )
+			{
+				str2 = SStrvs::vsa_get( strNowSender, "<", 0, 0 );
+				SStrf::strim( str2 );
+				if( should_decode_name ) *pstrName = header_decode(str2); else *pstrName = str2;
+			}
+		}
+
+		strNowSender = s1;
+		if( strNowSender.find("<") != std::string::npos )
+		{
+			str2 = SStrvs::vsa_get( strNowSender, "<", 0, 1 );
+			strNowSender = SStrvs::vsa_get( str2, ">", 0, 0 );
+		}
+		SStrf::strim( strNowSender );
+
+		if( pstrAddr ) *pstrAddr = strNowSender;
+
+		return strNowSender;
+	}
+
+
+public:
+
+	
 	void LinkCellc( IRice * p )
 	{
 		m_pCellc = p;
@@ -41210,7 +41342,7 @@ public:
 		return "";
 	}
 
-	
+
 	std::string get_t1( std::string strUser, std::string strPass )  
 	{
 		SCake ck;
@@ -41351,69 +41483,14 @@ public:
 
 
 			if(pvSubject) ps = &(*(pvSubject->rbegin()));
-			if(1)
-			{
-				std::string strKey = "aSUBJECT: ";
-				std::string str2 = str1;
-				std::string strUpper = str2;
+			strNowTitle = get_subj( str1, 0 );
+			if(pvSubject) *ps = strNowTitle;
 
-				strKey[0] = 0x0a;
-				SStrf::sucase(strUpper);
 
-				std::string::size_type i1 = strUpper.find(strKey);
-				std::string::size_type i2 = i1 + SStrf::slen(strKey.c_str());
-
-				if( i1 != std::string::npos ) i1++;
-
-				for( ; i1 != std::string::npos && i1 < str2.size() ; i1++ )
-				{
-					if( str2[i1] == 0x0d || str2[i1] == 0x0a )
-					{
-						str2[i1] = 0;
-						strNowTitle = &(str2[i2]);
-						if(pvSubject) { *ps = &(str2[i2]); break; }
-					}
-				}
-			}
-
-			
 			if(pvFrom) ps = &(*(pvFrom->rbegin()));
-			if(1)
-			{
-				std::string strKey = "aFROM: ";
-				std::string str2 = str1;
-				std::string strUpper = str2;
+			strNowSender = get_fromwho( str1 );
+			if(pvFrom) *ps = strNowSender;
 
-				strKey[0] = 0x0a;
-				SStrf::sucase(strUpper);
-
-				std::string::size_type i1 = strUpper.find(strKey);
-				std::string::size_type i2 = i1 + SStrf::slen(strKey.c_str());
-
-				if( i1 != std::string::npos ) i1++;
-
-				for( ; i1 != std::string::npos && i1 < str2.size() ; i1++ )
-				{
-					if( str2[i1] == 0x0d || str2[i1] == 0x0a )
-					{
-						str2[i1] = 0;
-
-						strNowSender = &(str2[i2]);	
-
-						if( strNowSender.find("<") != std::string::npos )
-						{
-							str2 = SStrvs::vsa_get( strNowSender, "<", 0, 1 );
-							strNowSender = SStrvs::vsa_get( str2, ">", 0, 0 );
-						}
-
-						if(pvFrom)
-						{
-							*ps = strNowSender;
-							break;
-						}
-					}
-				}
-			}
 
 			tbool biWithDel = 1;
 			std::string *prefstrNowTitle;
@@ -41632,35 +41709,6 @@ public:
 
 		return 1;
 	}
-
-
-	static tbool header_decode( std::string strSubj, std::string &refstrRtn )
-	{
-		if( strSubj.find("=?") == 0 && strSubj.find("B?") != std::string::npos )
-		{
-			std::string::size_type i = strSubj.find("B?");
-			refstrRtn = SStrTbl::decode64str( strSubj.c_str() + i + 2 );
-			return 1;
-		}
-		if( strSubj.find("=X") == 0 && strSubj.find("BX") != std::string::npos )
-		{
-			std::string::size_type i = strSubj.find("BX");
-			refstrRtn = SStrTbl::decode64str( strSubj.c_str() + i + 2 );
-			return 1;
-		}
-		refstrRtn = strSubj;
-		return 0;
-	}
-
-	static std::string header_decode( std::string strSubj )
-	{
-		std::string re;
-		header_decode( strSubj, re );
-		SStrf::sucase(strSubj);
-		if( strSubj.length() > 3 && strSubj[2] == 'U' ) WFile::Utf8toCh( re );
-		return re;
-	}
-
 
 };
 
