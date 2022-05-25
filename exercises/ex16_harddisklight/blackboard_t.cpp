@@ -138,6 +138,7 @@ long blackboard_t::GetValue( std::string strAddr )
 	SCake ck;
 	tbool rc;
 
+	cc.killer_up(9);
 	rc = cc.Conn( strAddr );
 
 	if( !rc )
