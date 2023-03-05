@@ -16,7 +16,7 @@
 // library, and the C++ .
 
 /*  
-2021c11c19c周五-10c10c15.76  
+2023c03c05c周日-13c53c22.07  
 */  
 #ifdef WINENV_
 #pragma warning(push)
@@ -470,7 +470,7 @@ public:
 	}
 
 
-	unsigned char rev_bit( unsigned char c )
+	static unsigned char rev_bit( unsigned char c )
 	{
 		static unsigned char sta[16] =
 		{
@@ -4577,6 +4577,11 @@ public:
 		{
 			oiid = (tint32)SStrf::satol( SStrvs::vsa_get( str_dte, std::string(" "), 1, 0 ) );
 			oiit = (tint32)SStrf::satol( SStrvs::vsa_get( str_dte, std::string(" "), 1, 1 ) );
+		}
+		else if( str_dte.find( "." ) != std::string::npos ) 
+		{
+			oiid = (tint32)SStrf::satol( SStrvs::vsa_get( str_dte, std::string("."), 1, 0 ) );
+			oiit = (tint32)SStrf::satol( SStrvs::vsa_get( str_dte, std::string("."), 1, 1 ) );
 		}
 		else
 		{
@@ -18494,6 +18499,114 @@ public:
 public:
 
 	
+	static tbool header_decode( std::string strSubj, std::string &refstrRtn )
+	{
+		if( strSubj.find("=?") == 0 && strSubj.find("B?") != std::string::npos )
+		{
+			SStrf::sreplch( &(strSubj[0]), '.', '\0' );
+			std::string::size_type i = strSubj.find("B?");
+			refstrRtn = SStrTbl::decode64str( std::string( strSubj.c_str() + i + 2 ) );
+			return 1;
+		}
+		if( strSubj.find("=X") == 0 && strSubj.find("BX") != std::string::npos )
+		{
+			SStrf::sreplch( &(strSubj[0]), '.', '\0' );
+			std::string::size_type i = strSubj.find("BX");
+			refstrRtn = SStrTbl::decode64str( std::string( strSubj.c_str() + i + 2 ) );
+			return 1;
+		}
+		refstrRtn = strSubj;
+		return 0;
+	}
+
+	
+	static std::string header_decode( std::string strSubj )
+	{
+		std::string re;
+		tbool rc = header_decode( strSubj, re );
+		
+		return re;
+	}
+
+	
+	static std::string get_value_bykey( std::string strAllContent , std::string strKey, tbool should_decode = 0 )
+	{
+		
+		
+		strKey = "a" + strKey + ": ";
+
+		std::string strUpper = strAllContent;
+		std::string::size_type i1, i2;
+		std::string strNowTitle;
+
+		strKey[0] = 0x0a;
+		SStrf::sucase(strUpper);
+
+		i1 = strUpper.find(strKey);
+		if( i1 == std::string::npos ) return "";
+
+		i2 = i1 + SStrf::slen(strKey.c_str());
+		i1++;
+
+		strNowTitle = &(strAllContent[i2]);
+		for( ; i1 != std::string::npos && i1 < strAllContent.size() ; i1++ )
+		{
+			if( strAllContent[i1] == 0x0d || strAllContent[i1] == 0x0a )
+			{
+				strAllContent[i1] = 0;
+				strNowTitle = &(strAllContent[i2]);
+				break;
+			}
+		}
+
+		if( should_decode ) return header_decode(strNowTitle);
+		return strNowTitle;
+	}
+
+	
+	static std::string get_subj( std::string strAllContent , tbool should_decode = 0 )
+	{
+		std::string strKey = "SUBJECT";
+		std::string strNowTitle = get_value_bykey( strAllContent, strKey, should_decode );
+		return strNowTitle;
+	}
+
+	
+	static std::string get_fromwho( std::string strAllContent , std::string *pstrName = NULL, tbool should_decode_name = 0 , std::string *pstrAddr = NULL )
+	{
+		std::string strKey = "FROM";
+		std::string s1 = get_value_bykey( strAllContent, strKey );
+		std::string strNowSender;
+		std::string str2;
+
+		if(pstrName)
+		{
+			strNowSender = s1;
+			if( strNowSender.find("<") != std::string::npos )
+			{
+				str2 = SStrvs::vsa_get( strNowSender, "<", 0, 0 );
+				SStrf::strim( str2 );
+				if( should_decode_name ) *pstrName = header_decode(str2); else *pstrName = str2;
+			}
+		}
+
+		strNowSender = s1;
+		if( strNowSender.find("<") != std::string::npos )
+		{
+			str2 = SStrvs::vsa_get( strNowSender, "<", 0, 1 );
+			strNowSender = SStrvs::vsa_get( str2, ">", 0, 0 );
+		}
+		SStrf::strim( strNowSender );
+
+		if( pstrAddr ) *pstrAddr = strNowSender;
+
+		return strNowSender;
+	}
+
+
+public:
+
+	
 	void LinkCellc( IRice * p )
 	{
 		m_pCellc = p;
@@ -18541,7 +18654,7 @@ public:
 		return "";
 	}
 
-	
+
 	std::string get_t1( std::string strUser, std::string strPass )  
 	{
 		SCake ck;
@@ -18682,69 +18795,14 @@ public:
 
 
 			if(pvSubject) ps = &(*(pvSubject->rbegin()));
-			if(1)
-			{
-				std::string strKey = "aSUBJECT: ";
-				std::string str2 = str1;
-				std::string strUpper = str2;
+			strNowTitle = get_subj( str1, 0 );
+			if(pvSubject) *ps = strNowTitle;
 
-				strKey[0] = 0x0a;
-				SStrf::sucase(strUpper);
 
-				std::string::size_type i1 = strUpper.find(strKey);
-				std::string::size_type i2 = i1 + SStrf::slen(strKey.c_str());
-
-				if( i1 != std::string::npos ) i1++;
-
-				for( ; i1 != std::string::npos && i1 < str2.size() ; i1++ )
-				{
-					if( str2[i1] == 0x0d || str2[i1] == 0x0a )
-					{
-						str2[i1] = 0;
-						strNowTitle = &(str2[i2]);
-						if(pvSubject) { *ps = &(str2[i2]); break; }
-					}
-				}
-			}
-
-			
 			if(pvFrom) ps = &(*(pvFrom->rbegin()));
-			if(1)
-			{
-				std::string strKey = "aFROM: ";
-				std::string str2 = str1;
-				std::string strUpper = str2;
+			strNowSender = get_fromwho( str1 );
+			if(pvFrom) *ps = strNowSender;
 
-				strKey[0] = 0x0a;
-				SStrf::sucase(strUpper);
-
-				std::string::size_type i1 = strUpper.find(strKey);
-				std::string::size_type i2 = i1 + SStrf::slen(strKey.c_str());
-
-				if( i1 != std::string::npos ) i1++;
-
-				for( ; i1 != std::string::npos && i1 < str2.size() ; i1++ )
-				{
-					if( str2[i1] == 0x0d || str2[i1] == 0x0a )
-					{
-						str2[i1] = 0;
-
-						strNowSender = &(str2[i2]);	
-
-						if( strNowSender.find("<") != std::string::npos )
-						{
-							str2 = SStrvs::vsa_get( strNowSender, "<", 0, 1 );
-							strNowSender = SStrvs::vsa_get( str2, ">", 0, 0 );
-						}
-
-						if(pvFrom)
-						{
-							*ps = strNowSender;
-							break;
-						}
-					}
-				}
-			}
 
 			tbool biWithDel = 1;
 			std::string *prefstrNowTitle;
@@ -18963,35 +19021,6 @@ public:
 
 		return 1;
 	}
-
-
-	static tbool header_decode( std::string strSubj, std::string &refstrRtn )
-	{
-		if( strSubj.find("=?") == 0 && strSubj.find("B?") != std::string::npos )
-		{
-			std::string::size_type i = strSubj.find("B?");
-			refstrRtn = SStrTbl::decode64str( strSubj.c_str() + i + 2 );
-			return 1;
-		}
-		if( strSubj.find("=X") == 0 && strSubj.find("BX") != std::string::npos )
-		{
-			std::string::size_type i = strSubj.find("BX");
-			refstrRtn = SStrTbl::decode64str( strSubj.c_str() + i + 2 );
-			return 1;
-		}
-		refstrRtn = strSubj;
-		return 0;
-	}
-
-	static std::string header_decode( std::string strSubj )
-	{
-		std::string re;
-		header_decode( strSubj, re );
-		SStrf::sucase(strSubj);
-		if( strSubj.length() > 3 && strSubj[2] == 'U' ) WFile::Utf8toCh( re );
-		return re;
-	}
-
 
 };
 
@@ -22038,30 +22067,25 @@ public:
 
 class WKeyinput3
 {
-public:
-
 private:
 	WTcpListener	m_lsn;
 	WTcpCells		m_ts;
 	WTcpCellc		m_tc;
 
 public:
-
 	WKeyinput3()
 	{
-
 	}
 
 	virtual ~WKeyinput3()
 	{
 		m_tc.DisConn();
 		m_ts.DisConn();
-
 	}
 
 public:
 	
-	tbool KeyInit( tuint16 iBeginPort = 53300 , tuint16 *pPortOut = NULL ) 
+	tbool KeyInit( tuint16 iBeginPort = 43000 , tuint16 *pPortOut = NULL ) 
 	{
 		tuint16 iPortOut;
 		std::string strAddr;
@@ -22084,13 +22108,13 @@ public:
 		return 0;
 	}
 
-
+	
 	void other_release()
 	{
 		this->m_ts.send_str( "a" );
 	}
 
-
+	
 	tbool me_lock()
 	{
 		SCake ckTmp;
@@ -22099,7 +22123,6 @@ public:
 
 		return ( ckTmp.len() >= 1 ) ? 1 : 0;
 	}
-
 };
 
 
@@ -22221,8 +22244,6 @@ public:
 	}
 
 };
-
-
 
 
 
@@ -33154,7 +33175,20 @@ public:
 	}
 
 
-	
+	static void add_browsend_header( std::string &refstr_out, std::string str_cr, WTcpHttp::MAP_HTTPHEADPARA *pmapBrowSend )
+	{
+		if( !pmapBrowSend ) return;
+
+		for( WTcpHttp::MAP_HTTPHEADPARA_IT it = pmapBrowSend->begin(); it != pmapBrowSend->end(); ++it )
+		{
+			refstr_out += it->first;
+			refstr_out += ": ";
+			refstr_out += it->second;
+			refstr_out += str_cr;
+		}
+	}
+
+
 	static tbool WGet(
 						std::string strAddr ,    
 						std::string strUniFn , 
@@ -33166,7 +33200,9 @@ public:
 						SCake		*pckRtn2 = NULL ,
 						std::string strCommuCR = "\r\n"	,
 						int iKillerSec = 0 ,
-						int iTryTimes = 2
+						int iTryTimes = 2 ,
+						WTcpHttp::MAP_HTTPHEADPARA *pmapBrowSend=NULL ,
+						WTcpHttp::MAP_HTTPHEADPARA *pmapSvrRtn=NULL
 					)
 	{
 		WTcpCellc cc;
@@ -33217,6 +33253,7 @@ public:
 			strOut = strMethod + " " + strUniFn + " HTTP/1.0" + strCommuCR;
 			strOut += "Cache-Control: no-cache" + strCommuCR;
 			strOut += "Pragma: no-cache" + strCommuCR;
+			add_browsend_header( strOut, strCommuCR, pmapBrowSend );
 			strOut += strCommuCR;
 			cc.send_str( strOut );
 		}
@@ -33226,7 +33263,7 @@ public:
 			std::string strOut;
 
 			strOut = strMethod + " " + strUniFn + " HTTP/1.0" + strCommuCR;
-			strOut += "Server: NotApache/" + SDte::GetNow().ReadStringPack() + WFile::MkRUStr() + strCommuCR;
+			
 			strOut += "Cache-Control: no-cache" + strCommuCR;
 			strOut += "Pragma: no-cache" + strCommuCR;
 
@@ -33252,6 +33289,7 @@ public:
 			}
 
 			strOut += "Connection: close" + strCommuCR;
+			add_browsend_header( strOut, strCommuCR, pmapBrowSend );
 			strOut += strCommuCR;
 			cc.send_str( strOut );
 
@@ -33266,10 +33304,21 @@ public:
 			}
 		}
 
+
+		if( !pckRtn2 ) 
+		{
+			if(rc_killer) cc.killer_dn();
+			return 1;
+		}
+
 		
-		WTcpHttp h;
+		WTcpHttp::MAP_HTTPHEADPARA mapSvrRtn;
+
 		SCake ck;
 		std::string strHttpHead;
+		long iContentLen(0);
+
+		if( pmapSvrRtn == NULL ) pmapSvrRtn = &mapSvrRtn;
 
 		if( pstrRtn1 ) *pstrRtn1 = "";
 		if( pckRtn2 ) pckRtn2->redim(0);
@@ -33278,20 +33327,22 @@ public:
 		if( ck.len() != 0 && pstrRtn1 ) ck.mk_str(*pstrRtn1);
 		ck.mk_str(strHttpHead);
 
-		h.ImportSvrRtnHeadPara( strHttpHead );
 		
-		if( !pckRtn2 ) 
-		{
-			if(rc_killer) cc.killer_dn();
-			return 1;
-		}
-
-		long i = SStrf::satol( h.GetSvrRtnHeadParaVal( "Content-Length" ) );
+		WTcpHttp::MakeHeadParaMap( strHttpHead, *pmapSvrRtn );
 
 		
-		if( i == 0 )
+
+		
+		iContentLen = (long)SStrf::satol( WTcpHttp::GetSvrRtnHeadParaVal_i( *pmapSvrRtn, "Content-Length" ) );
+
+		
+		if( iContentLen <= 0 )
 		{
-			std::string s = h.GetSvrRtnHeadParaVal( "Connection" );
+			std::string s;
+
+			
+			s = WTcpHttp::GetSvrRtnHeadParaVal_i( *pmapSvrRtn, "Connection" );
+
 			if( SStrf::slcase(s) == "close" )
 			{
 				cc.recv_all_f( *pckRtn2 );
@@ -33301,9 +33352,9 @@ public:
 			return 1;
 		}
 
-		if( i > 0 )
+		if( iContentLen > 0 )
 		{
-			cc.recv_len( *pckRtn2, i );
+			cc.recv_len( *pckRtn2, iContentLen );
 		}
 
 
@@ -33392,8 +33443,8 @@ typedef		char					tint8;
 typedef		unsigned char			tuint8;
 typedef		short					tint16;
 typedef		unsigned short			tuint16;
-typedef		long					tint32;
-typedef		unsigned long			tuint32;
+typedef		int					tint32;
+typedef		unsigned int			tuint32;
 
 typedef     long long               tint64;
 typedef     unsigned long long      tuint64; 
@@ -33407,7 +33458,7 @@ typedef		tuint32			tsize;
 typedef		tint32			toffset;
 
 
-typedef unsigned long       DWORD;
+typedef tuint32       DWORD;
 
 
 X011_NAMESPACE_END
@@ -33814,7 +33865,7 @@ public:
 	}
 
 
-	unsigned char rev_bit( unsigned char c )
+	static unsigned char rev_bit( unsigned char c )
 	{
 		static unsigned char sta[16] =
 		{
@@ -44303,12 +44354,13 @@ private:
 
 	static void * ThreadProc(void * lpParam)
 	{
-		WThrd *pThis=reinterpret_cast<WThrd*>(lpParam);
+		
+		WThrd *pThis=(WThrd*)(lpParam);
+
 		int iAutoDel = pThis->m_iAutoDel; 
 		int iAutoDelrc = 0;
 
 		
-		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 
 		try
 		{
@@ -44412,8 +44464,8 @@ public:
 
 		size_t val;
 
+		val = 8*1024*1024;
 		
-		val = 2 * 1024 * 1024;
 		pthread_attr_setstacksize(&m_stacksize, val);
 
 		m_idestructed = 0;
@@ -44504,8 +44556,10 @@ public:
 
 		
 
-		err = pthread_create( &m_hThread, &m_stacksize,  
-										ThreadProc, reinterpret_cast<void*>(this) );
+		
+
+		err = pthread_create( &m_hThread, NULL,
+										ThreadProc, (void*)(this) );
 
 		tbool rc = 1;
 
@@ -49123,6 +49177,114 @@ public:
 public:
 
 	
+	static tbool header_decode( std::string strSubj, std::string &refstrRtn )
+	{
+		if( strSubj.find("=?") == 0 && strSubj.find("B?") != std::string::npos )
+		{
+			SStrf::sreplch( &(strSubj[0]), '.', '\0' );
+			std::string::size_type i = strSubj.find("B?");
+			refstrRtn = SStrTbl::decode64str( std::string( strSubj.c_str() + i + 2 ) );
+			return 1;
+		}
+		if( strSubj.find("=X") == 0 && strSubj.find("BX") != std::string::npos )
+		{
+			SStrf::sreplch( &(strSubj[0]), '.', '\0' );
+			std::string::size_type i = strSubj.find("BX");
+			refstrRtn = SStrTbl::decode64str( std::string( strSubj.c_str() + i + 2 ) );
+			return 1;
+		}
+		refstrRtn = strSubj;
+		return 0;
+	}
+
+	
+	static std::string header_decode( std::string strSubj )
+	{
+		std::string re;
+		tbool rc = header_decode( strSubj, re );
+		
+		return re;
+	}
+
+	
+	static std::string get_value_bykey( std::string strAllContent , std::string strKey, tbool should_decode = 0 )
+	{
+		
+		
+		strKey = "a" + strKey + ": ";
+
+		std::string strUpper = strAllContent;
+		std::string::size_type i1, i2;
+		std::string strNowTitle;
+
+		strKey[0] = 0x0a;
+		SStrf::sucase(strUpper);
+
+		i1 = strUpper.find(strKey);
+		if( i1 == std::string::npos ) return "";
+
+		i2 = i1 + SStrf::slen(strKey.c_str());
+		i1++;
+
+		strNowTitle = &(strAllContent[i2]);
+		for( ; i1 != std::string::npos && i1 < strAllContent.size() ; i1++ )
+		{
+			if( strAllContent[i1] == 0x0d || strAllContent[i1] == 0x0a )
+			{
+				strAllContent[i1] = 0;
+				strNowTitle = &(strAllContent[i2]);
+				break;
+			}
+		}
+
+		if( should_decode ) return header_decode(strNowTitle);
+		return strNowTitle;
+	}
+
+	
+	static std::string get_subj( std::string strAllContent , tbool should_decode = 0 )
+	{
+		std::string strKey = "SUBJECT";
+		std::string strNowTitle = get_value_bykey( strAllContent, strKey, should_decode );
+		return strNowTitle;
+	}
+
+	
+	static std::string get_fromwho( std::string strAllContent , std::string *pstrName = NULL, tbool should_decode_name = 0 , std::string *pstrAddr = NULL )
+	{
+		std::string strKey = "FROM";
+		std::string s1 = get_value_bykey( strAllContent, strKey );
+		std::string strNowSender;
+		std::string str2;
+
+		if(pstrName)
+		{
+			strNowSender = s1;
+			if( strNowSender.find("<") != std::string::npos )
+			{
+				str2 = SStrvs::vsa_get( strNowSender, "<", 0, 0 );
+				SStrf::strim( str2 );
+				if( should_decode_name ) *pstrName = header_decode(str2); else *pstrName = str2;
+			}
+		}
+
+		strNowSender = s1;
+		if( strNowSender.find("<") != std::string::npos )
+		{
+			str2 = SStrvs::vsa_get( strNowSender, "<", 0, 1 );
+			strNowSender = SStrvs::vsa_get( str2, ">", 0, 0 );
+		}
+		SStrf::strim( strNowSender );
+
+		if( pstrAddr ) *pstrAddr = strNowSender;
+
+		return strNowSender;
+	}
+
+
+public:
+
+	
 	void LinkCellc( IRice * p )
 	{
 		m_pCellc = p;
@@ -49170,7 +49332,7 @@ public:
 		return "";
 	}
 
-	
+
 	std::string get_t1( std::string strUser, std::string strPass )  
 	{
 		SCake ck;
@@ -49311,69 +49473,14 @@ public:
 
 
 			if(pvSubject) ps = &(*(pvSubject->rbegin()));
-			if(1)
-			{
-				std::string strKey = "aSUBJECT: ";
-				std::string str2 = str1;
-				std::string strUpper = str2;
+			strNowTitle = get_subj( str1, 0 );
+			if(pvSubject) *ps = strNowTitle;
 
-				strKey[0] = 0x0a;
-				SStrf::sucase(strUpper);
 
-				std::string::size_type i1 = strUpper.find(strKey);
-				std::string::size_type i2 = i1 + SStrf::slen(strKey.c_str());
-
-				if( i1 != std::string::npos ) i1++;
-
-				for( ; i1 != std::string::npos && i1 < str2.size() ; i1++ )
-				{
-					if( str2[i1] == 0x0d || str2[i1] == 0x0a )
-					{
-						str2[i1] = 0;
-						strNowTitle = &(str2[i2]);
-						if(pvSubject) { *ps = &(str2[i2]); break; }
-					}
-				}
-			}
-
-			
 			if(pvFrom) ps = &(*(pvFrom->rbegin()));
-			if(1)
-			{
-				std::string strKey = "aFROM: ";
-				std::string str2 = str1;
-				std::string strUpper = str2;
+			strNowSender = get_fromwho( str1 );
+			if(pvFrom) *ps = strNowSender;
 
-				strKey[0] = 0x0a;
-				SStrf::sucase(strUpper);
-
-				std::string::size_type i1 = strUpper.find(strKey);
-				std::string::size_type i2 = i1 + SStrf::slen(strKey.c_str());
-
-				if( i1 != std::string::npos ) i1++;
-
-				for( ; i1 != std::string::npos && i1 < str2.size() ; i1++ )
-				{
-					if( str2[i1] == 0x0d || str2[i1] == 0x0a )
-					{
-						str2[i1] = 0;
-
-						strNowSender = &(str2[i2]);	
-
-						if( strNowSender.find("<") != std::string::npos )
-						{
-							str2 = SStrvs::vsa_get( strNowSender, "<", 0, 1 );
-							strNowSender = SStrvs::vsa_get( str2, ">", 0, 0 );
-						}
-
-						if(pvFrom)
-						{
-							*ps = strNowSender;
-							break;
-						}
-					}
-				}
-			}
 
 			tbool biWithDel = 1;
 			std::string *prefstrNowTitle;
@@ -49592,35 +49699,6 @@ public:
 
 		return 1;
 	}
-
-
-	static tbool header_decode( std::string strSubj, std::string &refstrRtn )
-	{
-		if( strSubj.find("=?") == 0 && strSubj.find("B?") != std::string::npos )
-		{
-			std::string::size_type i = strSubj.find("B?");
-			refstrRtn = SStrTbl::decode64str( strSubj.c_str() + i + 2 );
-			return 1;
-		}
-		if( strSubj.find("=X") == 0 && strSubj.find("BX") != std::string::npos )
-		{
-			std::string::size_type i = strSubj.find("BX");
-			refstrRtn = SStrTbl::decode64str( strSubj.c_str() + i + 2 );
-			return 1;
-		}
-		refstrRtn = strSubj;
-		return 0;
-	}
-
-	static std::string header_decode( std::string strSubj )
-	{
-		std::string re;
-		header_decode( strSubj, re );
-		SStrf::sucase(strSubj);
-		if( strSubj.length() > 3 && strSubj[2] == 'U' ) WFile::Utf8toCh( re );
-		return re;
-	}
-
 
 };
 
@@ -52798,30 +52876,25 @@ public:
 
 class WKeyinput3
 {
-public:
-
 private:
 	WTcpListener	m_lsn;
 	WTcpCells		m_ts;
 	WTcpCellc		m_tc;
 
 public:
-
 	WKeyinput3()
 	{
-
 	}
 
 	virtual ~WKeyinput3()
 	{
 		m_tc.DisConn();
 		m_ts.DisConn();
-
 	}
 
 public:
 	
-	tbool KeyInit( tuint16 iBeginPort = 53300 , tuint16 *pPortOut = NULL ) 
+	tbool KeyInit( tuint16 iBeginPort = 43000 , tuint16 *pPortOut = NULL ) 
 	{
 		tuint16 iPortOut;
 		std::string strAddr;
@@ -52844,13 +52917,13 @@ public:
 		return 0;
 	}
 
-
+	
 	void other_release()
 	{
 		this->m_ts.send_str( "a" );
 	}
 
-
+	
 	tbool me_lock()
 	{
 		SCake ckTmp;
@@ -52859,7 +52932,6 @@ public:
 
 		return ( ckTmp.len() >= 1 ) ? 1 : 0;
 	}
-
 };
 
 
@@ -52981,8 +53053,6 @@ public:
 	}
 
 };
-
-
 
 
 
@@ -63266,7 +63336,20 @@ public:
 	}
 
 
-	
+	static void add_browsend_header( std::string &refstr_out, std::string str_cr, WTcpHttp::MAP_HTTPHEADPARA *pmapBrowSend )
+	{
+		if( !pmapBrowSend ) return;
+
+		for( WTcpHttp::MAP_HTTPHEADPARA_IT it = pmapBrowSend->begin(); it != pmapBrowSend->end(); ++it )
+		{
+			refstr_out += it->first;
+			refstr_out += ": ";
+			refstr_out += it->second;
+			refstr_out += str_cr;
+		}
+	}
+
+
 	static tbool WGet(
 						std::string strAddr ,    
 						std::string strUniFn , 
@@ -63278,7 +63361,9 @@ public:
 						SCake		*pckRtn2 = NULL ,
 						std::string strCommuCR = "\r\n"	,
 						int iKillerSec = 0 ,
-						int iTryTimes = 2
+						int iTryTimes = 2 ,
+						WTcpHttp::MAP_HTTPHEADPARA *pmapBrowSend=NULL ,
+						WTcpHttp::MAP_HTTPHEADPARA *pmapSvrRtn=NULL
 					)
 	{
 		WTcpCellc cc;
@@ -63329,6 +63414,7 @@ public:
 			strOut = strMethod + " " + strUniFn + " HTTP/1.0" + strCommuCR;
 			strOut += "Cache-Control: no-cache" + strCommuCR;
 			strOut += "Pragma: no-cache" + strCommuCR;
+			add_browsend_header( strOut, strCommuCR, pmapBrowSend );
 			strOut += strCommuCR;
 			cc.send_str( strOut );
 		}
@@ -63338,7 +63424,7 @@ public:
 			std::string strOut;
 
 			strOut = strMethod + " " + strUniFn + " HTTP/1.0" + strCommuCR;
-			strOut += "Server: NotApache/" + SDte::GetNow().ReadStringPack() + WFile::MkRUStr() + strCommuCR;
+			
 			strOut += "Cache-Control: no-cache" + strCommuCR;
 			strOut += "Pragma: no-cache" + strCommuCR;
 
@@ -63364,6 +63450,7 @@ public:
 			}
 
 			strOut += "Connection: close" + strCommuCR;
+			add_browsend_header( strOut, strCommuCR, pmapBrowSend );
 			strOut += strCommuCR;
 			cc.send_str( strOut );
 
@@ -63378,10 +63465,21 @@ public:
 			}
 		}
 
+
+		if( !pckRtn2 ) 
+		{
+			if(rc_killer) cc.killer_dn();
+			return 1;
+		}
+
 		
-		WTcpHttp h;
+		WTcpHttp::MAP_HTTPHEADPARA mapSvrRtn;
+
 		SCake ck;
 		std::string strHttpHead;
+		long iContentLen(0);
+
+		if( pmapSvrRtn == NULL ) pmapSvrRtn = &mapSvrRtn;
 
 		if( pstrRtn1 ) *pstrRtn1 = "";
 		if( pckRtn2 ) pckRtn2->redim(0);
@@ -63390,20 +63488,22 @@ public:
 		if( ck.len() != 0 && pstrRtn1 ) ck.mk_str(*pstrRtn1);
 		ck.mk_str(strHttpHead);
 
-		h.ImportSvrRtnHeadPara( strHttpHead );
 		
-		if( !pckRtn2 ) 
-		{
-			if(rc_killer) cc.killer_dn();
-			return 1;
-		}
-
-		long i = SStrf::satol( h.GetSvrRtnHeadParaVal( "Content-Length" ) );
+		WTcpHttp::MakeHeadParaMap( strHttpHead, *pmapSvrRtn );
 
 		
-		if( i == 0 )
+
+		
+		iContentLen = (long)SStrf::satol( WTcpHttp::GetSvrRtnHeadParaVal_i( *pmapSvrRtn, "Content-Length" ) );
+
+		
+		if( iContentLen <= 0 )
 		{
-			std::string s = h.GetSvrRtnHeadParaVal( "Connection" );
+			std::string s;
+
+			
+			s = WTcpHttp::GetSvrRtnHeadParaVal_i( *pmapSvrRtn, "Connection" );
+
 			if( SStrf::slcase(s) == "close" )
 			{
 				cc.recv_all_f( *pckRtn2 );
@@ -63413,9 +63513,9 @@ public:
 			return 1;
 		}
 
-		if( i > 0 )
+		if( iContentLen > 0 )
 		{
-			cc.recv_len( *pckRtn2, i );
+			cc.recv_len( *pckRtn2, iContentLen );
 		}
 
 
